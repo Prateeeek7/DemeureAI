@@ -1,0 +1,5 @@
+student_id,name,sleep_schedule,cleanliness,study_noise,diet,sociability_score
+101,Pratik Kumar,NIGHT_OWL,HIGH,QUIET,VEG,0.4
+102,Dev Sharma,EARLY_BIRD,MEDIUM,MODERATE,NON_VEG,0.8
+103,Kabir Malhotra,NIGHT_OWL,HIGH,QUIET,VEG,0.3
+104,Rohan Das,EARLY_BIRD,LOW,LOUD,NON_VEG,0.9

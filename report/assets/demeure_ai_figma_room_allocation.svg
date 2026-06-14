@@ -1,0 +1,397 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <!-- Fonts Pre-load -->
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap');
+      .heading { font-family: 'Outfit', 'Georgia', serif; font-weight: 700; fill: #111827; }
+      .body-text { font-family: 'Inter', sans-serif; font-weight: 400; fill: #4B5563; }
+      .body-bold { font-family: 'Inter', sans-serif; font-weight: 600; fill: #111827; }
+      .mono { font-family: 'Courier New', Courier, monospace; fill: #1E3A5F; }
+      .grid-lines { stroke: rgba(30, 58, 95, 0.03); stroke-width: 1; }
+      .grid-lines-accent { stroke: rgba(30, 58, 95, 0.05); stroke-width: 0.5; }
+      .border-line { stroke: rgba(17, 24, 39, 0.1); stroke-width: 1; }
+    </style>
+    
+    <!-- Blueprint Grid Pattern (32x32px) -->
+    <pattern id="blueprint-grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" class="grid-lines" />
+    </pattern>
+    <!-- Blueprint Grid Accent Pattern (16x16px) -->
+    <pattern id="blueprint-grid-accent" width="16" height="16" patternUnits="userSpaceOnUse">
+      <path d="M 16 0 L 0 0 0 16" fill="none" class="grid-lines-accent" />
+    </pattern>
+  </defs>
+
+  <!-- 1. BASE CANVAS BACKGROUND -->
+  <rect width="1920" height="1080" fill="#F8F6F2" />
+  
+  <!-- 2. BLUEPRINT GRID OVERLAY -->
+  <rect width="1920" height="1080" fill="url(#blueprint-grid)" />
+  <rect width="1920" height="1080" fill="url(#blueprint-grid-accent)" />
+
+  <!-- 3. TOP NAVIGATION HEADER BAR -->
+  <g id="Header-Bar">
+    <rect x="0" y="0" width="1920" height="72" fill="#FFFFFF" />
+    <line x1="0" y1="72" x2="1920" y2="72" class="border-line" />
+    
+    <!-- Title / Branding -->
+    <text x="24" y="40" class="heading" font-size="20" letter-spacing="-0.02em">DEMEURE AI // COMMAND</text>
+    <text x="24" y="55" class="mono" font-size="9" letter-spacing="0.1em">Institutional Campus OS</text>
+    
+    <!-- Core State Indicator -->
+    <g transform="translate(340, 24)">
+      <rect x="0" y="0" width="200" height="24" fill="rgba(53, 94, 59, 0.05)" stroke="rgba(53, 94, 59, 0.2)" stroke-width="1" />
+      <circle cx="16" cy="12" r="4" fill="#355E3B" />
+      <text x="30" y="16" class="mono" font-size="10" fill="#355E3B" font-weight="bold">CORE STATE: OPERATIONAL</text>
+    </g>
+    
+    <!-- Live Time -->
+    <text x="1300" y="42" class="mono" font-size="11" fill="#4B5563">14:35:37 | Sat, Jun 13</text>
+    
+    <!-- Persona Selector Mockup -->
+    <g id="Persona-Selector" transform="translate(1500, 18)">
+      <rect x="0" y="0" width="230" height="36" fill="#F8F6F2" stroke="rgba(17, 24, 39, 0.15)" stroke-width="1" />
+      <text x="12" y="22" class="mono" font-size="11" fill="#111827" font-weight="bold">PERSONA: ADMIN</text>
+      <path d="M 205 15 L 210 20 L 215 15" fill="none" stroke="#4B5563" stroke-width="1.5" />
+    </g>
+    
+    <!-- Storyboard Button -->
+    <g id="Storyboard-Btn" transform="translate(1750, 18)">
+      <rect x="0" y="0" width="146" height="36" fill="#FFFFFF" stroke="rgba(17, 24, 39, 0.15)" stroke-width="1" />
+      <text x="24" y="22" class="mono" font-size="10" fill="#4B5563" letter-spacing="0.05em">← STORYBOARD</text>
+    </g>
+  </g>
+
+  <!-- 4. SIDEBAR NAVIGATION -->
+  <g id="Sidebar-Navigation">
+    <rect x="0" y="72" width="256" height="1008" fill="#FFFFFF" />
+    <line x1="256" y1="72" x2="256" y2="1080" class="border-line" />
+    
+    <text x="24" y="110" class="mono" font-size="10" fill="#4B5563" letter-spacing="0.1em">SYSTEM SUB-PROTOCOLS</text>
+    
+    
+    <!-- Item 1: OVERVIEW TELEMETRY -->
+    <g transform="translate(12, 130)">
+      <rect x="0" y="0" width="232" height="42" fill="none" />
+      <text x="16" y="26" class="mono" font-size="11" fill="#111827">OVERVIEW TELEMETRY</text>
+    </g>
+    <!-- Item 2: ROOM ALLOCATION (Active) -->
+    <g transform="translate(12, 180)">
+      <rect x="0" y="0" width="232" height="42" fill="#1E3A5F" />
+      <text x="16" y="26" class="mono" font-size="11" fill="#FFFFFF" font-weight="bold">ROOM ALLOCATION</text>
+      <path d="M 210 16 L 215 21 L 210 26" fill="none" stroke="#FFFFFF" stroke-width="1.5" />
+    </g>
+    <!-- Item 3: STUDENT SURVEY FORM -->
+    <g transform="translate(12, 230)">
+      <rect x="0" y="0" width="232" height="42" fill="none" />
+      <text x="16" y="26" class="mono" font-size="11" fill="#111827">STUDENT SURVEY FORM</text>
+    </g>
+    <!-- Item 4: POWER GRID DIAGNOSTICS -->
+    <g transform="translate(12, 280)">
+      <rect x="0" y="0" width="232" height="42" fill="none" />
+      <text x="16" y="26" class="mono" font-size="11" fill="#111827">POWER GRID DIAGNOSTICS</text>
+    </g>
+    <!-- Item 5: SECURITY SOC GATE -->
+    <g transform="translate(12, 330)">
+      <rect x="0" y="0" width="232" height="42" fill="none" />
+      <text x="16" y="26" class="mono" font-size="11" fill="#111827">SECURITY SOC GATE</text>
+    </g>
+    <!-- Item 6: NLP COMPLAINT DESK -->
+    <g transform="translate(12, 380)">
+      <rect x="0" y="0" width="232" height="42" fill="none" />
+      <text x="16" y="26" class="mono" font-size="11" fill="#111827">NLP COMPLAINT DESK</text>
+    </g>
+    <!-- Item 7: MESS &amp; FOOD OPTIMIZER -->
+    <g transform="translate(12, 430)">
+      <rect x="0" y="0" width="232" height="42" fill="none" />
+      <text x="16" y="26" class="mono" font-size="11" fill="#111827">MESS &amp; FOOD OPTIMIZER</text>
+    </g>
+    <!-- Item 8: WELFARE OPERATIONS -->
+    <g transform="translate(12, 480)">
+      <rect x="0" y="0" width="232" height="42" fill="none" />
+      <text x="16" y="26" class="mono" font-size="11" fill="#111827">WELFARE OPERATIONS</text>
+    </g>
+    <!-- Item 9: AI HANDBOOK RAG -->
+    <g transform="translate(12, 530)">
+      <rect x="0" y="0" width="232" height="42" fill="none" />
+      <text x="16" y="26" class="mono" font-size="11" fill="#111827">AI HANDBOOK RAG</text>
+    </g>
+
+    <!-- Sidebar Footer Telemetry -->
+    <g transform="translate(24, 1000)" class="mono" font-size="9" fill="#4B5563">
+      <text x="0" y="0">HOSTEL ID: DE-DELHI-09</text>
+      <text x="0" y="15">STITCH_NODE: ACTIVE</text>
+      <text x="0" y="30">VER: 1.0.4 // LTS</text>
+    </g>
+  </g>
+
+  <!-- 5. MAIN CONTENT AREA -->
+  <g id="Main-Content" transform="translate(288, 104)">
+    
+    <!-- Module Header -->
+    <g id="Content-Header">
+      <text x="0" y="0" class="mono" font-size="11" fill="#4B5563" letter-spacing="0.2em">MODULE // 01</text>
+      <text x="0" y="32" class="heading" font-size="32" font-family="'Outfit', sans-serif">Room Allocation &amp; Compatibility Grid</text>
+      <line x1="0" y1="50" x2="1600" y2="50" class="border-line" />
+    </g>
+    
+    
+    <!-- Block and Floor selector bar -->
+    <g transform="translate(0, 72)">
+      <rect width="1600" height="64" fill="#FFFFFF" stroke="rgba(17, 24, 39, 0.1)" stroke-width="1" />
+      
+      <!-- Block selection dropdown -->
+      <g transform="translate(16, 14)">
+        <text x="0" y="-2" class="mono" font-size="9" fill="#4B5563">HOSTEL BLOCK</text>
+        <rect x="0" y="4" width="220" height="32" fill="#F8F6F2" stroke="rgba(17, 24, 39, 0.15)" />
+        <text x="12" y="24" class="mono" font-size="11" fill="#111827">Block A — Boys (North Wing)</text>
+        <path d="M 200 16 L 204 20 L 208 16" fill="none" stroke="#4B5563" stroke-width="1.5" />
+      </g>
+      
+      <!-- Floor selection dropdown -->
+      <g transform="translate(252, 14)">
+        <text x="0" y="-2" class="mono" font-size="9" fill="#4B5563">FLOOR</text>
+        <rect x="0" y="4" width="220" height="32" fill="#F8F6F2" stroke="rgba(17, 24, 39, 0.15)" />
+        <text x="12" y="24" class="mono" font-size="11" fill="#111827">Floor 1 (Rooms 101–110)</text>
+        <path d="M 200 16 L 204 20 L 208 16" fill="none" stroke="#4B5563" stroke-width="1.5" />
+      </g>
+
+      <!-- Live summary pills -->
+      <g transform="translate(1000, 20)">
+        <rect x="0" y="0" width="100" height="24" fill="rgba(53, 94, 59, 0.05)" stroke="rgba(53, 94, 59, 0.2)" />
+        <circle cx="12" cy="12" r="3" fill="#355E3B" />
+        <text x="22" y="15" class="mono" font-size="9" fill="#355E3B" font-weight="bold">6 Available</text>
+        
+        <rect x="110" y="0" width="80" height="24" fill="rgba(211, 47, 47, 0.05)" stroke="rgba(211, 47, 47, 0.2)" />
+        <circle cx="122" cy="12" r="3" fill="#D32F2F" />
+        <text x="132" y="15" class="mono" font-size="9" fill="#D32F2F" font-weight="bold">3 Full</text>
+
+        <rect x="200" y="0" width="110" height="24" fill="rgba(245, 158, 11, 0.05)" stroke="rgba(245, 158, 11, 0.2)" />
+        <circle cx="212" cy="12" r="3" fill="#F59E0B" />
+        <text x="222" y="15" class="mono" font-size="9" fill="#D97706" font-weight="bold">1 Maintenance</text>
+        
+        <rect x="320" y="0" width="130" height="24" fill="#F8F6F2" stroke="rgba(17, 24, 39, 0.1)" />
+        <text x="330" y="15" class="mono" font-size="9" fill="#111827">🛏 14 / 20 Beds Filled</text>
+      </g>
+    </g>
+
+    <!-- Content Columns -->
+    <g transform="translate(0, 160)">
+      <!-- Left Column: Compatibility Scorer -->
+      <g transform="translate(0, 0)">
+        <rect width="640" height="720" fill="#FFFFFF" stroke="rgba(17, 24, 39, 0.1)" stroke-width="1" />
+        
+        <g transform="translate(24, 24)">
+          <text x="0" y="16" class="heading" font-size="18">Compatibility Scorer</text>
+          <line x1="0" y1="28" x2="592" y2="28" class="border-line" />
+          
+          <text x="0" y="48" class="mono" font-size="10" fill="#4B5563">Lifestyle vector similarity calculation engine.</text>
+          
+          <!-- Form Fields -->
+          <!-- Sleep Profile -->
+          <g transform="translate(0, 70)">
+            <text x="0" y="0" class="mono" font-size="9" fill="#4B5563">1. SLEEP PROFILE *</text>
+            <rect x="0" y="8" width="592" height="36" fill="#F8F6F2" stroke="rgba(17, 24, 39, 0.15)" />
+            <text x="12" y="30" class="mono" font-size="11" fill="#111827">Early Riser (Before 6:00 AM)</text>
+            <path d="M 570 22 L 575 27 L 580 22" fill="none" stroke="#4B5563" stroke-width="1.5" />
+          </g>
+
+          <!-- Study Environment -->
+          <g transform="translate(0, 136)">
+            <text x="0" y="0" class="mono" font-size="9" fill="#4B5563">2. STUDY ENVIRONMENT *</text>
+            <rect x="0" y="8" width="592" height="36" fill="#F8F6F2" stroke="rgba(17, 24, 39, 0.15)" />
+            <text x="12" y="30" class="mono" font-size="11" fill="#111827">Absolute Silence Required</text>
+            <path d="M 570 22 L 575 27 L 580 22" fill="none" stroke="#4B5563" stroke-width="1.5" />
+          </g>
+
+          <!-- Maintenance -->
+          <g transform="translate(0, 202)">
+            <text x="0" y="0" class="mono" font-size="9" fill="#4B5563">3. MAINTENANCE OF SPACE *</text>
+            <rect x="0" y="8" width="592" height="36" fill="#F8F6F2" stroke="rgba(17, 24, 39, 0.15)" />
+            <text x="12" y="30" class="mono" font-size="11" fill="#111827">Strictly Clean / Scheduled Chore chart</text>
+            <path d="M 570 22 L 575 27 L 580 22" fill="none" stroke="#4B5563" stroke-width="1.5" />
+          </g>
+
+          <!-- Social -->
+          <g transform="translate(0, 268)">
+            <text x="0" y="0" class="mono" font-size="9" fill="#4B5563">4. SOCIAL PROFILE *</text>
+            <rect x="0" y="8" width="592" height="36" fill="#F8F6F2" stroke="rgba(17, 24, 39, 0.15)" />
+            <text x="12" y="30" class="mono" font-size="11" fill="#111827">Quiet Sanctuary (No visitors inside)</text>
+            <path d="M 570 22 L 575 27 L 580 22" fill="none" stroke="#4B5563" stroke-width="1.5" />
+          </g>
+          
+          <!-- Submit Button -->
+          <g transform="translate(0, 334)">
+            <rect x="0" y="0" width="592" height="42" fill="#1E3A5F" />
+            <text x="296" y="26" class="mono" font-size="11" fill="#FFFFFF" font-weight="bold" text-anchor="middle">ANALYZE COMPATIBILITY →</text>
+          </g>
+          
+          <!-- Compatibility Results Box -->
+          <g transform="translate(0, 400)">
+            <rect x="0" y="0" width="592" height="150" fill="#F8F6F2" stroke="rgba(30, 58, 95, 0.2)" />
+            <text x="16" y="24" class="mono" font-size="11" fill="#1E3A5F" font-weight="bold">✓ OPTIMAL COMPATIBLE MATCHES IN BLOCK A · FLOOR 1</text>
+            <line x1="16" y1="34" x2="576" y2="34" stroke="rgba(30, 58, 95, 0.1)" stroke-width="1" />
+            
+            <text x="16" y="60" class="mono" font-size="11" fill="#111827">1. Sameer Verma (Room A-103)</text>
+            <text x="576" y="60" class="mono" font-size="11" fill="#355E3B" font-weight="bold" text-anchor="end">94% Match</text>
+            
+            <text x="16" y="90" class="mono" font-size="11" fill="#111827">2. Abhishek Kumar (Room A-108)</text>
+            <text x="576" y="90" class="mono" font-size="11" fill="#1E3A5F" font-weight="bold" text-anchor="end">86% Match</text>
+            
+            <text x="16" y="120" class="mono" font-size="11" fill="#111827">3. Riya Banerjee (Room A-104)</text>
+            <text x="576" y="120" class="mono" font-size="11" fill="#D97706" font-weight="bold" text-anchor="end">79% Match</text>
+          </g>
+          
+          <!-- Information Source Dropdown (Minimized) -->
+          <g transform="translate(0, 570)">
+            <rect x="0" y="0" width="592" height="40" fill="#FFFFFF" stroke="rgba(17, 24, 39, 0.15)" />
+            <text x="16" y="24" class="mono" font-size="11" fill="#111827" font-weight="bold">ℹ HOW IS PREDICTION DATA GENERATED?</text>
+            <path d="M 570 16 L 575 21 L 580 16" fill="none" stroke="#4B5563" stroke-width="1.5" />
+          </g>
+        </g>
+      </g>
+      
+      <!-- Right Column: Floor Map -->
+      <g transform="translate(672, 0)">
+        <rect width="928" height="720" fill="#FFFFFF" stroke="rgba(17, 24, 39, 0.1)" stroke-width="1" />
+        
+        <g transform="translate(24, 24)">
+          <text x="0" y="16" class="heading" font-size="18">Block A · Floor 1 Map</text>
+          <text x="880" y="16" class="mono" font-size="10" fill="#4B5563" text-anchor="end">Click a room to inspect</text>
+          <line x1="0" y1="28" x2="880" y2="28" class="border-line" />
+          
+          <!-- Map Grid background -->
+          <g transform="translate(0, 48)">
+            <rect width="880" height="240" fill="#F8F6F2" stroke="rgba(17, 24, 39, 0.1)" />
+            
+            <!-- 5x2 room cells grid -->
+            <!-- Row 1: Rooms 101 to 105 -->
+            <!-- Room 101 (A-101) -->
+            <g transform="translate(16, 16)">
+              <rect width="156" height="90" fill="#FFFFFF" stroke="#1E3A5F" stroke-width="1.5" />
+              <text x="10" y="20" class="mono" font-size="11" font-weight="bold" fill="#111827">A-101</text>
+              <circle cx="146" cy="15" r="4" fill="#355E3B" />
+              <text x="10" y="55" class="mono" font-size="8" fill="#4B5563">DOUBLE</text>
+              <text x="10" y="75" class="mono" font-size="9" fill="#1E3A5F" font-weight="bold">1 / 2 Occ.</text>
+            </g>
+            <!-- Room 102 -->
+            <g transform="translate(188, 16)">
+              <rect width="156" height="90" fill="#FFFFFF" stroke="rgba(17, 24, 39, 0.1)" />
+              <text x="10" y="20" class="mono" font-size="11" font-weight="bold" fill="#111827">A-102</text>
+              <circle cx="146" cy="15" r="4" fill="#355E3B" />
+              <text x="10" y="55" class="mono" font-size="8" fill="#4B5563">SINGLE</text>
+              <text x="10" y="75" class="mono" font-size="9" fill="#1E3A5F" font-weight="bold">0 / 1 Occ.</text>
+            </g>
+            <!-- Room 103 -->
+            <g transform="translate(360, 16)">
+              <rect width="156" height="90" fill="#FFFFFF" stroke="rgba(17, 24, 39, 0.1)" />
+              <text x="10" y="20" class="mono" font-size="11" font-weight="bold" fill="#111827">A-103</text>
+              <circle cx="146" cy="15" r="4" fill="#D32F2F" />
+              <text x="10" y="55" class="mono" font-size="8" fill="#4B5563">DOUBLE</text>
+              <text x="10" y="75" class="mono" font-size="9" fill="#1E3A5F" font-weight="bold">2 / 2 Occ.</text>
+            </g>
+            <!-- Room 104 -->
+            <g transform="translate(532, 16)">
+              <rect width="156" height="90" fill="#FFFFFF" stroke="rgba(17, 24, 39, 0.1)" />
+              <text x="10" y="20" class="mono" font-size="11" font-weight="bold" fill="#111827">A-104</text>
+              <circle cx="146" cy="15" r="4" fill="#355E3B" />
+              <text x="10" y="55" class="mono" font-size="8" fill="#4B5563">SUITE</text>
+              <text x="10" y="75" class="mono" font-size="9" fill="#1E3A5F" font-weight="bold">2 / 4 Occ.</text>
+            </g>
+            <!-- Room 105 -->
+            <g transform="translate(704, 16)">
+              <rect width="156" height="90" fill="rgba(245, 158, 11, 0.05)" stroke="rgba(245, 158, 11, 0.2)" />
+              <text x="10" y="20" class="mono" font-size="11" font-weight="bold" fill="#111827">A-105</text>
+              <circle cx="146" cy="15" r="4" fill="#F59E0B" />
+              <text x="10" y="55" class="mono" font-size="8" fill="#4B5563">DOUBLE</text>
+              <text x="10" y="75" class="mono" font-size="9" fill="#D97706" font-weight="bold">MAINT.</text>
+            </g>
+
+            <!-- Row 2: Rooms 106 to 110 -->
+            <!-- Room 106 -->
+            <g transform="translate(16, 122)">
+              <rect width="156" height="90" fill="#FFFFFF" stroke="rgba(17, 24, 39, 0.1)" />
+              <text x="10" y="20" class="mono" font-size="11" font-weight="bold" fill="#111827">A-106</text>
+              <circle cx="146" cy="15" r="4" fill="#355E3B" />
+              <text x="10" y="55" class="mono" font-size="8" fill="#4B5563">SINGLE</text>
+              <text x="10" y="75" class="mono" font-size="9" fill="#1E3A5F" font-weight="bold">0 / 1 Occ.</text>
+            </g>
+            <!-- Room 107 -->
+            <g transform="translate(188, 122)">
+              <rect width="156" height="90" fill="#FFFFFF" stroke="rgba(17, 24, 39, 0.1)" />
+              <text x="10" y="20" class="mono" font-size="11" font-weight="bold" fill="#111827">A-107</text>
+              <circle cx="146" cy="15" r="4" fill="#355E3B" />
+              <text x="10" y="55" class="mono" font-size="8" fill="#4B5563">DOUBLE</text>
+              <text x="10" y="75" class="mono" font-size="9" fill="#1E3A5F" font-weight="bold">1 / 2 Occ.</text>
+            </g>
+            <!-- Room 108 -->
+            <g transform="translate(360, 122)">
+              <rect width="156" height="90" fill="#FFFFFF" stroke="rgba(17, 24, 39, 0.1)" />
+              <text x="10" y="20" class="mono" font-size="11" font-weight="bold" fill="#111827">A-108</text>
+              <circle cx="146" cy="15" r="4" fill="#D32F2F" />
+              <text x="10" y="55" class="mono" font-size="8" fill="#4B5563">SUITE</text>
+              <text x="10" y="75" class="mono" font-size="9" fill="#1E3A5F" font-weight="bold">4 / 4 Occ.</text>
+            </g>
+            <!-- Room 109 -->
+            <g transform="translate(532, 122)">
+              <rect width="156" height="90" fill="#FFFFFF" stroke="rgba(17, 24, 39, 0.1)" />
+              <text x="10" y="20" class="mono" font-size="11" font-weight="bold" fill="#111827">A-109</text>
+              <circle cx="146" cy="15" r="4" fill="#355E3B" />
+              <text x="10" y="55" class="mono" font-size="8" fill="#4B5563">SINGLE</text>
+              <text x="10" y="75" class="mono" font-size="9" fill="#1E3A5F" font-weight="bold">0 / 1 Occ.</text>
+            </g>
+            <!-- Room 110 -->
+            <g transform="translate(704, 122)">
+              <rect width="156" height="90" fill="#FFFFFF" stroke="rgba(17, 24, 39, 0.1)" />
+              <text x="10" y="20" class="mono" font-size="11" font-weight="bold" fill="#111827">A-110</text>
+              <circle cx="146" cy="15" r="4" fill="#355E3B" />
+              <text x="10" y="55" class="mono" font-size="8" fill="#4B5563">DOUBLE</text>
+              <text x="10" y="75" class="mono" font-size="9" fill="#1E3A5F" font-weight="bold">1 / 2 Occ.</text>
+            </g>
+          </g>
+
+          <!-- Selected Room Details Panel -->
+          <g transform="translate(0, 310)">
+            <rect width="880" height="330" fill="#F8F6F2" stroke="rgba(17, 24, 39, 0.1)" />
+            
+            <g transform="translate(24, 24)">
+              <!-- Left side metadata -->
+              <g transform="translate(0, 0)">
+                <text x="0" y="16" class="heading" font-size="16" fill="#1E3A5F">Room A-101 Diagnostic</text>
+                
+                <text x="0" y="50" class="mono" font-size="9" fill="#4B5563">ROOM TYPE</text>
+                <text x="0" y="66" class="mono" font-size="11" fill="#111827" font-weight="bold">Double</text>
+                
+                <text x="0" y="100" class="mono" font-size="9" fill="#4B5563">OPERATIONAL STATUS</text>
+                <text x="0" y="116" class="mono" font-size="11" fill="#355E3B" font-weight="bold">Available</text>
+                
+                <text x="0" y="150" class="mono" font-size="9" fill="#4B5563">COMPATIBILITY WEIGHT</text>
+                <text x="0" y="166" class="mono" font-size="11" fill="#355E3B" font-weight="bold">92% Match Index</text>
+                
+                <text x="0" y="200" class="mono" font-size="9" fill="#4B5563">BLOCK / FLOOR</text>
+                <text x="0" y="216" class="mono" font-size="11" fill="#111827" font-weight="bold">Block A · Floor 1</text>
+              </g>
+              
+              <!-- Right side occupants list -->
+              <g transform="translate(440, 0)">
+                <line x1="-24" y1="0" x2="-24" y2="240" stroke="rgba(17, 24, 39, 0.1)" stroke-width="1" />
+                
+                <text x="0" y="16" class="heading" font-size="13" fill="#111827">ACTIVE OCCUPANTS</text>
+                
+                <circle cx="6" cy="46" r="3" fill="#1E3A5F" />
+                <text x="18" y="50" class="mono" font-size="11" fill="#111827">Aarav Mehta</text>
+                
+                <text x="0" y="90" class="mono" font-size="10" fill="#4B5563" font-style="italic">1 bed is currently unallocated.</text>
+                
+                <!-- Allocate Resident Here button -->
+                <rect x="0" y="130" width="360" height="36" fill="#1E3A5F" />
+                <text x="180" y="152" class="mono" font-size="10" fill="#FFFFFF" font-weight="bold" text-anchor="middle">ALLOCATE RESIDENT HERE</text>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    
+  </g>
+</svg>

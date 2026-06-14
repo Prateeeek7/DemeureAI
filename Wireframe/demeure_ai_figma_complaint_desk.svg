@@ -1,0 +1,274 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <!-- Fonts Pre-load -->
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap');
+      .heading { font-family: 'Outfit', 'Georgia', serif; font-weight: 700; fill: #111827; }
+      .body-text { font-family: 'Inter', sans-serif; font-weight: 400; fill: #4B5563; }
+      .body-bold { font-family: 'Inter', sans-serif; font-weight: 600; fill: #111827; }
+      .mono { font-family: 'Courier New', Courier, monospace; fill: #1E3A5F; }
+      .grid-lines { stroke: rgba(30, 58, 95, 0.03); stroke-width: 1; }
+      .grid-lines-accent { stroke: rgba(30, 58, 95, 0.05); stroke-width: 0.5; }
+      .border-line { stroke: rgba(17, 24, 39, 0.1); stroke-width: 1; }
+    </style>
+    
+    <!-- Blueprint Grid Pattern (32x32px) -->
+    <pattern id="blueprint-grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" class="grid-lines" />
+    </pattern>
+    <!-- Blueprint Grid Accent Pattern (16x16px) -->
+    <pattern id="blueprint-grid-accent" width="16" height="16" patternUnits="userSpaceOnUse">
+      <path d="M 16 0 L 0 0 0 16" fill="none" class="grid-lines-accent" />
+    </pattern>
+  </defs>
+
+  <!-- 1. BASE CANVAS BACKGROUND -->
+  <rect width="1920" height="1080" fill="#F8F6F2" />
+  
+  <!-- 2. BLUEPRINT GRID OVERLAY -->
+  <rect width="1920" height="1080" fill="url(#blueprint-grid)" />
+  <rect width="1920" height="1080" fill="url(#blueprint-grid-accent)" />
+
+  <!-- 3. TOP NAVIGATION HEADER BAR -->
+  <g id="Header-Bar">
+    <rect x="0" y="0" width="1920" height="72" fill="#FFFFFF" />
+    <line x1="0" y1="72" x2="1920" y2="72" class="border-line" />
+    
+    <!-- Title / Branding -->
+    <text x="24" y="40" class="heading" font-size="20" letter-spacing="-0.02em">DEMEURE AI // COMMAND</text>
+    <text x="24" y="55" class="mono" font-size="9" letter-spacing="0.1em">Institutional Campus OS</text>
+    
+    <!-- Core State Indicator -->
+    <g transform="translate(340, 24)">
+      <rect x="0" y="0" width="200" height="24" fill="rgba(53, 94, 59, 0.05)" stroke="rgba(53, 94, 59, 0.2)" stroke-width="1" />
+      <circle cx="16" cy="12" r="4" fill="#355E3B" />
+      <text x="30" y="16" class="mono" font-size="10" fill="#355E3B" font-weight="bold">CORE STATE: OPERATIONAL</text>
+    </g>
+    
+    <!-- Live Time -->
+    <text x="1300" y="42" class="mono" font-size="11" fill="#4B5563">14:35:37 | Sat, Jun 13</text>
+    
+    <!-- Persona Selector Mockup -->
+    <g id="Persona-Selector" transform="translate(1500, 18)">
+      <rect x="0" y="0" width="230" height="36" fill="#F8F6F2" stroke="rgba(17, 24, 39, 0.15)" stroke-width="1" />
+      <text x="12" y="22" class="mono" font-size="11" fill="#111827" font-weight="bold">PERSONA: ADMIN</text>
+      <path d="M 205 15 L 210 20 L 215 15" fill="none" stroke="#4B5563" stroke-width="1.5" />
+    </g>
+    
+    <!-- Storyboard Button -->
+    <g id="Storyboard-Btn" transform="translate(1750, 18)">
+      <rect x="0" y="0" width="146" height="36" fill="#FFFFFF" stroke="rgba(17, 24, 39, 0.15)" stroke-width="1" />
+      <text x="24" y="22" class="mono" font-size="10" fill="#4B5563" letter-spacing="0.05em">← STORYBOARD</text>
+    </g>
+  </g>
+
+  <!-- 4. SIDEBAR NAVIGATION -->
+  <g id="Sidebar-Navigation">
+    <rect x="0" y="72" width="256" height="1008" fill="#FFFFFF" />
+    <line x1="256" y1="72" x2="256" y2="1080" class="border-line" />
+    
+    <text x="24" y="110" class="mono" font-size="10" fill="#4B5563" letter-spacing="0.1em">SYSTEM SUB-PROTOCOLS</text>
+    
+    
+    <!-- Item 1: OVERVIEW TELEMETRY -->
+    <g transform="translate(12, 130)">
+      <rect x="0" y="0" width="232" height="42" fill="none" />
+      <text x="16" y="26" class="mono" font-size="11" fill="#111827">OVERVIEW TELEMETRY</text>
+    </g>
+    <!-- Item 2: ROOM ALLOCATION -->
+    <g transform="translate(12, 180)">
+      <rect x="0" y="0" width="232" height="42" fill="none" />
+      <text x="16" y="26" class="mono" font-size="11" fill="#111827">ROOM ALLOCATION</text>
+    </g>
+    <!-- Item 3: STUDENT SURVEY FORM -->
+    <g transform="translate(12, 230)">
+      <rect x="0" y="0" width="232" height="42" fill="none" />
+      <text x="16" y="26" class="mono" font-size="11" fill="#111827">STUDENT SURVEY FORM</text>
+    </g>
+    <!-- Item 4: POWER GRID DIAGNOSTICS -->
+    <g transform="translate(12, 280)">
+      <rect x="0" y="0" width="232" height="42" fill="none" />
+      <text x="16" y="26" class="mono" font-size="11" fill="#111827">POWER GRID DIAGNOSTICS</text>
+    </g>
+    <!-- Item 5: SECURITY SOC GATE -->
+    <g transform="translate(12, 330)">
+      <rect x="0" y="0" width="232" height="42" fill="none" />
+      <text x="16" y="26" class="mono" font-size="11" fill="#111827">SECURITY SOC GATE</text>
+    </g>
+    <!-- Item 6: NLP COMPLAINT DESK (Active) -->
+    <g transform="translate(12, 380)">
+      <rect x="0" y="0" width="232" height="42" fill="#1E3A5F" />
+      <text x="16" y="26" class="mono" font-size="11" fill="#FFFFFF" font-weight="bold">NLP COMPLAINT DESK</text>
+      <path d="M 210 16 L 215 21 L 210 26" fill="none" stroke="#FFFFFF" stroke-width="1.5" />
+    </g>
+    <!-- Item 7: MESS &amp; FOOD OPTIMIZER -->
+    <g transform="translate(12, 430)">
+      <rect x="0" y="0" width="232" height="42" fill="none" />
+      <text x="16" y="26" class="mono" font-size="11" fill="#111827">MESS &amp; FOOD OPTIMIZER</text>
+    </g>
+    <!-- Item 8: WELFARE OPERATIONS -->
+    <g transform="translate(12, 480)">
+      <rect x="0" y="0" width="232" height="42" fill="none" />
+      <text x="16" y="26" class="mono" font-size="11" fill="#111827">WELFARE OPERATIONS</text>
+    </g>
+    <!-- Item 9: AI HANDBOOK RAG -->
+    <g transform="translate(12, 530)">
+      <rect x="0" y="0" width="232" height="42" fill="none" />
+      <text x="16" y="26" class="mono" font-size="11" fill="#111827">AI HANDBOOK RAG</text>
+    </g>
+
+    <!-- Sidebar Footer Telemetry -->
+    <g transform="translate(24, 1000)" class="mono" font-size="9" fill="#4B5563">
+      <text x="0" y="0">HOSTEL ID: DE-DELHI-09</text>
+      <text x="0" y="15">STITCH_NODE: ACTIVE</text>
+      <text x="0" y="30">VER: 1.0.4 // LTS</text>
+    </g>
+  </g>
+
+  <!-- 5. MAIN CONTENT AREA -->
+  <g id="Main-Content" transform="translate(288, 104)">
+    
+    <!-- Module Header -->
+    <g id="Content-Header">
+      <text x="0" y="0" class="mono" font-size="11" fill="#4B5563" letter-spacing="0.2em">MODULE // 04</text>
+      <text x="0" y="32" class="heading" font-size="32" font-family="'Outfit', sans-serif">NLP Complaint Desk &amp; Proactive Maintenance</text>
+      <line x1="0" y1="50" x2="1600" y2="50" class="border-line" />
+    </g>
+    
+    
+    <g transform="translate(0, 72)">
+      <!-- Left Column: NLP Triage Sandbox -->
+      <g transform="translate(0, 0)">
+        <rect width="780" height="700" fill="#FFFFFF" stroke="rgba(17, 24, 39, 0.1)" />
+        
+        <g transform="translate(24, 24)">
+          <text x="0" y="16" class="heading" font-size="18">NLP Triage Sandbox</text>
+          <line x1="0" y1="28" x2="732" y2="28" class="border-line" />
+          
+          <text x="0" y="48" class="mono" font-size="10" fill="#4B5563">Type an issue below to simulate the automated classification model.</text>
+          
+          <!-- Input Description text-area -->
+          <g transform="translate(0, 72)">
+            <rect width="732" height="130" fill="#F8F6F2" stroke="rgba(17, 24, 39, 0.1)" />
+            <text x="16" y="24" class="mono" font-size="11" fill="#4B5563">Water leakage from the AC unit dripping on the study desk in room A-302...</text>
+          </g>
+          
+          <!-- Submit Button -->
+          <g transform="translate(0, 218)">
+            <rect width="732" height="42" fill="#1E3A5F" />
+            <text x="366" y="26" class="mono" font-size="11" fill="#FFFFFF" font-weight="bold" text-anchor="middle">SUBMIT TO NLP DESK</text>
+          </g>
+          
+          <!-- Classification Predictions Card -->
+          <g transform="translate(0, 288)">
+            <rect width="732" height="320" fill="#F8F6F2" stroke="rgba(30, 58, 95, 0.2)" />
+            
+            <g transform="translate(24, 24)">
+              <text x="0" y="16" class="heading" font-size="14" fill="#1E3A5F">NLP CLASSIFICATION PREDICTIONS</text>
+              <line x1="0" y1="28" x2="660" y2="28" stroke="rgba(30, 58, 95, 0.1)" />
+              
+              <!-- Category -->
+              <g transform="translate(0, 46)">
+                <text x="0" y="12" class="mono" font-size="9" fill="#4B5563">EXTRACTED CATEGORY</text>
+                <text x="0" y="30" class="mono" font-size="14" fill="#111827" font-weight="bold">Plumbing</text>
+              </g>
+              
+              <!-- Priority -->
+              <g transform="translate(340, 46)">
+                <text x="0" y="12" class="mono" font-size="9" fill="#4B5563">CALCULATED PRIORITY</text>
+                <text x="0" y="30" class="mono" font-size="14" fill="#D32F2F" font-weight="bold">HIGH</text>
+              </g>
+              
+              <!-- ETA -->
+              <g transform="translate(0, 126)">
+                <text x="0" y="12" class="mono" font-size="9" fill="#4B5563">RESPONSE SLA ETA</text>
+                <text x="0" y="30" class="mono" font-size="14" fill="#111827" font-weight="bold">12 Hours</text>
+              </g>
+              
+              <!-- Model -->
+              <g transform="translate(340, 126)">
+                <text x="0" y="12" class="mono" font-size="9" fill="#4B5563">CLASSIFICATION MODEL</text>
+                <text x="0" y="30" class="mono" font-size="12" fill="#4B5563">RoBERTa-Hostel v2</text>
+              </g>
+              
+              <!-- Log Ticket button -->
+              <rect x="0" y="200" width="684" height="42" fill="#355E3B" />
+              <text x="342" y="226" class="mono" font-size="10" fill="#FFFFFF" font-weight="bold" text-anchor="middle">LOG TICKET TO CORE REGISTRY</text>
+            </g>
+          </g>
+        </g>
+      </g>
+      
+      <!-- Right Column: Ticket Ledger -->
+      <g transform="translate(812, 0)">
+        <rect width="788" height="700" fill="#FFFFFF" stroke="rgba(17, 24, 39, 0.1)" />
+        
+        <g transform="translate(24, 24)">
+          <text x="0" y="16" class="heading" font-size="18">Core Complaint Ledger</text>
+          <text x="740" y="16" class="mono" font-size="10" fill="#4B5563" text-anchor="end">3 Active Tickets</text>
+          <line x1="0" y1="28" x2="740" y2="28" class="border-line" />
+          
+          <!-- Ticket 1: Plumbing Critical -->
+          <g transform="translate(0, 48)">
+            <rect width="740" height="150" fill="#F8F6F2" stroke="rgba(211, 47, 47, 0.2)" />
+            
+            <g transform="translate(16, 16)">
+              <text x="0" y="16" class="mono" font-size="11" fill="#111827" font-weight="bold">T-984 (A-304)</text>
+              
+              <rect x="530" y="0" width="160" height="20" fill="rgba(211,47,47,0.05)" stroke="rgba(211,47,47,0.2)" />
+              <text x="610" y="13" class="mono" font-size="8" fill="#D32F2F" font-weight="bold" text-anchor="middle">CRITICAL (IMMEDIATE)</text>
+              
+              <text x="0" y="55" class="mono" font-size="11" fill="#111827" font-style="italic">"Water leakage from the ceiling dripping on electrical sockets."</text>
+              
+              <line x1="0" y1="80" x2="690" y2="80" stroke="rgba(17,24,39,0.05)" />
+              
+              <text x="0" y="105" class="mono" font-size="10" fill="#4B5563">CAT: <strong>Plumbing</strong></text>
+              <text x="250" y="105" class="mono" font-size="10" fill="#4B5563">ETA: <strong>2 Hours</strong></text>
+              <text x="690" y="105" class="mono" font-size="10" fill="#1E3A5F" font-weight="bold" text-anchor="end">DISPATCHED</text>
+            </g>
+          </g>
+
+          <!-- Ticket 2: IT High -->
+          <g transform="translate(0, 214)">
+            <rect width="740" height="130" fill="#F8F6F2" stroke="rgba(17,24,39,0.1)" />
+            
+            <g transform="translate(16, 16)">
+              <text x="0" y="16" class="mono" font-size="11" fill="#111827" font-weight="bold">T-982 (B-108)</text>
+              
+              <rect x="590" y="0" width="100" height="20" fill="rgba(30,58,95,0.05)" stroke="rgba(30,58,95,0.2)" />
+              <text x="640" y="13" class="mono" font-size="8" fill="#1E3A5F" font-weight="bold" text-anchor="middle">HIGH</text>
+              
+              <text x="0" y="55" class="mono" font-size="11" fill="#111827" font-style="italic">"High latency and dropping connections on WiFi access point A2."</text>
+              
+              <text x="0" y="95" class="mono" font-size="10" fill="#4B5563">CAT: <strong>IT / WiFi</strong>  |  ETA: <strong>6 Hours</strong>  |  STATUS: <strong>OPEN</strong></text>
+            </g>
+          </g>
+
+          <!-- Ticket 3: Electrical Medium -->
+          <g transform="translate(0, 360)">
+            <rect width="740" height="130" fill="#F8F6F2" stroke="rgba(17,24,39,0.1)" />
+            
+            <g transform="translate(16, 16)">
+              <text x="0" y="16" class="mono" font-size="11" fill="#111827" font-weight="bold">T-979 (A-201)</text>
+              
+              <rect x="590" y="0" width="100" height="20" fill="none" stroke="rgba(17,24,39,0.2)" />
+              <text x="640" y="13" class="mono" font-size="8" fill="#4B5563" font-weight="bold" text-anchor="middle">MEDIUM</text>
+              
+              <text x="0" y="55" class="mono" font-size="11" fill="#111827" font-style="italic">"Main tube light flickering during evening study hours."</text>
+              
+              <text x="0" y="95" class="mono" font-size="10" fill="#4B5563">CAT: <strong>Electrical</strong>  |  ETA: <strong>24 Hours</strong>  |  STATUS: <strong>RESOLVED</strong></text>
+            </g>
+          </g>
+          
+          <!-- Predictive Alert Banner -->
+          <g transform="translate(0, 506)">
+            <rect width="740" height="60" fill="rgba(211, 47, 47, 0.05)" stroke="rgba(211, 47, 47, 0.2)" />
+            <circle cx="24" cy="30" r="4" fill="#D32F2F" />
+            <text x="40" y="34" class="mono" font-size="9.5" fill="#D32F2F" font-weight="bold">PREDICTIVE ALERT: Motor vibration in Water Pump-B indicates failure in 7 days. Dispatch set.</text>
+          </g>
+        </g>
+      </g>
+    </g>
+    
+  </g>
+</svg>

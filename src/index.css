@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-warm-ivory text-charcoal font-sans overflow-x-hidden antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif font-semibold tracking-tight;
+  }
+}
+
+/* Custom scrollbar matching the sharp, premium command-center style */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F8F6F2;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1F2937;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #1E3A5F;
+}
+
+/* Print / Architectural blueprint background grids */
+.blueprint-grid {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(30, 58, 95, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(30, 58, 95, 0.03) 1px, transparent 1px);
+}
+
+.blueprint-grid-accent {
+  background-size: 16px 16px;
+  background-image: 
+    linear-gradient(to right, rgba(30, 58, 95, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(30, 58, 95, 0.05) 1px, transparent 1px);
+}
+
+/* Custom animations for transitions */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2s infinite;
+}
+
+/* Strict layout resets */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
