@@ -177,9 +177,9 @@ function ResidentForm({ values, set, mode }: { values: FormValues; set: (k: stri
       <Section title="Accommodation">
         {mode === 'add' ? (
           <>
-            <Field label="Hostel Block" hint="Block A is for men, Block B for women, Block C (PG) is mixed."><ThemedSelect value={v.block} onChange={x => set('block', x)} options={BLOCKS} /></Field>
+            <Field label="Hostel Block" hint="Block A is for men, Block B for women, Block C (PG) is mixed."><ThemedSelect value={v.block} onChange={x => set('block', x)} options={BLOCKS} placeholder="Automatic (by gender)" /></Field>
             <Field label="Preferred Floor"><ThemedSelect value={v.preferredFloor} onChange={x => set('preferredFloor', x)} options={FLOORS} /></Field>
-            <Field label="Room Type"><ThemedSelect value={v.roomType} onChange={x => set('roomType', x)} options={ROOM_TYPES} /></Field>
+            <Field label="Room Type"><ThemedSelect value={v.roomType} onChange={x => set('roomType', x)} options={ROOM_TYPES} placeholder="Any room type" /></Field>
             <Field label="Specific Room (optional)" hint="e.g. B-204. Leave blank to assign the first free bed."><TextInput value={v.roomId} onChange={x => set('roomId', x.toUpperCase())} placeholder="B-204" /></Field>
           </>
         ) : (

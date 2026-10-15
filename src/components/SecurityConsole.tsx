@@ -42,6 +42,7 @@ export default function SecurityConsole() {
   const visitorsApi = useApi<VisitorRequest[]>('/api/visitors');
   const leavesApi = useApi<LeaveRequest[]>('/api/leaves');
   const ledgerApi = useApi<Ledger>('/api/gate/ledger');
+  const residentsApi = useApi<{ students: { name: string; room: string; status?: string }[] }>('/api/students');
   const [actionError, setActionError] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -97,8 +98,11 @@ export default function SecurityConsole() {
       if (mode === 'success') {
         setLivenessCheck(prev => ({ ...prev, microExpressions: true }));
         setScanStatus('COMPLETED');
-        setIdentifiedName('Aarav Mehta (Room A-101)');
-        recordGateEvent({ name: 'Aarav Mehta', type: 'Resident', roomOrPurpose: 'RM-101', status: 'GRANTED' });
+        // The simulated face match is a randomly chosen active resident from the directory.
+        const active = (residentsApi.data?.students ?? []).filter(r => (r.status ?? 'Active') === 'Active');
+        const match = active.length ? active[Math.floor(Math.random() * active.length)] : { name: 'Aarav Mehta', room: 'A-101' };
+        setIdentifiedName(`${match.name} (Room ${match.room})`);
+        recordGateEvent({ name: match.name, type: 'Resident', roomOrPurpose: match.room, status: 'GRANTED' });
       } else {
         setScanStatus('FAILED');
         recordGateEvent({ name: 'Unknown Subject', type: 'Visitor', roomOrPurpose: 'Liveness spoof attempt', status: 'DENIED' });
