@@ -100,7 +100,7 @@ export default function DashboardLayout() {
     { id: 'telemetry', label: 'Overview Telemetry', icon: LayoutDashboard, roles: ['CampusAdmin', 'HostelAdmin', 'Admin', 'Warden', 'MessManager', 'Student', 'Faculty'] },
     { id: 'academic', label: 'Academic & Student Hub', icon: GraduationCap, roles: ['CampusAdmin', 'Admin', 'Student', 'Faculty'] },
     { id: 'facilities', label: 'Facilities & Fleet Hub', icon: Building2, roles: ['CampusAdmin', 'Admin', 'Faculty', 'Student'] },
-    { id: 'campusOps', label: 'Finance & Campus Life', icon: Landmark, roles: ['CampusAdmin', 'Admin', 'Faculty', 'MessManager', 'Student'] },
+    { id: 'campusOps', label: 'Finance & Campus Life', icon: Landmark, roles: ['CampusAdmin', 'Admin', 'Faculty', 'Student'] },
     { id: 'directory', label: 'Resident Directory', icon: IdCard, roles: ['CampusAdmin', 'HostelAdmin', 'Admin', 'Warden'] },
     { id: 'rooms', label: 'Hostel Room Allocation', icon: Users, roles: ['HostelAdmin', 'Warden'] },
     { id: 'survey', label: 'Student Survey Form', icon: ClipboardList, roles: ['HostelAdmin', 'Warden', 'Student'] },
@@ -529,9 +529,13 @@ export default function DashboardLayout() {
                       <div className="font-bold text-navy-accent uppercase">Current Session Diagnostics</div>
                       <div className="space-y-1">
                         <div className="flex justify-between"><span>User Role:</span><span className="font-bold text-charcoal">{currentRole}</span></div>
-                        <div className="flex justify-between"><span>Environment:</span><span className="uppercase">{health?.env ?? '—'}</span></div>
-                        <div className="flex justify-between"><span>Data Store:</span><span className="uppercase">{health ? (health.storage === 'dynamodb' ? 'DynamoDB (AWS)' : 'Local SQLite') : '—'}</span></div>
-                        <div className="flex justify-between"><span>AWS Services:</span><span className={health?.awsLive ? 'text-forest-status' : 'text-slate-gray'}>{health ? (health.awsLive ? 'LIVE' : 'MOCK MODE') : '—'}</span></div>
+                        {currentRole === 'CampusAdmin' && (
+                          <>
+                            <div className="flex justify-between"><span>Environment:</span><span className="uppercase">{health?.env ?? '—'}</span></div>
+                            <div className="flex justify-between"><span>Data Store:</span><span className="uppercase">{health ? (health.storage === 'dynamodb' ? 'DynamoDB (AWS)' : 'Local SQLite') : '—'}</span></div>
+                            <div className="flex justify-between"><span>AWS Services:</span><span className={health?.awsLive ? 'text-forest-status' : 'text-slate-gray'}>{health ? (health.awsLive ? 'LIVE' : 'MOCK MODE') : '—'}</span></div>
+                          </>
+                        )}
                         <div className="flex justify-between"><span>Handbook Assistant:</span><span className={health?.assistant === 'ready' ? 'text-forest-status' : 'text-amber-700'}>{health?.assistant?.toUpperCase() ?? '—'}</span></div>
                       </div>
                     </div>
@@ -548,8 +552,8 @@ export default function DashboardLayout() {
                   </div>
                 </div>
 
-                {/* Subsystem status indicators */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6 border-t border-charcoal/5 font-mono text-[13px]">
+                {/* Subsystem status indicators (operations staff only) */}
+                {(currentRole === 'CampusAdmin' || currentRole === 'HostelAdmin') && <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6 border-t border-charcoal/5 font-mono text-[13px]">
                   <div className="p-3 border border-charcoal/10 bg-warm-ivory flex justify-between items-center">
                     <span>BIOMETRICS SECURE</span>
                     <span className="text-forest-status">100%</span>
@@ -566,7 +570,7 @@ export default function DashboardLayout() {
                     <span>POWER ANOMALIES</span>
                     <span className="text-red-700">1 ALERT</span>
                   </div>
-                </div>
+                </div>}
               </div>
             )}
 

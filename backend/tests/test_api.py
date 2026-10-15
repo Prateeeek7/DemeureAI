@@ -437,3 +437,28 @@ def test_deactivate_and_reset_code(app, login):
     new_code = warden.post(f"/api/students/{sid}/reset-code").json()["accessCode"]
     assert _resident_login(app, "deact@t.in", code).status_code == 401
     assert _resident_login(app, "deact@t.in", new_code).status_code == 200
+
+
+# --- role scoping ------------------------------------------------------------------------
+def test_billing_summary_is_admin_only_and_consistent(login):
+    body = login("CampusAdmin").get("/api/billing/summary").json()
+    assert body["residents"] == body["paidCount"] + len(body["dueResidents"])
+    assert body["outstanding"] == round(body["perStudent"] * len(body["dueResidents"]), 2)
+    assert login("HostelAdmin").get("/api/billing/summary").status_code == 403
+    assert login("Student").get("/api/billing/summary").status_code == 403
+
+
+def test_students_see_only_their_own_work_orders(login):
+    student = login("Student")
+    mine = student.post("/api/maintenance/ticket", json={"location": "Block A - Room 101", "issue": "Fan not working",
+                                                          "type": "AC/Fan Maintenance"}).json()
+    own = student.get("/api/maintenance/tickets").json()
+    assert mine["id"] in {t["id"] for t in own} and {t["filedBy"] for t in own} == {mine["filedBy"]}
+    assert mine["id"] not in {t["id"] for t in login("OtherStudent").get("/api/maintenance/tickets").json()}
+    assert mine["id"] in {t["id"] for t in login("CampusAdmin").get("/api/maintenance/tickets").json()}
+
+
+def test_only_students_file_grievances(login):
+    body = {"subject": "Noise after curfew", "category": "Hostel / Warden Complaint", "isAnonymous": False}
+    assert login("CampusAdmin").post("/api/grievances/file", json=body).status_code == 403
+    assert login("MessManager").post("/api/grievances/file", json=body).status_code == 403

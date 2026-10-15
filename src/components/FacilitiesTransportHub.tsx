@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Building2, Bus, Wrench, Package, PlusCircle } from 'lucide-react';
 import { api, errorMessage } from '../lib/api';
 import { useApi } from '../lib/useApi';
+import { useSession } from '../lib/session';
 
 interface FacilitiesTransportHubProps {
   currentRole: string;
@@ -50,6 +51,7 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
   type SubTab = 'facilities' | 'transport' | 'maintenance' | 'assets';
   const [activeSubTab, setActiveSubTab] = useState<SubTab>('facilities');
   const isAdmin = currentRole === 'CampusAdmin' || currentRole === 'Admin';
+  const user = useSession();
   const bookingsApi = useApi<FacilityBooking[]>('/api/facilities/bookings');
   const ticketsApi = useApi<MaintenanceTicket[]>('/api/maintenance/tickets');
   const bookings = bookingsApi.data ?? [];
@@ -60,7 +62,7 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
   const [newFacility, setNewFacility] = useState('Main Auditorium (1,200 Seats)');
   const [newFacilityType, setNewFacilityType] = useState('Auditorium');
   const [newSlot, setNewSlot] = useState('Oct 15 • 02:00 PM - 05:00 PM');
-  const [newOrganizer, setNewOrganizer] = useState('ACM Student Chapter');
+  const [newOrganizer, setNewOrganizer] = useState(user?.role === 'Student' ? `${user.name} (Student)` : 'Campus Administration');
 
   const [newLocation, setNewLocation] = useState('');
   const [newIssue, setNewIssue] = useState('');
@@ -138,10 +140,10 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
         {/* Sub Navigation Tabs */}
         <div className="flex flex-wrap gap-1 bg-warm-ivory p-1 border border-charcoal/15 rounded-sm">
           {[
-            { id: 'facilities', label: 'Facility Booking', icon: Building2 },
+            { id: 'facilities', label: isAdmin ? 'Venue Bookings' : 'Book a Venue', icon: Building2 },
             { id: 'transport', label: 'Transport & Fleet', icon: Bus },
-            { id: 'maintenance', label: 'Maintenance Work-Orders', icon: Wrench },
-            { id: 'assets', label: 'Asset Inventory', icon: Package },
+            { id: 'maintenance', label: isAdmin ? 'Maintenance Work-Orders' : 'My Maintenance Requests', icon: Wrench },
+            ...(isAdmin ? [{ id: 'assets', label: 'Asset Inventory', icon: Package }] : []),
           ].map((tab) => (
             <button
               key={tab.id}
@@ -352,9 +354,9 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
           <div className="flex justify-between items-center border-b border-charcoal/10 pb-3">
             <div>
               <h3 className="font-serif font-bold text-lg text-charcoal flex items-center gap-2">
-                <Wrench className="w-5 h-5 text-navy-accent" /> Campus Infrastructure Maintenance Desk (Module 9)
+                <Wrench className="w-5 h-5 text-navy-accent" /> {isAdmin ? 'Campus Maintenance Work-Orders' : 'My Maintenance Requests'}
               </h3>
-              <p className="text-xs text-slate-gray mt-0.5">Report & track electrical, plumbing, AC/fan, and sanitation tickets.</p>
+              <p className="text-xs text-slate-gray mt-0.5">{isAdmin ? 'Every work order raised on campus; move each one through to completion.' : 'Report a campus facility problem and track its progress. Hostel room issues go to the NLP Complaint Desk.'}</p>
             </div>
             <button 
               onClick={() => setShowNewTicketModal(true)}
@@ -425,6 +427,11 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
 
           {/* Maintenance Ticket List */}
           <div className="space-y-3">
+            {!ticketsApi.loading && tickets.length === 0 && (
+              <div className="border border-dashed border-charcoal/20 p-6 text-center text-slate-gray text-sm">
+                {isAdmin ? 'No work orders.' : 'You have not raised any maintenance requests.'}
+              </div>
+            )}
             {tickets.map((t) => (
               <div key={t.id} className="border border-charcoal/15 bg-warm-ivory/30 p-4 rounded-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-xs">
                 <div className="space-y-1">
@@ -458,7 +465,7 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
       )}
 
       {/* SUB TAB 4: ASSET & INVENTORY CONTROL */}
-      {activeSubTab === 'assets' && (
+      {isAdmin && activeSubTab === 'assets' && (
         <div className="border border-charcoal/15 bg-surface-white p-6 rounded-sm shadow-sm space-y-6 font-mono text-xs">
           <div className="flex justify-between items-center border-b border-charcoal/10 pb-3">
             <div>

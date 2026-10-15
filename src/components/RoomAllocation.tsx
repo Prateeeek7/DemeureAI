@@ -21,7 +21,6 @@ interface Room {
   occupants: string[];
   maxOccupants: number;
   status: RoomStatus;
-  compatibility: number;
 }
 
 // Floor layout mirrors the server's seed (backend/services/seed.py): 10 rooms per floor.
@@ -46,8 +45,6 @@ function generateFloorRooms(block: string, floor: number): Room[] {
       occupants: [],
       maxOccupants: maxOcc,
       status: isMaint ? 'Maintenance' : 'Available',
-      // Compatibility score varies per room
-      compatibility: Math.min(99, 60 + (roomNum * 7 + floor * 3 + block.charCodeAt(0)) % 40),
     };
   });
 }
@@ -452,12 +449,6 @@ export default function RoomAllocation() {
                     <span className="text-slate-gray uppercase text-xs block">Operational Status</span>
                     <span className={`font-semibold ${selectedRoom.status === 'Full' ? 'text-red-700' : 'text-forest-status'}`}>
                       {selectedRoom.status}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-slate-gray uppercase text-xs block">Compatibility Weight</span>
-                    <span className={`font-semibold ${selectedRoom.compatibility >= 85 ? 'text-forest-status' : selectedRoom.compatibility >= 65 ? 'text-navy-accent' : 'text-amber-700'}`}>
-                      {selectedRoom.compatibility}% Match Index
                     </span>
                   </div>
                   <div>

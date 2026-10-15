@@ -98,3 +98,24 @@ def pay(req: PaymentRequest, services: Services = Depends(get_services),
     })
     services.aws.log_event("Payments", "Collect", "MOCK", f"Recorded {payment['receiptId']} for {user.name}")
     return {**stmt, "payment": payment}
+
+
+@router.get("/api/billing/summary")
+def billing_summary(services: Services = Depends(get_services),
+                    _: SessionUser = Depends(require_roles("CampusAdmin"))) -> dict:
+    """Collection status of the current cycle across all active residents."""
+    billing = load_billing(services.store)
+    per_student = round(billing["baseFee"] + METERED_UNITS_KWH * billing["powerRate"] + MESS_FINE_COUNT * MESS_FINE_EACH, 2)
+    residents = [d for d in services.store.list("students") if d.get("status", "Active") == "Active"]
+    payments = {p["studentId"]: p for p in services.store.list("payments") if p.get("cycleId") == billing["cycleId"]}
+    paid = [r for r in residents if r["id"] in payments]
+    due = sorted((r for r in residents if r["id"] not in payments), key=lambda r: (r.get("room", ""), r.get("name", "")))
+    return {
+        **_public(billing),
+        "perStudent": per_student,
+        "residents": len(residents),
+        "paidCount": len(paid),
+        "collected": round(sum(payments[r["id"]]["amount"] for r in paid), 2),
+        "outstanding": round(per_student * len(due), 2),
+        "dueResidents": [{"name": r["name"], "regNo": r.get("regNo", ""), "room": r.get("room", "")} for r in due],
+    }

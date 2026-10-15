@@ -68,8 +68,11 @@ class TicketStatus(BaseModel):
 
 
 @router.get("/api/maintenance/tickets")
-def list_tickets(services: Services = Depends(get_services), _: SessionUser = Depends(current_user)) -> list[dict]:
-    return services.store.list("maintenance")
+def list_tickets(services: Services = Depends(get_services), user: SessionUser = Depends(current_user)) -> list[dict]:
+    tickets = services.store.list("maintenance")
+    if user.role in STAFF_ROLES:
+        return tickets
+    return [t for t in tickets if t.get("filedBy") == user.id]  # residents track their own work orders
 
 
 @router.post("/api/maintenance/ticket")
@@ -116,7 +119,7 @@ def list_grievances(services: Services = Depends(get_services), user: SessionUse
 
 @router.post("/api/grievances/file")
 def file_grievance(req: GrievanceRequest, services: Services = Depends(get_services),
-                   user: SessionUser = Depends(current_user)) -> dict:
+                   user: SessionUser = Depends(require_roles("Student"))) -> dict:
     # The filer is kept so they can track the case, but never shown to staff when anonymous.
     doc = services.store.put("grievances", {
         **req.model_dump(), "id": new_id("GRV"), "date": _today(), "priority": "HIGH",

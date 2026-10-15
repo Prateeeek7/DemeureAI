@@ -89,10 +89,12 @@ export default function ComplaintDesk() {
         <div className="lg:col-span-6 border border-charcoal/10 bg-surface-white p-6 space-y-6">
           <div className="flex items-center gap-2 border-b border-charcoal/5 pb-3">
             <MessageSquare className="w-5 h-5 text-navy-accent" />
-            <h3 className="font-serif font-bold text-lg text-charcoal">NLP Triage Sandbox</h3>
+            <h3 className="font-serif font-bold text-lg text-charcoal">{isStaff ? 'Log a Complaint for a Resident' : 'NLP Triage Sandbox'}</h3>
           </div>
           <p className="text-xs text-slate-gray leading-relaxed font-mono">
-            Type an issue text below. The AI will parse details, assign categories, and calculate urgency matrices automatically.
+            {isStaff
+              ? 'For issues reported in person or by phone: enter the room and describe the problem; it is triaged and added to the ledger.'
+              : 'Describe the problem in your room. It is classified by category and urgency before you log it.'}
           </p>
 
           <form onSubmit={handleAnalyzeNLP} className="space-y-4 font-mono text-xs">

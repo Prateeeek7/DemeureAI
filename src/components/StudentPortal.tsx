@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { IndianRupee, FileText, CheckCircle, Clock, Upload, Link, UserCheck, Lock } from 'lucide-react';
 import { api, errorMessage, ACCEPTED_UPLOADS, MAX_UPLOAD_BYTES } from '../lib/api';
 import { useApi } from '../lib/useApi';
+import { inr } from '../lib/format';
 
 interface LeaveRequest {
   id: string;
@@ -46,11 +47,6 @@ const todayIso = () => {
   d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
   return d.toISOString().slice(0, 10);
 };
-// Whole rupees stay whole; anything with paise always shows two decimals (₹1,942.50, not ₹1,942.5).
-const inr = (n: number) => n.toLocaleString('en-IN', {
-  minimumFractionDigits: Number.isInteger(n) ? 0 : 2,
-  maximumFractionDigits: 2,
-});
 
 interface ResidentProfile {
   name: string;
