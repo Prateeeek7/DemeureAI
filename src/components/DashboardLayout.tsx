@@ -207,24 +207,24 @@ export default function DashboardLayout() {
         <div className="fixed inset-0 bg-charcoal/90 z-50 flex items-center justify-center p-4">
           <div className="bg-warm-ivory border border-charcoal/20 w-full max-w-sm p-6 font-mono text-xs text-charcoal space-y-6 blueprint-grid-accent">
             <div className="border-b border-charcoal/10 pb-3 flex justify-between items-center bg-surface-white/80 p-2">
-              <span className="font-bold text-navy-accent uppercase text-[10px] tracking-wider">STUDENT AUTHENTICATION</span>
-              <span className="text-[9px] text-red-700 animate-pulse-dot font-bold">LOCKED</span>
+              <span className="font-bold text-navy-accent uppercase text-xs tracking-wider">STUDENT AUTHENTICATION</span>
+              <span className="text-xs text-red-700 animate-pulse-dot font-bold">LOCKED</span>
             </div>
 
-            <div className="text-[11px] leading-relaxed text-slate-gray p-2 border-l-2 border-navy-accent space-y-1">
+            <div className="text-[13px] leading-relaxed text-slate-gray p-2 border-l-2 border-navy-accent space-y-1">
               <p>Enter your institutional email and the secure access code sent to your inbox.</p>
               {SHOW_DEMO_CREDENTIALS && (
-                <p className="text-[10px] text-navy-accent font-bold">Demo Student: <code className="bg-navy-accent/10 px-1 py-0.5 rounded select-all">pratik2024@vit.student.ac.in</code> / <code className="bg-navy-accent/10 px-1 py-0.5 rounded select-all">VIT2024</code></p>
+                <p className="text-xs text-navy-accent font-bold">Demo Student: <code className="bg-navy-accent/10 px-1 py-0.5 rounded select-all">pratik2024@vit.student.ac.in</code> / <code className="bg-navy-accent/10 px-1 py-0.5 rounded select-all">VIT2024</code></p>
               )}
               {SHOW_DEMO_CREDENTIALS && (
-                <p className="text-[10px] text-navy-accent font-bold">Any of the 100 seeded residents, e.g. <code className="bg-navy-accent/10 px-1 py-0.5 rounded select-all">naveen.reddy@demeure.ac.in</code> / <code className="bg-navy-accent/10 px-1 py-0.5 rounded select-all">VIT2026</code></p>
+                <p className="text-xs text-navy-accent font-bold">Any of the 100 seeded residents, e.g. <code className="bg-navy-accent/10 px-1 py-0.5 rounded select-all">naveen.reddy@demeure.ac.in</code> / <code className="bg-navy-accent/10 px-1 py-0.5 rounded select-all">VIT2026</code></p>
               )}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-3">
                 <div>
-                  <label className="block text-[10px] uppercase text-slate-gray mb-1">Institutional Email</label>
+                  <label className="block text-xs uppercase text-slate-gray mb-1">Institutional Email</label>
                   <input
                     type="email"
                     required
@@ -232,12 +232,12 @@ export default function DashboardLayout() {
                     autoComplete="username"
                     value={studentEmailInput}
                     onChange={(e) => setStudentEmailInput(e.target.value)}
-                    className="w-full bg-surface-white border border-charcoal/20 p-2 font-mono text-[11px] outline-none focus:border-navy-accent placeholder:text-navy-accent/50 font-medium"
+                    className="w-full bg-surface-white border border-charcoal/20 p-2 font-mono text-[13px] outline-none focus:border-navy-accent placeholder:text-navy-accent/50 font-medium"
                     autoFocus
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] uppercase text-slate-gray mb-1">Access Code (from email)</label>
+                  <label className="block text-xs uppercase text-slate-gray mb-1">Access Code (from email)</label>
                   <input
                     type="password"
                     required
@@ -245,13 +245,13 @@ export default function DashboardLayout() {
                     placeholder="••••••••"
                     value={studentCodeInput}
                     onChange={(e) => setStudentCodeInput(e.target.value.toUpperCase())}
-                    className="w-full bg-surface-white border border-charcoal/20 p-2 font-mono text-[11px] outline-none focus:border-navy-accent placeholder:text-navy-accent/50 tracking-widest font-medium"
+                    className="w-full bg-surface-white border border-charcoal/20 p-2 font-mono text-[13px] outline-none focus:border-navy-accent placeholder:text-navy-accent/50 tracking-widest font-medium"
                   />
                 </div>
               </div>
 
               {authError && (
-                <div className="p-2.5 border border-red-700/20 bg-red-50/10 text-red-700 text-center font-bold text-[9px] uppercase tracking-wider animate-pulse">
+                <div className="p-2.5 border border-red-700/20 bg-red-50/10 text-red-700 text-center font-bold text-xs uppercase tracking-wider animate-pulse">
                   {authError}
                 </div>
               )}
@@ -266,14 +266,14 @@ export default function DashboardLayout() {
                     setStudentCodeInput('');
                     setAuthError('');
                   }}
-                  className="flex-1 bg-surface-white border border-charcoal/10 hover:bg-charcoal/5 py-2.5 uppercase tracking-wider text-[10px]"
+                  className="flex-1 bg-surface-white border border-charcoal/10 hover:bg-charcoal/5 py-2.5 uppercase tracking-wider text-xs"
                 >
                   Abort
                 </button>
                 <button
                   type="submit"
                   disabled={authBusy}
-                  className="flex-1 bg-navy-accent hover:bg-charcoal text-surface-white py-2.5 uppercase tracking-wider text-[10px] disabled:opacity-50"
+                  className="flex-1 bg-navy-accent hover:bg-charcoal text-surface-white py-2.5 uppercase tracking-wider text-xs disabled:opacity-50"
                 >
                   {authBusy ? 'Verifying...' : 'Login'}
                 </button>
@@ -288,14 +288,14 @@ export default function DashboardLayout() {
       <div className="fixed inset-0 bg-charcoal/90 z-50 flex items-center justify-center p-4">
         <div className="bg-warm-ivory border border-charcoal/20 w-full max-w-sm p-6 font-mono text-xs text-charcoal space-y-6 blueprint-grid-accent">
           <div className="border-b border-charcoal/10 pb-3 flex justify-between items-center bg-surface-white/80 p-2">
-            <span className="font-bold text-navy-accent uppercase text-[10px] tracking-wider">OS SECURE CHANNEL AUTH</span>
-            <span className="text-[9px] text-red-700 animate-pulse-dot font-bold">LOCKED</span>
+            <span className="font-bold text-navy-accent uppercase text-xs tracking-wider">OS SECURE CHANNEL AUTH</span>
+            <span className="text-xs text-red-700 animate-pulse-dot font-bold">LOCKED</span>
           </div>
 
-          <div className="text-[11px] leading-relaxed text-slate-gray p-2 border-l-2 border-navy-accent space-y-1">
+          <div className="text-[13px] leading-relaxed text-slate-gray p-2 border-l-2 border-navy-accent space-y-1">
             <p>Terminals require secure hardware key confirmation. Enter credentials for <strong>{roleName}</strong>.</p>
             {SHOW_DEMO_CREDENTIALS && demoPin && (
-              <p className="text-[10px] text-navy-accent font-bold">Demo PIN: <code className="bg-navy-accent/10 px-1 py-0.5 rounded select-all">{demoPin}</code></p>
+              <p className="text-xs text-navy-accent font-bold">Demo PIN: <code className="bg-navy-accent/10 px-1 py-0.5 rounded select-all">{demoPin}</code></p>
             )}
           </div>
 
@@ -351,7 +351,7 @@ export default function DashboardLayout() {
             </div>
 
             {authError && (
-              <div className="p-2.5 border border-red-700/20 bg-red-50/10 text-red-700 text-center font-bold text-[9px] uppercase tracking-wider animate-pulse">
+              <div className="p-2.5 border border-red-700/20 bg-red-50/10 text-red-700 text-center font-bold text-xs uppercase tracking-wider animate-pulse">
                 {authError}
               </div>
             )}
@@ -365,21 +365,21 @@ export default function DashboardLayout() {
                   setAuthCodeInput('');
                   setAuthError('');
                 }}
-                className="flex-1 bg-surface-white border border-charcoal/10 hover:bg-charcoal/5 py-2.5 uppercase tracking-wider text-[10px]"
+                className="flex-1 bg-surface-white border border-charcoal/10 hover:bg-charcoal/5 py-2.5 uppercase tracking-wider text-xs"
               >
                 Abort
               </button>
               <button
                 type="submit"
                 disabled={authBusy}
-                className="flex-1 bg-navy-accent hover:bg-charcoal text-surface-white py-2.5 uppercase tracking-wider text-[10px] disabled:opacity-50"
+                className="flex-1 bg-navy-accent hover:bg-charcoal text-surface-white py-2.5 uppercase tracking-wider text-xs disabled:opacity-50"
               >
                 {authBusy ? 'Verifying...' : 'Verify Key'}
               </button>
             </div>
           </form>
 
-          <div className="border-t border-charcoal/10 pt-2 flex justify-between text-[8px] text-slate-gray px-1">
+          <div className="border-t border-charcoal/10 pt-2 flex justify-between text-xs text-slate-gray px-1">
             <span>CIPHER: AES-GCM-256</span>
             <span>OS: DEMEURE.CORE</span>
           </div>
@@ -421,10 +421,10 @@ export default function DashboardLayout() {
         <div className="flex items-center gap-4">
           <div className="flex flex-col">
             <span className="font-serif text-xl font-bold tracking-tight text-navy-accent">DEMEURE AI // COMMAND</span>
-            <span className="font-mono text-[9px] text-slate-gray tracking-wider uppercase">Institutional Campus OS</span>
+            <span className="font-mono text-xs text-slate-gray tracking-wider uppercase">Institutional Campus OS</span>
           </div>
           <div className="hidden sm:flex border-l border-charcoal/10 pl-4 items-center gap-3">
-            <span className="flex items-center gap-1.5 font-mono text-[10px] text-forest-status bg-forest-status/5 px-2 py-0.5 border border-forest-status/20">
+            <span className="flex items-center gap-1.5 font-mono text-xs text-forest-status bg-forest-status/5 px-2 py-0.5 border border-forest-status/20">
               <span className="w-1.5 h-1.5 bg-forest-status rounded-full inline-block animate-pulse-dot"></span>
               CORE STATE: OPERATIONAL
             </span>
@@ -433,14 +433,14 @@ export default function DashboardLayout() {
 
         {/* Live details, role switch, and return buttons */}
         <div className="flex flex-wrap items-center gap-4 font-mono text-xs">
-          <div className="text-slate-gray text-[10px] hidden md:block">
+          <div className="text-slate-gray text-xs hidden md:block">
             {time}
           </div>
 
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-slate-gray uppercase">Active Persona:</span>
-              <span className="bg-navy-accent/10 text-navy-accent font-bold px-2.5 py-1 text-[11px] rounded-xs border border-navy-accent/20 uppercase font-mono">
+              <span className="text-xs text-slate-gray uppercase">Active Persona:</span>
+              <span className="bg-navy-accent/10 text-navy-accent font-bold px-2.5 py-1 text-[13px] rounded-xs border border-navy-accent/20 uppercase font-mono">
                 {currentRole === 'CampusAdmin' || currentRole === 'Admin' 
                   ? 'Campus Administrator' 
                   : currentRole === 'HostelAdmin' || currentRole === 'Warden' 
@@ -468,7 +468,7 @@ export default function DashboardLayout() {
 
         {/* SIDEBAR NAVIGATION */}
         <aside className="w-full md:w-64 bg-surface-white border-b md:border-b-0 md:border-r border-charcoal/10 p-4 space-y-4">
-          <div className="font-mono text-[10px] text-slate-gray uppercase border-b border-charcoal/5 pb-2">
+          <div className="font-mono text-xs text-slate-gray uppercase border-b border-charcoal/5 pb-2">
             System Sub-Protocols
           </div>
 
@@ -498,7 +498,7 @@ export default function DashboardLayout() {
           </nav>
 
           {/* Sidebar footer telemetry */}
-          <div className="pt-8 border-t border-charcoal/5 font-mono text-[9px] text-slate-gray space-y-1 hidden md:block">
+          <div className="pt-8 border-t border-charcoal/5 font-mono text-xs text-slate-gray space-y-1 hidden md:block">
             <div>HOSTEL ID: DE-DELHI-09</div>
             <div>STITCH_NODE: ACTIVE</div>
             <div>VER: 1.0.4 // LTS</div>
@@ -549,7 +549,7 @@ export default function DashboardLayout() {
                 </div>
 
                 {/* Subsystem status indicators */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6 border-t border-charcoal/5 font-mono text-[11px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6 border-t border-charcoal/5 font-mono text-[13px]">
                   <div className="p-3 border border-charcoal/10 bg-warm-ivory flex justify-between items-center">
                     <span>BIOMETRICS SECURE</span>
                     <span className="text-forest-status">100%</span>
@@ -602,7 +602,7 @@ export default function DashboardLayout() {
           {/* Main brand hero */}
           <div className="max-w-7xl mx-auto mb-14">
             <div className="space-y-2">
-              <span className="font-mono text-[10px] uppercase tracking-[0.4em] text-slate-gray block">Intelligent Campus Infrastructure</span>
+              <span className="font-mono text-xs uppercase tracking-[0.4em] text-slate-gray block">Intelligent Campus Infrastructure</span>
               <h2
                 className="font-bold select-none leading-none tracking-tighter text-surface-white"
                 style={{
@@ -622,12 +622,12 @@ export default function DashboardLayout() {
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-10 mb-12">
             {/* Description */}
             <div className="md:col-span-5 space-y-4">
-              <p className="font-mono text-xs leading-relaxed max-w-sm" style={{ color: '#6B7280' }}>
+              <p className="font-mono text-xs leading-relaxed max-w-sm" style={{ color: '#A3ACB9' }}>
                 A unified campus infrastructure platform integrating background telemetry, real-time ML diagnostics, biometric gate liveness, and quantitative food optimization models.
               </p>
               <div className="flex gap-3 flex-wrap">
                 {['Admin Portal', 'Student Hub', 'Warden Console'].map(tag => (
-                  <span key={tag} className="font-mono text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-sm" style={{ border: '1px solid rgba(75,139,255,0.25)', color: '#4B8BFF', background: 'rgba(75,139,255,0.05)' }}>
+                  <span key={tag} className="font-mono text-xs uppercase tracking-widest px-2.5 py-1 rounded-sm" style={{ border: '1px solid rgba(75,139,255,0.25)', color: '#4B8BFF', background: 'rgba(75,139,255,0.05)' }}>
                     {tag}
                   </span>
                 ))}
@@ -636,7 +636,7 @@ export default function DashboardLayout() {
 
             {/* Active Diagnostics */}
             <div className="md:col-span-4 space-y-3 font-mono text-xs">
-              <div className="text-[9px] uppercase tracking-[0.3em] pb-2 font-bold" style={{ color: '#6B7280', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>Active Diagnostics</div>
+              <div className="text-xs uppercase tracking-[0.3em] pb-2 font-bold" style={{ color: '#A3ACB9', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>Active Diagnostics</div>
               <div className="space-y-2.5">
                 {[
                   { label: 'Biometrics Gate (SOC-G1)', status: 'ONLINE', color: '#22c55e' },
@@ -645,7 +645,7 @@ export default function DashboardLayout() {
                 ].map(item => (
                   <div key={item.label} className="flex justify-between items-center">
                     <span style={{ color: '#9CA3AF' }}>{item.label}</span>
-                    <span className="font-bold text-[10px]" style={{ color: item.color }}>{item.status}</span>
+                    <span className="font-bold text-xs" style={{ color: item.color }}>{item.status}</span>
                   </div>
                 ))}
               </div>
@@ -653,7 +653,7 @@ export default function DashboardLayout() {
 
             {/* System Specs */}
             <div className="md:col-span-3 space-y-3 font-mono text-xs">
-              <div className="text-[9px] uppercase tracking-[0.3em] pb-2 font-bold" style={{ color: '#6B7280', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>System Specs</div>
+              <div className="text-xs uppercase tracking-[0.3em] pb-2 font-bold" style={{ color: '#A3ACB9', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>System Specs</div>
               <div className="space-y-2">
                 {[
                   ['VERSION', '1.0.4 LTS'],
@@ -662,7 +662,7 @@ export default function DashboardLayout() {
                   ['UPTIME', '99.97%'],
                 ].map(([k, v]) => (
                   <div key={k} className="flex justify-between">
-                    <span style={{ color: '#6B7280' }}>{k}</span>
+                    <span style={{ color: '#A3ACB9' }}>{k}</span>
                     <span style={{ color: '#E5E7EB' }}>{v}</span>
                   </div>
                 ))}
@@ -673,10 +673,10 @@ export default function DashboardLayout() {
           {/* Bottom rule & copyright */}
           <div className="max-w-7xl mx-auto" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.5rem' }}>
             <div className="flex flex-col md:flex-row justify-between items-center gap-3">
-              <span className="font-mono text-[10px]" style={{ color: '#4B5563' }}>
+              <span className="font-mono text-xs" style={{ color: '#8B95A3' }}>
                 © 2026 DEMEURE AI. ALL PROTOCOLS ENFORCED. BUILT FOR INSTITUTIONAL EXCELLENCE.
               </span>
-              <span className="font-mono text-[10px]" style={{ color: '#4B5563' }}>
+              <span className="font-mono text-xs" style={{ color: '#8B95A3' }}>
                 POWERED BY GEMINI AI · STITCH DESIGN SYSTEM
               </span>
             </div>

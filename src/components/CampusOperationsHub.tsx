@@ -175,7 +175,7 @@ export default function CampusOperationsHub({ currentRole }: CampusOperationsHub
       <div className="border border-charcoal/15 bg-surface-white p-6 rounded-sm shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="bg-navy-accent/10 text-navy-accent font-mono text-[11px] font-bold px-2 py-0.5 uppercase tracking-wider rounded-xs">
+            <span className="bg-navy-accent/10 text-navy-accent font-mono text-[13px] font-bold px-2 py-0.5 uppercase tracking-wider rounded-xs">
               Module Cluster 7, 11, 15, 16 & 17
             </span>
             <span className="text-slate-gray font-mono text-xs">• Finance, Student Life & Governance</span>
@@ -231,7 +231,7 @@ export default function CampusOperationsHub({ currentRole }: CampusOperationsHub
               <div key={item.term} className="border border-charcoal/15 bg-warm-ivory/30 p-5 rounded-sm space-y-4 shadow-xs">
                 <div className="flex justify-between items-center border-b border-charcoal/10 pb-2">
                   <h4 className="font-bold text-sm text-charcoal">{item.term}</h4>
-                  <span className="bg-emerald-50 text-forest-status border border-emerald-300 font-bold px-2.5 py-0.5 rounded-xs text-[11px]">
+                  <span className="bg-emerald-50 text-forest-status border border-emerald-300 font-bold px-2.5 py-0.5 rounded-xs text-[13px]">
                     STATUS: {item.status} ({item.receiptId})
                   </span>
                 </div>
@@ -281,9 +281,9 @@ export default function CampusOperationsHub({ currentRole }: CampusOperationsHub
                   <div className="flex justify-between items-start border-b border-charcoal/10 pb-2">
                     <div>
                       <h4 className="font-bold text-sm text-charcoal">{club.name}</h4>
-                      <span className="text-slate-gray text-[11px]">{club.category} • {club.members}</span>
+                      <span className="text-slate-gray text-[13px]">{club.category} • {club.members}</span>
                     </div>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 border rounded-xs ${
+                    <span className={`text-xs font-bold px-2 py-0.5 border rounded-xs ${
                       isJoined ? 'text-emerald-800 border-emerald-300 bg-emerald-50' : 'text-navy-accent border-navy-accent/30 bg-navy-accent/5'
                     }`}>
                       {isJoined ? 'JOINED' : 'OPEN'}
@@ -291,7 +291,7 @@ export default function CampusOperationsHub({ currentRole }: CampusOperationsHub
                   </div>
 
                   <div>
-                    <span className="text-slate-gray block text-[11px]">Upcoming Flagship Event:</span>
+                    <span className="text-slate-gray block text-[13px]">Upcoming Flagship Event:</span>
                     <strong className="text-charcoal block text-xs mt-0.5">{club.event}</strong>
                   </div>
 
@@ -310,7 +310,7 @@ export default function CampusOperationsHub({ currentRole }: CampusOperationsHub
                           handleToggleClub(club.name);
                         }
                       }}
-                      className="bg-navy-accent hover:bg-charcoal text-white px-3 py-1 text-[11px] font-bold rounded-xs transition-colors"
+                      className="bg-navy-accent hover:bg-charcoal text-white px-3 py-1 text-[13px] font-bold rounded-xs transition-colors"
                     >
                       {isJoined ? 'E-Certificate' : 'Join Club'}
                     </button>
@@ -332,7 +332,7 @@ export default function CampusOperationsHub({ currentRole }: CampusOperationsHub
               </h3>
               <p className="text-xs text-slate-gray mt-0.5">Explore cafeteria menus, night canteens, digital meal plan passes, and vendor feedback.</p>
             </div>
-            <span className="bg-forest-status text-white font-bold px-3 py-1 rounded-xs text-[11px]">
+            <span className="bg-forest-status text-white font-bold px-3 py-1 rounded-xs text-[13px]">
               DIGITAL MEAL PASS ACTIVE
             </span>
           </div>
@@ -342,12 +342,12 @@ export default function CampusOperationsHub({ currentRole }: CampusOperationsHub
               <div key={vendor.name} className="border border-charcoal/15 bg-warm-ivory/30 p-5 rounded-sm space-y-3 shadow-xs">
                 <div className="flex justify-between items-start border-b border-charcoal/10 pb-2">
                   <h4 className="font-bold text-charcoal text-xs leading-snug">{vendor.name}</h4>
-                  <span className="text-amber-800 font-bold bg-amber-50 px-1.5 py-0.5 text-[10px] border border-amber-200 rounded-xs shrink-0">
+                  <span className="text-amber-800 font-bold bg-amber-50 px-1.5 py-0.5 text-xs border border-amber-200 rounded-xs shrink-0">
                     {vendor.rating}
                   </span>
                 </div>
-                <p className="text-slate-gray text-[11px]">Specialties: <strong className="text-charcoal">{vendor.cuisine}</strong></p>
-                <p className="text-slate-gray text-[11px]">Hours: <strong className="text-charcoal">{vendor.timing}</strong></p>
+                <p className="text-slate-gray text-[13px]">Specialties: <strong className="text-charcoal">{vendor.cuisine}</strong></p>
+                <p className="text-slate-gray text-[13px]">Hours: <strong className="text-charcoal">{vendor.timing}</strong></p>
                 
                 <div className="pt-2 border-t border-charcoal/10">
                   <button 
@@ -360,7 +360,7 @@ export default function CampusOperationsHub({ currentRole }: CampusOperationsHub
                         { name: 'Fresh Fruit Juice / Shake', price: '₹40' },
                       ]
                     })}
-                    className="w-full bg-navy-accent hover:bg-charcoal text-white font-bold py-1.5 text-[11px] rounded-xs uppercase tracking-wider transition-colors"
+                    className="w-full bg-navy-accent hover:bg-charcoal text-white font-bold py-1.5 text-[13px] rounded-xs uppercase tracking-wider transition-colors"
                   >
                     View Digital Menu & Pay
                   </button>
@@ -413,7 +413,7 @@ export default function CampusOperationsHub({ currentRole }: CampusOperationsHub
                   Confirm Appointment
                 </button>
                 {clinicAppointmentSubmitted && (
-                  <p className="text-emerald-700 text-[11px] font-bold text-center">✓ Appointment confirmed with Campus Health Center.</p>
+                  <p className="text-emerald-700 text-[13px] font-bold text-center">✓ Appointment confirmed with Campus Health Center.</p>
                 )}
               </div>
             </div>
@@ -511,18 +511,18 @@ export default function CampusOperationsHub({ currentRole }: CampusOperationsHub
                   <div key={g.id} className="border border-charcoal/15 bg-warm-ivory/30 p-4 rounded-sm space-y-2 shadow-xs">
                     <div className="flex justify-between items-start">
                       <span className="font-bold text-rose-700">{g.id}</span>
-                      <span className="bg-amber-100 text-amber-800 font-bold px-2 py-0.5 text-[10px] rounded-xs">
+                      <span className="bg-amber-100 text-amber-800 font-bold px-2 py-0.5 text-xs rounded-xs">
                         {g.status}
                       </span>
                     </div>
                     <h5 className="font-bold text-charcoal text-xs">{g.subject}</h5>
-                    <div className="flex justify-between text-slate-gray text-[10px] border-t border-charcoal/10 pt-1">
+                    <div className="flex justify-between text-slate-gray text-xs border-t border-charcoal/10 pt-1">
                       <span>Category: <strong>{g.category}</strong></span>
                       <span>Date: <strong>{g.date}</strong></span>
                     </div>
                     {isStaff && NEXT_GRIEVANCE_STATUS[g.status] && (
                       <button onClick={() => advanceGrievance(g)}
-                        className="w-full border border-rose-700 text-rose-700 hover:bg-rose-700 hover:text-white py-1 text-[10px] font-bold uppercase rounded-xs transition-colors">
+                        className="w-full border border-rose-700 text-rose-700 hover:bg-rose-700 hover:text-white py-1 text-xs font-bold uppercase rounded-xs transition-colors">
                         Move to {NEXT_GRIEVANCE_STATUS[g.status]}
                       </button>
                     )}
@@ -569,7 +569,7 @@ export default function CampusOperationsHub({ currentRole }: CampusOperationsHub
             <p className="text-xs font-mono text-charcoal leading-relaxed">
               In recognition of active participation and verified membership in the <strong>{certificateModalClub}</strong> during Academic Term 2026.
             </p>
-            <div className="pt-4 border-t border-charcoal/10 flex justify-between font-mono text-[10px] text-slate-gray">
+            <div className="pt-4 border-t border-charcoal/10 flex justify-between font-mono text-xs text-slate-gray">
               <span>CERT-ID: DEM-{certificateId(`${studentLabel}|${certificateModalClub}`)}</span>
               <span>VERIFIED BY DEAN ACADEMICS</span>
             </div>
@@ -584,13 +584,13 @@ export default function CampusOperationsHub({ currentRole }: CampusOperationsHub
             <div className="flex justify-between items-center border-b border-charcoal/10 pb-3">
               <div>
                 <h4 className="font-bold text-charcoal text-sm">{selectedVendorMenu.name}</h4>
-                <span className="text-[10px] text-slate-gray">{selectedVendorMenu.cuisine}</span>
+                <span className="text-xs text-slate-gray">{selectedVendorMenu.cuisine}</span>
               </div>
               <button onClick={() => { setSelectedVendorMenu(null); setPaidVendorStatus(null); }} className="text-slate-gray hover:text-charcoal font-bold text-base">✕</button>
             </div>
 
             <div className="space-y-2">
-              <span className="font-bold text-slate-gray text-[10px] uppercase block">Popular Digital Menu Items</span>
+              <span className="font-bold text-slate-gray text-xs uppercase block">Popular Digital Menu Items</span>
               {selectedVendorMenu.items.map((it, idx) => (
                 <div key={idx} className="flex justify-between items-center p-2.5 bg-warm-ivory border border-charcoal/10">
                   <span className="text-charcoal font-semibold">{it.name}</span>
@@ -631,7 +631,7 @@ export default function CampusOperationsHub({ currentRole }: CampusOperationsHub
               <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold leading-relaxed">
                 🚨 SOS Signal Broadcasted to Campus Clinic & Gate 1 Medical Station!
               </div>
-              <div className="space-y-1 text-[11px] text-slate-gray">
+              <div className="space-y-1 text-[13px] text-slate-gray">
                 <div>Campus Ambulance Driver: <strong>V. Sundaram (+91 98400 11223)</strong></div>
                 <div>Dispatched Vehicle: <strong>TN-37-EV-0911 (Campus Ambulance 1)</strong></div>
                 <div>Live ETA: <strong className="text-rose-700 font-bold">2 Minutes 45 Seconds</strong></div>

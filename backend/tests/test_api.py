@@ -369,3 +369,71 @@ def test_rooms_are_seeded_without_mixing_genders(app):
 def test_session_probe(anon, login):
     assert anon.get("/api/auth/session").json() == {"user": None}
     assert login("Student").get("/api/auth/session").json()["user"]["role"] == "Student"
+
+
+# --- resident onboarding ----------------------------------------------------------------
+NEW_RESIDENT = {"regNo": "25BCE0999", "name": "Meera Krishnan", "email": "Meera.K@vitstudent.ac.in", "gender": "F",
+                "course": "B.Tech", "branch": "CSE", "yearOfStudy": "Year 1", "phone": "98400 12345",
+                "guardianName": "Lakshmi Krishnan", "guardianEmail": "lakshmi.k@example.com",
+                "bloodGroup": "o +", "dietaryPref": "veg", "dateOfBirth": "2007-04-12"}
+
+
+def _resident_login(app, email, code):
+    from fastapi.testclient import TestClient
+    return TestClient(app).post("/api/auth/login", json={"role": "Student", "email": email, "secret": code})
+
+
+def test_staff_can_onboard_a_resident(app, login, anon):
+    warden = login("HostelAdmin")
+    res = warden.post("/api/students", json=NEW_RESIDENT)
+    assert res.status_code == 200, res.text
+    body = res.json()
+    student, code = body["student"], body["accessCode"]
+    assert student["block"] == "B" and student["room"].startswith("B-") and len(code) == 9
+    assert warden.get("/api/rooms/allocations").json()[student["roomId"]][-1] == "Meera Krishnan"
+    # Stored encrypted, decrypted for staff, normalised on the way in.
+    raw = app.state.services.store.get("students", student["id"])
+    assert raw["phone"].startswith("enc:v1:") and raw["email"] == "meera.k@vitstudent.ac.in"
+    full = warden.get(f"/api/students/{student['id']}").json()
+    assert full["phone"] == "+91 9840012345" and full["bloodGroup"] == "O+" and full["dietaryPref"] == "Vegetarian"
+    # The code works case-insensitively, with or without the dash, and was e-mailed.
+    assert _resident_login(app, "meera.k@vitstudent.ac.in", code.lower().replace("-", "")).status_code == 200
+    logs = login("CampusAdmin").get("/api/aws/status").json()["logs"]
+    assert any(l["service"] == "SES" and "meera.k@vitstudent.ac.in" in l["details"] for l in logs)
+    assert warden.post("/api/students", json=NEW_RESIDENT).status_code == 409  # duplicate
+    assert login("Student").post("/api/students", json={**NEW_RESIDENT, "email": "x@y.in"}).status_code == 403
+
+
+def test_onboarding_rejects_invalid_details(login):
+    warden = login("HostelAdmin")
+    assert warden.post("/api/students", json={**NEW_RESIDENT, "email": "a1@t.in", "regNo": "R1", "phone": "12345"}).status_code == 422
+    blocked = warden.post("/api/students", json={**NEW_RESIDENT, "email": "a2@t.in", "regNo": "R2X", "block": "A"})
+    assert blocked.status_code == 409 and "reserved for male" in blocked.json()["detail"]
+
+
+def test_import_creates_valid_rows_and_reports_bad_ones(login):
+    rows = [
+        {**NEW_RESIDENT, "regNo": "IMP001", "email": "imp1@t.in", "name": "Rohit Menon", "gender": "Male"},
+        {**NEW_RESIDENT, "regNo": "IMP002", "email": "imp2@t.in", "name": "Sara Thomas"},
+        {**NEW_RESIDENT, "regNo": "IMP003", "email": "imp3@t.in", "phone": "000"},
+        {**NEW_RESIDENT, "regNo": "IMP004", "email": "imp1@t.in"},
+    ]
+    body = login("CampusAdmin").post("/api/students/import", json={"students": rows, "sendEmails": False}).json()
+    assert (body["created"], body["failed"]) == (2, 2)
+    errors = {r["row"]: r["error"] for r in body["results"] if r["status"] == "error"}
+    assert "phone" in errors[3] and "Duplicate" in errors[4]
+    created = [r["student"] for r in body["results"] if r["status"] == "created"]
+    assert created[0]["block"] == "A" and created[1]["block"] == "B"
+
+
+def test_deactivate_and_reset_code(app, login):
+    warden = login("HostelAdmin")
+    res = warden.post("/api/students", json={**NEW_RESIDENT, "regNo": "DEA001", "email": "deact@t.in"}).json()
+    sid, code = res["student"]["id"], res["accessCode"]
+    warden.patch(f"/api/students/{sid}", json={"status": "Inactive"})
+    assert _resident_login(app, "deact@t.in", code).status_code == 401
+    updated = warden.patch(f"/api/students/{sid}", json={"status": "Active", "phone": "9123456780"}).json()
+    assert updated["phone"] == "+91 9123456780"
+    new_code = warden.post(f"/api/students/{sid}/reset-code").json()["accessCode"]
+    assert _resident_login(app, "deact@t.in", code).status_code == 401
+    assert _resident_login(app, "deact@t.in", new_code).status_code == 200

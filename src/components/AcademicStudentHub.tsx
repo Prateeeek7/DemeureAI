@@ -93,7 +93,7 @@ export default function AcademicStudentHub() {
       <div className="border border-charcoal/15 bg-surface-white p-6 rounded-sm shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="bg-navy-accent/10 text-navy-accent font-mono text-[11px] font-bold px-2 py-0.5 uppercase tracking-wider rounded-xs">
+            <span className="bg-navy-accent/10 text-navy-accent font-mono text-[13px] font-bold px-2 py-0.5 uppercase tracking-wider rounded-xs">
               Module Cluster 1, 2, 6 & 12
             </span>
             <span className="text-slate-gray font-mono text-xs">• Academic & Student Operations</span>
@@ -142,10 +142,10 @@ export default function AcademicStudentHub() {
                   <Building className="w-6 h-6 text-cyan-400" />
                   <div>
                     <h3 className="font-bold text-sm tracking-wider uppercase">Demeure Institute of Technology</h3>
-                    <span className="text-[10px] text-gray-300 block">OFFICIAL INSTITUTIONAL SMART PASS</span>
+                    <span className="text-xs text-gray-300 block">OFFICIAL INSTITUTIONAL SMART PASS</span>
                   </div>
                 </div>
-                <span className="bg-emerald-500/20 text-emerald-300 text-[9px] font-bold px-2 py-0.5 border border-emerald-400/30 rounded-xs">
+                <span className="bg-emerald-500/20 text-emerald-300 text-xs font-bold px-2 py-0.5 border border-emerald-400/30 rounded-xs">
                   RFID / NFC ACTIVE
                 </span>
               </div>
@@ -153,27 +153,27 @@ export default function AcademicStudentHub() {
               <div className="flex gap-4 items-center mb-6">
                 <div className="w-20 h-24 bg-slate-800 border-2 border-white/20 rounded-sm flex items-center justify-center relative overflow-hidden shrink-0">
                   <User className="w-12 h-12 text-slate-400" />
-                  <span className="absolute bottom-0 w-full bg-emerald-600 text-[8px] font-bold text-center text-white py-0.5">VERIFIED</span>
+                  <span className="absolute bottom-0 w-full bg-emerald-700 text-xs font-bold text-center text-white py-0.5">VERIFIED</span>
                 </div>
                 
                 <div className="space-y-1 text-xs">
                   <h4 className="font-bold text-base text-white tracking-wide">{profile.name}</h4>
                   <p className="text-cyan-300 font-semibold">{profile.rollNo}</p>
-                  <p className="text-[11px] text-gray-300">{profile.department}</p>
-                  <p className="text-[10px] text-gray-400">{profile.semester}</p>
+                  <p className="text-[13px] text-gray-300">{profile.department}</p>
+                  <p className="text-xs text-gray-400">{profile.semester}</p>
                 </div>
               </div>
 
               <div className="flex items-end justify-between border-t border-white/15 pt-4">
                 <div className="space-y-1">
-                  <span className="text-[9px] text-gray-400 block uppercase">Current CGPA Score</span>
+                  <span className="text-xs text-gray-400 block uppercase">Current CGPA Score</span>
                   <span className="font-bold text-sm text-emerald-400">{profile.gpa}</span>
                 </div>
 
                 {/* QR Code Mock */}
                 <div className="bg-white p-1.5 rounded-sm shadow-sm flex flex-col items-center">
                   <QrCode className="w-10 h-10 text-charcoal" />
-                  <span className="text-[8px] font-mono font-bold text-charcoal tracking-tighter mt-0.5">DEMEURE-PASSPORT</span>
+                  <span className="text-xs font-mono font-bold text-charcoal tracking-tighter mt-0.5">DEMEURE-PASSPORT</span>
                 </div>
               </div>
             </div>
@@ -205,18 +205,18 @@ export default function AcademicStudentHub() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 font-mono text-xs">
               <div className="space-y-4">
                 <h4 className="font-bold text-charcoal uppercase border-b border-charcoal/10 pb-1">Academic Info</h4>
-                <div><span className="text-slate-gray block text-[11px]">Full Student Name</span><strong className="text-charcoal text-sm">{profile.name}</strong></div>
-                <div><span className="text-slate-gray block text-[11px]">Registration / Roll No</span><strong className="text-navy-accent text-sm">{profile.rollNo}</strong></div>
-                <div><span className="text-slate-gray block text-[11px]">Enrolled Department</span><strong className="text-charcoal">{profile.department}</strong></div>
-                <div><span className="text-slate-gray block text-[11px]">Current Semester</span><strong className="text-charcoal">{profile.semester}</strong></div>
+                <div><span className="text-slate-gray block text-[13px]">Full Student Name</span><strong className="text-charcoal text-sm">{profile.name}</strong></div>
+                <div><span className="text-slate-gray block text-[13px]">Registration / Roll No</span><strong className="text-navy-accent text-sm">{profile.rollNo}</strong></div>
+                <div><span className="text-slate-gray block text-[13px]">Enrolled Department</span><strong className="text-charcoal">{profile.department}</strong></div>
+                <div><span className="text-slate-gray block text-[13px]">Current Semester</span><strong className="text-charcoal">{profile.semester}</strong></div>
               </div>
 
               <div className="space-y-4">
                 <h4 className="font-bold text-charcoal uppercase border-b border-charcoal/10 pb-1">Guardian & Emergency Info</h4>
-                <div><span className="text-slate-gray block text-[11px]">Institutional Email</span><strong className="text-charcoal">{profile.email}</strong></div>
-                <div><span className="text-slate-gray block text-[11px]">Contact Phone</span><strong className="text-charcoal">{profile.phone}</strong></div>
-                <div><span className="text-slate-gray block text-[11px]">Parent / Guardian Name</span><strong className="text-charcoal">{profile.guardianName}</strong></div>
-                <div><span className="text-slate-gray block text-[11px]">Parent Contact Number</span><strong className="text-charcoal">{profile.guardianPhone}</strong></div>
+                <div><span className="text-slate-gray block text-[13px]">Institutional Email</span><strong className="text-charcoal">{profile.email}</strong></div>
+                <div><span className="text-slate-gray block text-[13px]">Contact Phone</span><strong className="text-charcoal">{profile.phone}</strong></div>
+                <div><span className="text-slate-gray block text-[13px]">Parent / Guardian Name</span><strong className="text-charcoal">{profile.guardianName}</strong></div>
+                <div><span className="text-slate-gray block text-[13px]">Parent Contact Number</span><strong className="text-charcoal">{profile.guardianPhone}</strong></div>
               </div>
             </div>
 
@@ -247,7 +247,7 @@ export default function AcademicStudentHub() {
           <div className="overflow-x-auto">
             <table className="w-full text-left font-mono text-xs border border-charcoal/15 border-collapse">
               <thead>
-                <tr className="bg-warm-ivory border-b border-charcoal/20 text-charcoal uppercase text-[11px]">
+                <tr className="bg-warm-ivory border-b border-charcoal/20 text-charcoal uppercase text-[13px]">
                   <th className="p-3 border-r border-charcoal/15">Time Slot</th>
                   <th className="p-3 border-r border-charcoal/15">Monday</th>
                   <th className="p-3 border-r border-charcoal/15">Tuesday</th>
@@ -318,8 +318,8 @@ export default function AcademicStudentHub() {
                 <div key={book.id} className="border border-charcoal/15 bg-warm-ivory/30 p-4 rounded-sm flex flex-col justify-between space-y-3 shadow-xs">
                   <div className="space-y-2">
                     <div className="flex justify-between items-start">
-                      <span className="font-bold text-navy-accent text-[11px]">{book.id}</span>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 border rounded-xs ${
+                      <span className="font-bold text-navy-accent text-[13px]">{book.id}</span>
+                      <span className={`text-xs font-bold px-2 py-0.5 border rounded-xs ${
                         book.status === 'AVAILABLE' ? 'text-forest-status border-forest-status/30 bg-emerald-50' :
                         book.status === 'RESERVED' ? 'text-amber-800 border-amber-300 bg-amber-50' : 'text-slate-gray border-charcoal/20 bg-gray-100'
                       }`}>
@@ -327,8 +327,8 @@ export default function AcademicStudentHub() {
                       </span>
                     </div>
                     <h4 className="font-bold text-charcoal text-sm leading-snug">{book.title}</h4>
-                    <p className="text-slate-gray text-[11px]">Author: {book.author}</p>
-                    <div className="flex justify-between text-[11px] text-charcoal/80 pt-1 border-t border-charcoal/10">
+                    <p className="text-slate-gray text-[13px]">Author: {book.author}</p>
+                    <div className="flex justify-between text-[13px] text-charcoal/80 pt-1 border-t border-charcoal/10">
                       <span>Category: <strong>{book.category}</strong></span>
                       <span>Location: <strong>{book.location}</strong></span>
                     </div>
@@ -389,7 +389,7 @@ export default function AcademicStudentHub() {
                 </div>
 
                 <div className="pt-2 border-t border-charcoal/10 flex justify-between items-center">
-                  <span className={`text-[10px] font-bold px-2 py-0.5 border rounded-xs ${
+                  <span className={`text-xs font-bold px-2 py-0.5 border rounded-xs ${
                     drive.status === 'SHORTLISTED' ? 'text-purple-800 border-purple-300 bg-purple-50' : 'text-emerald-800 border-emerald-300 bg-emerald-50'
                   }`}>
                     STATUS: {appliedJobs.includes(drive.company) ? 'APPLICATION SUBMITTED' : drive.status}

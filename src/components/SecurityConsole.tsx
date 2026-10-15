@@ -132,7 +132,7 @@ export default function SecurityConsole() {
                 <div className="w-20 h-20 border border-charcoal/30 flex items-center justify-center relative bg-surface-white">
                   <Shield className="w-8 h-8 text-slate-gray/50" />
                 </div>
-                <span className="text-slate-gray uppercase text-[10px]">Gate Lock: Engage. Stand in view.</span>
+                <span className="text-slate-gray uppercase text-xs">Gate Lock: Engage. Stand in view.</span>
               </div>
             )}
 
@@ -140,9 +140,9 @@ export default function SecurityConsole() {
               <div className="flex-1 flex gap-4 py-2 z-10">
                 <div className="w-24 h-24 border-2 border-dashed border-navy-accent flex items-center justify-center relative bg-surface-white self-center">
                   <div className="absolute inset-x-1 h-0.5 bg-forest-status top-1/2 animate-bounce"></div>
-                  <span className="text-[8px] text-center text-slate-gray">FACE VECTOR</span>
+                  <span className="text-xs text-center text-slate-gray">FACE VECTOR</span>
                 </div>
-                <div className="flex-1 flex flex-col justify-center space-y-1 text-[10px]">
+                <div className="flex-1 flex flex-col justify-center space-y-1 text-xs">
                   <div className="flex justify-between">
                     <span>1. Blink Detection:</span>
                     <span className={livenessCheck.blinkDetected ? 'text-forest-status' : 'text-slate-gray animate-pulse'}>
@@ -169,7 +169,7 @@ export default function SecurityConsole() {
                   <UserCheck className="w-8 h-8 text-forest-status" />
                 </div>
                 <div>
-                  <span className="text-forest-status font-bold block uppercase text-[10px]">ACCESS GRANTED</span>
+                  <span className="text-forest-status font-bold block uppercase text-xs">ACCESS GRANTED</span>
                   <span className="text-charcoal font-semibold text-xs block">{identifiedName}</span>
                 </div>
               </div>
@@ -181,14 +181,14 @@ export default function SecurityConsole() {
                   <ShieldAlert className="w-8 h-8 text-red-700" />
                 </div>
                 <div>
-                  <span className="text-red-700 font-bold block uppercase text-[10px]">ACCESS DENIED</span>
-                  <span className="text-slate-gray text-[10px] block">Liveness Validation Failed (Biometric Spoof Alert)</span>
+                  <span className="text-red-700 font-bold block uppercase text-xs">ACCESS DENIED</span>
+                  <span className="text-slate-gray text-xs block">Liveness Validation Failed (Biometric Spoof Alert)</span>
                 </div>
               </div>
             )}
 
             {/* Diagnostics footer */}
-            <div className="border-t border-charcoal/10 pt-2 flex justify-between text-[9px] text-slate-gray z-10">
+            <div className="border-t border-charcoal/10 pt-2 flex justify-between text-xs text-slate-gray z-10">
               <span>SCANNER NODE: SOC-G1</span>
               <span>STATE: {scanStatus}</span>
             </div>
@@ -241,17 +241,17 @@ export default function SecurityConsole() {
               ) : (
                 visitors.map(req => (
                   <div key={req.id} className="border border-charcoal/10 p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-warm-ivory/30">
-                    <div className="flex flex-col gap-1">
-                      <span className="font-bold text-charcoal text-sm">{req.visitor} <span className="font-mono text-[10px] font-normal text-slate-gray">({req.purpose})</span></span>
+                    <div className="flex flex-col gap-1 min-w-0 flex-1">
+                      <span className="font-bold text-charcoal text-sm">{req.visitor} <span className="font-mono text-xs font-normal text-slate-gray">({req.purpose})</span></span>
                       <span className="text-xs text-slate-gray font-mono">Host: {req.host} • {req.date}</span>
                     </div>
-                    <div className="flex gap-2 w-full sm:w-auto">
-                      <button className="flex-1 sm:flex-none border border-navy-accent text-navy-accent hover:bg-navy-accent hover:text-white px-3 py-1 font-mono text-[10px] uppercase transition-colors disabled:opacity-50"
+                    <div className="flex gap-2 w-full sm:w-auto shrink-0">
+                      <button className="flex-1 sm:flex-none whitespace-nowrap border border-navy-accent text-navy-accent hover:bg-navy-accent hover:text-white px-3 py-1 font-mono text-xs uppercase transition-colors disabled:opacity-50"
                         disabled={busyId === req.id}
                         onClick={() => resolve(`/api/visitors/${req.id}/approve`, req.id, visitorsApi.reload)}>
                         Approve & Issue Pass
                       </button>
-                      <button className="flex-1 sm:flex-none border border-red-700 text-red-700 hover:bg-red-700 hover:text-white px-3 py-1 font-mono text-[10px] uppercase transition-colors disabled:opacity-50"
+                      <button className="flex-1 sm:flex-none border border-red-700 text-red-700 hover:bg-red-700 hover:text-white px-3 py-1 font-mono text-xs uppercase transition-colors disabled:opacity-50"
                         disabled={busyId === req.id}
                         onClick={() => resolve(`/api/visitors/${req.id}/deny`, req.id, visitorsApi.reload)}>
                         Deny
@@ -287,22 +287,22 @@ export default function SecurityConsole() {
                           href={leave.proofUrl} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className="text-[10px] text-navy-accent font-bold hover:underline block mt-1"
+                          className="text-xs text-navy-accent font-bold hover:underline block mt-1"
                         >
                           View Proof Attachment →
                         </a>
                       )}
-                      <div className={`text-[10px] ${leave.consent.includes('Verified') ? 'text-forest-status' : 'text-red-700'}`}>
+                      <div className={`text-xs ${leave.consent.includes('Verified') ? 'text-forest-status' : 'text-red-700'}`}>
                         {leave.consent}
                       </div>
                     </div>
                     <div className="flex gap-2 w-full sm:w-auto">
-                      <button className="flex-1 sm:flex-none border border-navy-accent text-navy-accent hover:bg-navy-accent hover:text-white px-3 py-1 font-mono text-[10px] uppercase transition-colors disabled:opacity-50"
+                      <button className="flex-1 sm:flex-none border border-navy-accent text-navy-accent hover:bg-navy-accent hover:text-white px-3 py-1 font-mono text-xs uppercase transition-colors disabled:opacity-50"
                         disabled={busyId === leave.id}
                         onClick={() => resolve(`/api/leaves/${leave.id}/approve`, leave.id, leavesApi.reload)}>
                         Approve
                       </button>
-                      <button className="flex-1 sm:flex-none border border-red-700 text-red-700 hover:bg-red-700 hover:text-white px-3 py-1 font-mono text-[10px] uppercase transition-colors disabled:opacity-50"
+                      <button className="flex-1 sm:flex-none border border-red-700 text-red-700 hover:bg-red-700 hover:text-white px-3 py-1 font-mono text-xs uppercase transition-colors disabled:opacity-50"
                         disabled={busyId === leave.id}
                         onClick={() => resolve(`/api/leaves/${leave.id}/deny`, leave.id, leavesApi.reload)}>
                         Deny
@@ -333,7 +333,7 @@ export default function SecurityConsole() {
             {ledgerApi.error && <p className="text-xs text-red-700 font-mono">{ledgerApi.error}</p>}
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left font-mono text-[10px] border-collapse">
+              <table className="w-full text-left font-mono text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-charcoal/10 uppercase text-slate-gray">
                     <th className="py-2 font-semibold">Time</th>

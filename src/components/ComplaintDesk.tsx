@@ -136,11 +136,11 @@ export default function ComplaintDesk() {
               </div>
               <div className="grid grid-cols-2 gap-4 border-b border-charcoal/10 pb-3">
                 <div>
-                  <span className="text-slate-gray uppercase text-[8px] block">Extracted Category</span>
+                  <span className="text-slate-gray uppercase text-xs block">Extracted Category</span>
                   <span className="font-bold text-charcoal">{predictedResult.category}</span>
                 </div>
                 <div>
-                  <span className="text-slate-gray uppercase text-[8px] block">Calculated Priority</span>
+                  <span className="text-slate-gray uppercase text-xs block">Calculated Priority</span>
                   <span className={`font-bold ${
                     predictedResult.priority?.includes('CRITICAL') ? 'text-red-700' : 'text-navy-accent'
                   }`}>
@@ -148,18 +148,18 @@ export default function ComplaintDesk() {
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-gray uppercase text-[8px] block">Response SLA ETA</span>
+                  <span className="text-slate-gray uppercase text-xs block">Response SLA ETA</span>
                   <span className="font-bold text-charcoal">{predictedResult.eta}</span>
                 </div>
                 <div>
-                  <span className="text-slate-gray uppercase text-[8px] block">Classification Model</span>
+                  <span className="text-slate-gray uppercase text-xs block">Classification Model</span>
                   <span className="text-slate-gray">Keyword triage rules v1</span>
                 </div>
               </div>
               <button
                 onClick={fileTicket}
                 disabled={filing || (isStaff && !room.trim())}
-                className="w-full bg-forest-status text-surface-white py-2 uppercase tracking-widest text-[10px] hover:bg-charcoal transition-colors disabled:opacity-50"
+                className="w-full bg-forest-status text-surface-white py-2 uppercase tracking-widest text-xs hover:bg-charcoal transition-colors disabled:opacity-50"
               >
                 {filing ? 'Logging...' : 'Log Ticket to Core Registry'}
               </button>
@@ -184,18 +184,18 @@ export default function ComplaintDesk() {
                     <span className="font-bold text-charcoal">{t.id}</span>
                     <span className="text-slate-gray">({t.room})</span>
                   </div>
-                  <span className={`px-1.5 py-0.5 border text-[9px] ${
+                  <span className={`px-1.5 py-0.5 border text-xs ${
                     t.priority.includes('CRITICAL') ? 'text-red-700 border-red-700/20 bg-red-50/5 font-bold' : 'text-navy-accent border-navy-accent/20'
                   }`}>
                     {t.priority}
                   </span>
                 </div>
 
-                <p className="text-charcoal italic text-[11px] leading-relaxed">
+                <p className="text-charcoal italic text-[13px] leading-relaxed">
                   "{t.originalText}"
                 </p>
 
-                <div className="flex justify-between items-center border-t border-charcoal/5 pt-2 text-[10px] text-slate-gray">
+                <div className="flex justify-between items-center border-t border-charcoal/5 pt-2 text-xs text-slate-gray">
                   <span>CAT: <strong>{t.category}</strong></span>
                   <span>ETA: <strong>{t.eta}</strong></span>
                   <span className={`font-bold ${t.status === 'Resolved' ? 'text-forest-status' : 'text-slate-gray'}`}>
@@ -205,7 +205,7 @@ export default function ComplaintDesk() {
                 {isStaff && NEXT_STATUS[t.status] && (
                   <button
                     onClick={() => advanceStatus(t)}
-                    className="w-full border border-navy-accent text-navy-accent hover:bg-navy-accent hover:text-white py-1 text-[10px] uppercase tracking-wider transition-colors"
+                    className="w-full border border-navy-accent text-navy-accent hover:bg-navy-accent hover:text-white py-1 text-xs uppercase tracking-wider transition-colors"
                   >
                     Mark {NEXT_STATUS[t.status]}
                   </button>

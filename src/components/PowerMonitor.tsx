@@ -90,7 +90,7 @@ export default function PowerMonitor() {
       {/* Overview Cards (Modular Blocks) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="border border-charcoal/10 bg-surface-white p-5 space-y-2">
-          <span className="font-mono text-[10px] text-slate-gray block uppercase">Total Power Draw (Live)</span>
+          <span className="font-mono text-xs text-slate-gray block uppercase">Total Power Draw (Live)</span>
           <div className="flex justify-between items-end">
             <span className="font-serif text-4xl font-bold text-charcoal">{totalDraw} kW</span>
             <span className={`font-mono text-xs font-bold ${drawDelta > 0 ? 'text-red-700' : 'text-forest-status'}`}>
@@ -99,7 +99,7 @@ export default function PowerMonitor() {
           </div>
         </div>
         <div className="border border-charcoal/10 bg-surface-white p-5 space-y-2">
-          <span className="font-mono text-[10px] text-slate-gray block uppercase">Isolation Forest Telemetry</span>
+          <span className="font-mono text-xs text-slate-gray block uppercase">Isolation Forest Telemetry</span>
           <div className="flex justify-between items-end">
             <span className="font-serif text-4xl font-bold text-charcoal">{openAlerts} Alert{openAlerts === 1 ? '' : 's'}</span>
             {openAlerts > 0
@@ -108,7 +108,7 @@ export default function PowerMonitor() {
           </div>
         </div>
         <div className="border border-charcoal/10 bg-surface-white p-5 space-y-2">
-          <span className="font-mono text-[10px] text-slate-gray block uppercase">Fault Diagnosis Score</span>
+          <span className="font-mono text-xs text-slate-gray block uppercase">Fault Diagnosis Score</span>
           <div className="flex justify-between items-end">
             <span className="font-serif text-4xl font-bold text-charcoal">98 / 100</span>
             <span className="font-mono text-xs text-slate-gray">Optimal baseline</span>
@@ -150,7 +150,7 @@ export default function PowerMonitor() {
                     backgroundColor: '#FFFFFF', 
                     border: '1px solid #1F2937', 
                     borderRadius: '0px',
-                    fontFamily: 'Courier New, monospace'
+                    fontFamily: '"IBM Plex Mono", monospace'
                   }} 
                 />
                 <Area type="monotone" dataKey="baseline" name="Expected Baseline" stroke="#64748B" fill="#E2E8F0" strokeDasharray="5 5" fillOpacity={0.1} />
@@ -158,7 +158,7 @@ export default function PowerMonitor() {
               </AreaChart>
             </ResponsiveContainer>
           </div>
-          <div className="font-mono text-[10px] text-slate-gray flex justify-between">
+          <div className="font-mono text-xs text-slate-gray flex justify-between">
             <span>METHODOLOGY: ISOLATION FOREST + EXPONENTIAL SMOOTHING FORECAST</span>
             <span>LAST RUN: 2 MINS AGO</span>
           </div>
@@ -178,19 +178,19 @@ export default function PowerMonitor() {
               <div className="space-y-3 font-mono text-xs">
                 {anomaliesApi.error && <div className="text-red-700">{anomaliesApi.error}</div>}
                 {anomalies.map((an) => (
-                  <div key={an.id} className={`p-3 border ${an.status === 'Resolved' ? 'border-charcoal/10 bg-warm-ivory/50 opacity-60' : 'border-red-700/20 bg-red-50/20'}`}>
+                  <div key={an.id} className={`p-3 border ${an.status === 'Resolved' ? 'border-charcoal/10 bg-warm-ivory' : 'border-red-700/20 bg-red-50/20'}`}>
                     <div className="flex justify-between items-start">
-                      <span className={`font-bold uppercase tracking-wider text-[9px] px-1 border ${
+                      <span className={`font-bold uppercase tracking-wider text-xs px-1 border ${
                         an.status === 'Resolved' ? 'text-forest-status border-forest-status/30' : 'text-red-700 border-red-700/30'
                       }`}>
                         {an.status}
                       </span>
-                      <span className="text-[10px] text-slate-gray">{an.time}</span>
+                      <span className="text-xs text-slate-gray">{an.time}</span>
                     </div>
                     <div className="mt-2 space-y-1">
                       <div className="font-bold text-charcoal">{an.location}</div>
-                      <div className="text-[10px] text-slate-gray">{an.deviceType}</div>
-                      <div className="flex justify-between text-[10px] pt-1">
+                      <div className="text-xs text-slate-gray">{an.deviceType}</div>
+                      <div className="flex justify-between text-xs pt-1">
                         <span>LOAD IMPACT: <strong className="text-charcoal">{an.loadSpike}</strong></span>
                         <span>CONF: <strong>{an.confidence}%</strong></span>
                       </div>
@@ -198,7 +198,7 @@ export default function PowerMonitor() {
                     {an.status !== 'Resolved' && (
                       <button 
                         onClick={() => resolveAnomaly(an.id)}
-                        className="mt-3 w-full text-center bg-charcoal hover:bg-navy-accent text-surface-white uppercase py-1 text-[10px] tracking-wider transition-colors"
+                        className="mt-3 w-full text-center bg-charcoal hover:bg-navy-accent text-surface-white uppercase py-1 text-xs tracking-wider transition-colors"
                       >
                         Mark Resolved
                       </button>
@@ -228,7 +228,7 @@ export default function PowerMonitor() {
               </div>
 
               <div className="pt-2">
-                <label className="block text-slate-gray mb-1 text-[10px] uppercase" htmlFor="power-rate">Update Power Rate (₹)</label>
+                <label className="block text-slate-gray mb-1 text-xs uppercase" htmlFor="power-rate">Update Power Rate (₹)</label>
                 <input
                   id="power-rate"
                   type="number"
@@ -242,7 +242,7 @@ export default function PowerMonitor() {
               </div>
 
               {billingStatus && (
-                <div role="status" className={`p-2 border text-[10px] font-bold ${billingStatus.ok ? 'border-forest-status/30 text-forest-status' : 'border-red-700/30 text-red-700'}`}>
+                <div role="status" className={`p-2 border text-xs font-bold ${billingStatus.ok ? 'border-forest-status/30 text-forest-status' : 'border-red-700/30 text-red-700'}`}>
                   {billingStatus.text}
                 </div>
               )}

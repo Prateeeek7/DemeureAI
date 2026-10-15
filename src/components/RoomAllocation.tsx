@@ -192,7 +192,7 @@ export default function RoomAllocation() {
       <div className="bg-surface-white border border-charcoal/10 p-4">
         <div className="flex flex-wrap items-end gap-6">
           <div className="flex-1 min-w-[140px] space-y-1.5">
-            <label className="font-mono text-[10px] uppercase tracking-wider text-slate-gray block">Hostel Block</label>
+            <label className="font-mono text-xs uppercase tracking-wider text-slate-gray block">Hostel Block</label>
             <ThemedSelect
               value={selectedBlock}
               onChange={handleBlockChange}
@@ -205,7 +205,7 @@ export default function RoomAllocation() {
           </div>
 
           <div className="flex-1 min-w-[140px] space-y-1.5">
-            <label className="font-mono text-[10px] uppercase tracking-wider text-slate-gray block">Floor</label>
+            <label className="font-mono text-xs uppercase tracking-wider text-slate-gray block">Floor</label>
             <ThemedSelect
               value={selectedFloor}
               onChange={handleFloorChange}
@@ -220,7 +220,7 @@ export default function RoomAllocation() {
           </div>
 
           {/* Live summary pills */}
-          <div className="flex flex-wrap gap-3 font-mono text-[10px] pb-0.5">
+          <div className="flex flex-wrap gap-3 font-mono text-xs pb-0.5">
             <span className="flex items-center gap-1.5 px-2.5 py-1.5 border border-forest-status/30 bg-green-50 text-forest-status">
               <span className="w-1.5 h-1.5 rounded-full bg-forest-status inline-block" />
               {availCount} Available
@@ -258,7 +258,7 @@ export default function RoomAllocation() {
 
             <form onSubmit={handleCalculateCompatibility} className="space-y-4 font-mono text-xs">
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">1. Sleep Profile</label>
+                <label className="block text-slate-gray uppercase text-xs tracking-wider">1. Sleep Profile</label>
                 <ThemedSelect
                   value={sleepHabit}
                   onChange={setSleepHabit}
@@ -272,7 +272,7 @@ export default function RoomAllocation() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">2. Study Environment</label>
+                <label className="block text-slate-gray uppercase text-xs tracking-wider">2. Study Environment</label>
                 <ThemedSelect
                   value={studyHabit}
                   onChange={setStudyHabit}
@@ -286,7 +286,7 @@ export default function RoomAllocation() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">3. Maintenance of Space</label>
+                <label className="block text-slate-gray uppercase text-xs tracking-wider">3. Maintenance of Space</label>
                 <ThemedSelect
                   value={cleanliness}
                   onChange={setCleanliness}
@@ -300,7 +300,7 @@ export default function RoomAllocation() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">4. Social Profile</label>
+                <label className="block text-slate-gray uppercase text-xs tracking-wider">4. Social Profile</label>
                 <ThemedSelect
                   value={socialPref}
                   onChange={setSocialPref}
@@ -315,11 +315,11 @@ export default function RoomAllocation() {
 
               <button
                 type="submit"
-                className="w-full bg-navy-accent hover:bg-charcoal text-surface-white py-3 uppercase tracking-wider text-[11px] transition-colors flex items-center justify-center gap-2"
+                className="w-full bg-navy-accent hover:bg-charcoal text-surface-white py-3 uppercase tracking-wider text-[13px] transition-colors flex items-center justify-center gap-2"
               >
                 Analyze Compatibility <ArrowRight className="w-3.5 h-3.5" />
               </button>
-              {compatibilityError && <div role="alert" className="text-red-700 font-mono text-[10px]">{compatibilityError}</div>}
+              {compatibilityError && <div role="alert" className="text-red-700 font-mono text-xs">{compatibilityError}</div>}
             </form>
 
             {compatibilityResults && (
@@ -355,7 +355,7 @@ export default function RoomAllocation() {
                 <Info className="w-4 h-4 text-navy-accent" />
                 <span className="uppercase tracking-wider font-bold text-charcoal">How is Prediction Data Generated?</span>
               </div>
-              <span className="text-slate-gray text-[11px]">{showDataSources ? '▲ Hide' : '▼ Show'}</span>
+              <span className="text-slate-gray text-[13px]">{showDataSources ? '▲ Hide' : '▼ Show'}</span>
             </button>
 
             {showDataSources && (
@@ -367,16 +367,16 @@ export default function RoomAllocation() {
                       <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${src.color}`} />
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-bold text-[11px] text-charcoal">{src.title}</span>
-                          <span className={`font-mono text-[8px] border px-1 font-bold ${src.color} border-current`}>{src.badge}</span>
+                          <span className="font-mono font-bold text-[13px] text-charcoal">{src.title}</span>
+                          <span className={`font-mono text-xs border px-1 font-bold ${src.color} border-current`}>{src.badge}</span>
                         </div>
-                        <p className="font-mono text-[10px] text-slate-gray leading-relaxed">{src.desc}</p>
+                        <p className="font-mono text-xs text-slate-gray leading-relaxed">{src.desc}</p>
                       </div>
                     </div>
                   );
                 })}
 
-                <div className="border border-charcoal/5 bg-navy-accent/5 p-3 font-mono text-[10px] text-navy-accent space-y-1">
+                <div className="border border-charcoal/5 bg-navy-accent/5 p-3 font-mono text-xs text-navy-accent space-y-1">
                   <div className="font-bold uppercase tracking-wider">Model Pipeline Summary</div>
                   <div className="text-charcoal/70">
                     Questionnaire → Feature Vector → Cosine Similarity Matrix → Top-K Match Ranking → Room Suggestion
@@ -418,12 +418,12 @@ export default function RoomAllocation() {
                     className={`h-[90px] p-2.5 border flex flex-col justify-between text-left transition-all ${cardBg} ${room.status === 'Maintenance' ? 'cursor-not-allowed opacity-60' : ''}`}
                   >
                     <div className="flex justify-between items-start w-full">
-                      <span className="font-mono font-bold text-[11px] text-charcoal">{room.number}</span>
+                      <span className="font-mono font-bold text-[13px] text-charcoal">{room.number}</span>
                       <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotColor}`} />
                     </div>
                     <div className="space-y-0.5">
-                      <span className="font-mono text-[8px] text-slate-gray block uppercase">{room.type}</span>
-                      <span className="font-mono text-[9px] text-navy-accent block font-semibold">
+                      <span className="font-mono text-xs text-slate-gray block uppercase">{room.type}</span>
+                      <span className="font-mono text-xs text-navy-accent block font-semibold">
                         {room.status === 'Maintenance' ? 'MAINT.' : `${room.occupants.length}/${room.maxOccupants} Occ.`}
                       </span>
                     </div>
@@ -433,7 +433,7 @@ export default function RoomAllocation() {
             </div>
 
             {/* Legend */}
-            <div className="flex gap-4 font-mono text-[9px] text-slate-gray border-t border-charcoal/5 pt-3">
+            <div className="flex gap-4 font-mono text-xs text-slate-gray border-t border-charcoal/5 pt-3">
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-forest-status inline-block" /> Available</span>
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-600 inline-block" /> Full</span>
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" /> Maintenance</span>
@@ -445,23 +445,23 @@ export default function RoomAllocation() {
                 <div className="space-y-3">
                   <h4 className="font-bold text-navy-accent text-sm">Room {selectedRoom.number} Diagnostic</h4>
                   <div>
-                    <span className="text-slate-gray uppercase text-[9px] block">Room Type</span>
+                    <span className="text-slate-gray uppercase text-xs block">Room Type</span>
                     <span className="font-medium text-charcoal">{selectedRoom.type}</span>
                   </div>
                   <div>
-                    <span className="text-slate-gray uppercase text-[9px] block">Operational Status</span>
+                    <span className="text-slate-gray uppercase text-xs block">Operational Status</span>
                     <span className={`font-semibold ${selectedRoom.status === 'Full' ? 'text-red-700' : 'text-forest-status'}`}>
                       {selectedRoom.status}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-gray uppercase text-[9px] block">Compatibility Weight</span>
+                    <span className="text-slate-gray uppercase text-xs block">Compatibility Weight</span>
                     <span className={`font-semibold ${selectedRoom.compatibility >= 85 ? 'text-forest-status' : selectedRoom.compatibility >= 65 ? 'text-navy-accent' : 'text-amber-700'}`}>
                       {selectedRoom.compatibility}% Match Index
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-gray uppercase text-[9px] block">Block / Floor</span>
+                    <span className="text-slate-gray uppercase text-xs block">Block / Floor</span>
                     <span className="font-medium text-charcoal">Block {selectedBlock} · Floor {selectedFloor}</span>
                   </div>
                 </div>
@@ -475,12 +475,12 @@ export default function RoomAllocation() {
                       ))}
                     </ul>
                   ) : (
-                    <span className="text-slate-gray italic text-[11px]">Room is currently unallocated. Available for selection.</span>
+                    <span className="text-slate-gray italic text-[13px]">Room is currently unallocated. Available for selection.</span>
                   )}
                   {(activeSelectedRoom?.occupants.length ?? selectedRoom.occupants.length) < selectedRoom.maxOccupants && selectedRoom.status !== 'Maintenance' && (
                     <button 
                       onClick={() => setShowAllocateModal(true)}
-                      className="mt-3 w-full text-center bg-navy-accent text-surface-white font-mono text-[10px] uppercase tracking-wider py-2 hover:bg-charcoal transition-colors rounded-xs shadow-xs"
+                      className="mt-3 w-full text-center bg-navy-accent text-surface-white font-mono text-xs uppercase tracking-wider py-2 hover:bg-charcoal transition-colors rounded-xs shadow-xs"
                     >
                       Allocate Resident Here
                     </button>
@@ -506,7 +506,7 @@ export default function RoomAllocation() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-[11px] text-slate-gray uppercase">Resident Full Name *</label>
+              <label className="block text-[13px] text-slate-gray uppercase">Resident Full Name *</label>
               <input
                 type="text"
                 required
@@ -517,7 +517,7 @@ export default function RoomAllocation() {
                 maxLength={80}
                 autoFocus
               />
-              {allocationError && <div role="alert" className="text-red-700 text-[10px] font-bold">{allocationError}</div>}
+              {allocationError && <div role="alert" className="text-red-700 text-xs font-bold">{allocationError}</div>}
             </div>
 
             <div className="flex gap-2 justify-end pt-2">

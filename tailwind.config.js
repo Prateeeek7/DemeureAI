@@ -27,7 +27,7 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         serif: ['Outfit', 'Georgia', 'serif'],
-        mono: ['Courier New', 'Courier', 'monospace'],
+        mono: ['"IBM Plex Mono"', 'ui-monospace', 'Menlo', 'monospace'],
       },
     },
   },

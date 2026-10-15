@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -11,6 +11,22 @@
   
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif font-semibold tracking-tight;
+  }
+
+  /* Visible keyboard focus everywhere (mouse clicks do not show the ring). */
+  :focus-visible {
+    outline: 2px solid #1E3A5F;
+    outline-offset: 2px;
+  }
+
+  /* Figures line up in tables and statements. */
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::placeholder {
+    color: #6B7280;
+    opacity: 1;
   }
 }
 
@@ -50,7 +66,7 @@
 /* Custom animations for transitions */
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+  50% { opacity: 0.65; }
 }
 
 .animate-pulse-dot {

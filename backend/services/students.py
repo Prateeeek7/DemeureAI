@@ -28,9 +28,14 @@ def student_id(email: str) -> str:
     return f"student:{email.strip().lower()}"
 
 
+def _normalise_code(code: str) -> bytes:
+    """Codes are case-insensitive and may be typed with or without the dash."""
+    return "".join(ch for ch in code.upper() if ch.isalnum()).encode("utf-8")
+
+
 def hash_code(code: str, salt: Optional[bytes] = None) -> dict:
     salt = salt or secrets.token_bytes(16)
-    digest = hashlib.pbkdf2_hmac("sha256", code.strip().upper().encode("utf-8"), salt, PBKDF2_ITERATIONS)
+    digest = hashlib.pbkdf2_hmac("sha256", _normalise_code(code), salt, PBKDF2_ITERATIONS)
     return {"alg": "pbkdf2-sha256", "iterations": PBKDF2_ITERATIONS,
             "salt": base64.b64encode(salt).decode("ascii"), "hash": base64.b64encode(digest).decode("ascii")}
 
@@ -38,7 +43,7 @@ def hash_code(code: str, salt: Optional[bytes] = None) -> dict:
 def verify_code(credential: dict, code: str) -> bool:
     salt = base64.b64decode(credential["salt"])
     expected = base64.b64decode(credential["hash"])
-    digest = hashlib.pbkdf2_hmac("sha256", code.strip().upper().encode("utf-8"), salt,
+    digest = hashlib.pbkdf2_hmac("sha256", _normalise_code(code), salt,
                                  int(credential.get("iterations", PBKDF2_ITERATIONS)))
     return hmac.compare_digest(digest, expected)
 
@@ -109,3 +114,12 @@ class StudentRegistry:
         if not doc:
             return ""
         return self.cipher.try_decrypt(doc.get("guardianEmail"), doc["id"], "guardianEmail") or ""
+
+
+# Unambiguous characters only (no 0/O, 1/I/L), so codes can be read out or printed safely.
+_CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+
+
+def generate_access_code() -> str:
+    raw = "".join(secrets.choice(_CODE_ALPHABET) for _ in range(8))
+    return f"{raw[:4]}-{raw[4:]}"

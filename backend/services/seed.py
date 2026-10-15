@@ -13,6 +13,7 @@ from datetime import datetime, timedelta, timezone
 
 from services.crypto import FieldCipher
 from services.domain import GENESIS_HASH, ledger_hash
+from services.rooms import Hostel, room_id, room_label
 from services.store import Store
 from services.students import COLLECTION as STUDENTS, build_record, student_id
 
@@ -25,20 +26,6 @@ DEMO_ACCESS_CODE = "VIT2024"        # the README demo student
 DATASET_ACCESS_CODE = "VIT2026"     # every seeded resident (development / demo deployments only)
 BILLING_CYCLE = "2026-S2-01"
 BASE_FEE, POWER_RATE, UNITS, FINES = 75000, 8.5, 210, 100
-
-# Floor layout shared with the Room Allocation screen: 10 rooms per floor, 5 floors per block.
-ROOM_TYPES = ["Double", "Single", "Double", "Suite", "Double", "Single", "Double", "Suite", "Single", "Double"]
-CAPACITY = {"Single": 1, "Double": 2, "Suite": 4}
-MAINTENANCE_ROOM = 5  # out of service on even floors
-
-
-def room_id(block: str, floor: int, n: int) -> str:
-    return f"{block}{floor}{n}"
-
-
-def room_label(block: str, floor: int, n: int) -> str:
-    return f"{block}-{floor}{n:02d}"
-
 
 def _load_surveys() -> list[dict]:
     with open(SURVEY_FIXTURE, encoding="utf-8") as f:
@@ -94,43 +81,6 @@ def _personal_details(survey: dict, rng: random.Random) -> dict:
     }
 
 
-# --- rooms -----------------------------------------------------------------------------------
-class _Hostel:
-    """Assigns beds by preferred block/floor/room type without mixing genders in a room."""
-
-    def __init__(self):
-        self.rooms = {}
-        for block in "ABC":
-            for floor in range(1, 6):
-                for n, rtype in enumerate(ROOM_TYPES, start=1):
-                    if floor % 2 == 0 and n == MAINTENANCE_ROOM:
-                        continue
-                    self.rooms[(block, floor, n)] = {"type": rtype, "cap": CAPACITY[rtype], "occ": [], "gender": None}
-
-    def _fits(self, key, gender: str) -> bool:
-        room = self.rooms.get(key)
-        return bool(room) and len(room["occ"]) < room["cap"] and room["gender"] in (None, gender)
-
-    def place(self, name: str, gender: str, block: str, floor: int, rtype: str, fixed=None) -> tuple:
-        if fixed:
-            key = fixed
-        else:
-            floors = sorted(range(1, 6), key=lambda f: (abs(f - floor), f))
-            order = [(f, t) for f in floors for t in (rtype, None)]
-            key = next(((block, f, n) for f, t in order for n in range(1, 11)
-                        if (t is None or ROOM_TYPES[n - 1] == t) and self._fits((block, f, n), gender)), None)
-            if key is None:
-                raise RuntimeError(f"No free bed in block {block} for {name}")
-        room = self.rooms[key]
-        room["occ"].append(name)
-        room["gender"] = gender
-        return key
-
-    def allocations(self) -> list[dict]:
-        return [{"id": room_id(*key), "occupants": r["occ"], "maxOccupants": r["cap"]}
-                for key, r in self.rooms.items() if r["occ"]]
-
-
 # --- dataset ---------------------------------------------------------------------------------
 def _stamp(docs: list[dict]) -> list[dict]:
     """Gives seed docs strictly decreasing createdAt so list order is stable."""
@@ -165,7 +115,7 @@ def _gate_ledger(people: list[dict]) -> list[dict]:
 def build_demo_dataset(cipher: FieldCipher) -> dict[str, list[dict]]:
     rng = random.Random(2026)
     surveys = _load_surveys()
-    hostel = _Hostel()
+    hostel = Hostel()
 
     # The README demo student, in a single room on Block A, floor 3.
     demo = {
@@ -328,7 +278,7 @@ def build_demo_dataset(cipher: FieldCipher) -> dict[str, list[dict]]:
     return {
         STUDENTS: [build_record(prof, code, cipher) for prof, code in profiles],
         "surveys": surveys,
-        "room_allocations": hostel.allocations(),
+        "room_allocations": hostel.allocation_docs(),
         "billing": [{"id": "current", "powerRate": POWER_RATE, "baseFee": BASE_FEE, "cycleId": BILLING_CYCLE}],
         "payments": payment_docs,
         "leaves": leave_docs,

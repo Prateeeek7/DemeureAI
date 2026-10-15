@@ -96,7 +96,7 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
             className="lg:col-span-7 border border-charcoal/10 bg-surface-white relative flex flex-col overflow-hidden group cursor-crosshair"
           >
             {/* Reference stamp */}
-            <div className="absolute top-0 right-0 z-10 p-3 font-mono text-[9px] text-slate-gray border-b border-l border-charcoal/10 bg-surface-white">
+            <div className="absolute top-0 right-0 z-10 p-3 font-mono text-xs text-slate-gray border-b border-l border-charcoal/10 bg-surface-white">
               SYS-DWG // 001
             </div>
             {/* Masterplan image */}
@@ -126,7 +126,7 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
                 >
                   <div className="w-2 h-2 bg-navy-accent rounded-full animate-ping absolute" />
                   <div className="w-1.5 h-1.5 bg-navy-accent rounded-full" />
-                  <div className="font-mono text-[8px] text-navy-accent bg-surface-white/90 border border-navy-accent/20 px-1 py-0.5 shadow-sm whitespace-nowrap">
+                  <div className="font-mono text-xs text-navy-accent bg-surface-white/90 border border-navy-accent/20 px-1 py-0.5 shadow-sm whitespace-nowrap">
                     {c.lat} / {c.lng}
                   </div>
                 </div>
@@ -144,14 +144,14 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
                     style={{ top: `${cursorPos.y}%` }}
                   />
                   <div 
-                    className="absolute pointer-events-none bg-charcoal text-surface-white font-mono text-[9px] px-2 py-1 flex flex-col gap-0.5 shadow-md border border-surface-white/10 z-20 whitespace-nowrap"
+                    className="absolute pointer-events-none bg-charcoal text-surface-white font-mono text-xs px-2 py-1 flex flex-col gap-0.5 shadow-md border border-surface-white/10 z-20 whitespace-nowrap"
                     style={{ 
                       left: `${cursorPos.x + 2}%`, 
                       top: `${cursorPos.y + 2}%`,
                       transform: cursorPos.x > 75 ? 'translateX(-110%)' : cursorPos.y > 80 ? 'translateY(-110%)' : 'none'
                     }}
                   >
-                    <span className="font-bold text-[7px] text-slate-gray uppercase tracking-widest">Tracking Node</span>
+                    <span className="font-bold text-xs text-slate-gray uppercase tracking-widest">Tracking Node</span>
                     <span>LAT: {(28.6139 + (cursorPos.y - 50) * 0.0002).toFixed(5)}° N</span>
                     <span>LNG: {(77.2090 + (cursorPos.x - 50) * 0.0002).toFixed(5)}° E</span>
                   </div>
@@ -159,13 +159,13 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
               )}
 
               <div className="absolute bottom-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <span className="font-mono text-[9px] bg-navy-accent text-surface-white px-2 py-1 uppercase tracking-widest">
+                <span className="font-mono text-xs bg-navy-accent text-surface-white px-2 py-1 uppercase tracking-widest">
                   TAC EFI MASTER PLAN · SCALE 1:500 · REV-00
                 </span>
               </div>
             </div>
             {/* Footer strip */}
-            <div className="border-t border-charcoal/10 px-4 py-2.5 flex justify-between font-mono text-[10px] text-slate-gray bg-surface-white flex-shrink-0">
+            <div className="border-t border-charcoal/10 px-4 py-2.5 flex justify-between font-mono text-xs text-slate-gray bg-surface-white flex-shrink-0">
               <span>SCALE: 1:500</span>
               <span>DEMEURE AI — CAMPUS INFRASTRUCTURE MASTERPLAN</span>
               <span>STATUS: AUTHENTICATED</span>
@@ -177,19 +177,19 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
         {/* Hero bottom telemetry strip */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-t border-charcoal/10 pt-8 mt-12 bg-surface-white/60 p-4">
           <div className="space-y-1">
-            <span className="font-mono text-[10px] text-slate-gray block uppercase">Real-Time Core Load</span>
+            <span className="font-mono text-xs text-slate-gray block uppercase">Real-Time Core Load</span>
             <span className="font-serif text-2xl font-bold text-navy-accent">412 Residents</span>
           </div>
           <div className="space-y-1">
-            <span className="font-mono text-[10px] text-slate-gray block uppercase">Mess Food Wastage</span>
+            <span className="font-mono text-xs text-slate-gray block uppercase">Mess Food Wastage</span>
             <span className="font-serif text-2xl font-bold text-navy-accent">-34.2% YoY</span>
           </div>
           <div className="space-y-1">
-            <span className="font-mono text-[10px] text-slate-gray block uppercase">Energy Conservation</span>
+            <span className="font-mono text-xs text-slate-gray block uppercase">Energy Conservation</span>
             <span className="font-serif text-2xl font-bold text-navy-accent">18,450 kWh</span>
           </div>
           <div className="space-y-1">
-            <span className="font-mono text-[10px] text-slate-gray block uppercase">Active Safety Node</span>
+            <span className="font-mono text-xs text-slate-gray block uppercase">Active Safety Node</span>
             <span className="font-serif text-2xl font-bold text-forest-status flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 bg-forest-status rounded-full inline-block animate-pulse-dot"></span>
               SECURE
@@ -215,7 +215,7 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
             <blockquote className="font-serif italic text-lg text-navy-accent">
               "The design of structural systems should prioritize systemic coordination over cosmetic aesthetics."
             </blockquote>
-            <span className="font-mono text-[10px] text-slate-gray block mt-2">— Institutional Protocol Bulletin, 2026</span>
+            <span className="font-mono text-xs text-slate-gray block mt-2">— Institutional Protocol Bulletin, 2026</span>
           </div>
         </div>
 
@@ -292,10 +292,10 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
                   </div>
                   <div className="flex-1 flex gap-4 py-4 items-center justify-center">
                     <div className="w-32 h-32 border-2 border-dashed border-navy-accent flex items-center justify-center relative bg-warm-ivory">
-                      <span className="text-[10px] text-center text-slate-gray px-2">FACE SCAN AREA</span>
+                      <span className="text-xs text-center text-slate-gray px-2">FACE SCAN AREA</span>
                       <div className="absolute inset-x-2 top-1/2 border-b border-forest-status"></div>
                     </div>
-                    <div className="flex-1 space-y-2 text-[10px]">
+                    <div className="flex-1 space-y-2 text-xs">
                       <div className="flex justify-between"><span>BLINK RATIO:</span><span className="text-forest-status">0.28 (OK)</span></div>
                       <div className="flex justify-between"><span>HEAD POSE:</span><span>YAW 2.4°, PITCH -1.1°</span></div>
                       <div className="flex justify-between"><span>MICRO-EXPRESSIONS:</span><span className="text-forest-status">VALIDATED</span></div>
@@ -303,7 +303,7 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
                       <div className="flex justify-between"><span>ROOM:</span><span>BLOCK A - 302</span></div>
                     </div>
                   </div>
-                  <div className="border-t border-charcoal/5 pt-2 text-[9px] text-slate-gray flex justify-between">
+                  <div className="border-t border-charcoal/5 pt-2 text-xs text-slate-gray flex justify-between">
                     <span>LEDGER WRITE: SUCCESS</span>
                     <span>HASH: 8a4c2e...f10e</span>
                   </div>
@@ -323,12 +323,12 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
                       <div className="w-full bg-navy-accent/20 h-[42%]"></div>
                       <div className="w-full bg-navy-accent/20 h-[38%]"></div>
                       <div className="w-full bg-red-700/80 h-[85%] relative">
-                        <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-[8px] text-red-700 font-bold bg-surface-white px-1 border border-red-700/20">VAMPIRE</span>
+                        <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-red-700 font-bold bg-surface-white px-1 border border-red-700/20">VAMPIRE</span>
                       </div>
                       <div className="w-full bg-navy-accent/20 h-[45%]"></div>
                       <div className="w-full bg-navy-accent/20 h-[39%]"></div>
                     </div>
-                    <div className="flex justify-between text-[9px] text-slate-gray pt-1">
+                    <div className="flex justify-between text-xs text-slate-gray pt-1">
                       <span>12:00</span>
                       <span>13:00</span>
                       <span>14:00 (SPIKE)</span>
@@ -336,7 +336,7 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
                       <span>16:00</span>
                     </div>
                   </div>
-                  <div className="border-t border-charcoal/5 pt-2 text-[9px] text-slate-gray flex justify-between">
+                  <div className="border-t border-charcoal/5 pt-2 text-xs text-slate-gray flex justify-between">
                     <span>PREDICTION: WATER PUMP FAULT</span>
                     <span>CONFIDENCE: 92.4%</span>
                   </div>
@@ -350,17 +350,17 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
                     <span className="text-forest-status">● OPTIMIZED</span>
                   </div>
                   <div className="flex-1 flex gap-4 py-4 items-center justify-center">
-                    <div className="flex-1 space-y-2 text-[10px]">
+                    <div className="flex-1 space-y-2 text-xs">
                       <div className="border border-charcoal/10 p-2 bg-warm-ivory">
                         <div className="font-bold text-navy-accent">TODAY'S MENU (MODIFIED)</div>
-                        <div className="text-[9px] text-slate-gray mt-1">Adjusted from standard menu based on historical Saturday attendances & exam patterns.</div>
+                        <div className="text-xs text-slate-gray mt-1">Adjusted from standard menu based on historical Saturday attendances & exam patterns.</div>
                       </div>
                       <div className="flex justify-between"><span>FORECASTED ATTENDANCE:</span><span>240 / 412 residents</span></div>
                       <div className="flex justify-between"><span>RAW INGREDIENT RATIO:</span><span>-28% scaling applied</span></div>
                       <div className="flex justify-between"><span>PREDICTED WASTE REDUCTION:</span><span className="text-forest-status font-bold">-45.2 kgs saved</span></div>
                     </div>
                   </div>
-                  <div className="border-t border-charcoal/5 pt-2 text-[9px] text-slate-gray flex justify-between">
+                  <div className="border-t border-charcoal/5 pt-2 text-xs text-slate-gray flex justify-between">
                     <span>NUTRITIONAL SCORE: 9.4/10</span>
                     <span>CO2 SAVINGS: 122 kg CO2e</span>
                   </div>
@@ -374,25 +374,25 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
                     <span className="text-slate-gray">● NOMINAL STATE</span>
                   </div>
                   <div className="flex-1 flex flex-col justify-center space-y-3 py-4">
-                    <div className="border-l-2 border-navy-accent pl-3 text-[10px] text-slate-gray">
+                    <div className="border-l-2 border-navy-accent pl-3 text-xs text-slate-gray">
                       "Intelligent Welfare Module detects unusual patterns (e.g. absent swiping, consecutive missed meals, isolation indicators) to trigger quiet checks."
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <div className="border border-charcoal/10 p-1 bg-warm-ivory text-center">
                         <span className="block font-bold">12</span>
-                        <span className="text-[8px] text-slate-gray">OUT OF DORM &gt; 24H</span>
+                        <span className="text-xs text-slate-gray">OUT OF DORM &gt; 24H</span>
                       </div>
                       <div className="border border-charcoal/10 p-1 bg-warm-ivory text-center">
                         <span className="block font-bold">0</span>
-                        <span className="text-[8px] text-slate-gray">DISTRESS FLAGS</span>
+                        <span className="text-xs text-slate-gray">DISTRESS FLAGS</span>
                       </div>
                       <div className="border border-charcoal/10 p-1 bg-warm-ivory text-center">
                         <span className="block font-bold">98.4%</span>
-                        <span className="text-[8px] text-slate-gray">SWIPE CONSISTENCY</span>
+                        <span className="text-xs text-slate-gray">SWIPE CONSISTENCY</span>
                       </div>
                     </div>
                   </div>
-                  <div className="border-t border-charcoal/5 pt-2 text-[9px] text-slate-gray flex justify-between">
+                  <div className="border-t border-charcoal/5 pt-2 text-xs text-slate-gray flex justify-between">
                     <span>ETHICAL ANONYMIZATION: ACTIVE</span>
                     <span>WARDEN NOTIFICATIONS: SILENT</span>
                   </div>
@@ -437,7 +437,7 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
 
         {/* Huge brand name */}
         <div className="max-w-7xl mx-auto mb-12">
-          <span className="font-mono text-[10px] uppercase tracking-[0.4em] block mb-3" style={{ color: '#6B7280' }}>
+          <span className="font-mono text-xs uppercase tracking-[0.4em] block mb-3" style={{ color: '#A3ACB9' }}>
             Intelligent Campus Infrastructure
           </span>
           <h2
@@ -457,12 +457,12 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
 
         {/* Info row */}
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8 mb-10">
-          <p className="font-mono text-xs leading-relaxed max-w-sm" style={{ color: '#6B7280' }}>
+          <p className="font-mono text-xs leading-relaxed max-w-sm" style={{ color: '#A3ACB9' }}>
             A unified campus infrastructure platform integrating background telemetry, real-time ML diagnostics, biometric gate liveness, and quantitative food optimization models.
           </p>
           <div className="flex gap-3 flex-wrap">
             {['Admin Portal', 'Student Hub', 'Warden Console'].map(tag => (
-              <span key={tag} className="font-mono text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-sm" style={{ border: '1px solid rgba(75,139,255,0.25)', color: '#4B8BFF', background: 'rgba(75,139,255,0.05)' }}>
+              <span key={tag} className="font-mono text-xs uppercase tracking-widest px-2.5 py-1 rounded-sm" style={{ border: '1px solid rgba(75,139,255,0.25)', color: '#4B8BFF', background: 'rgba(75,139,255,0.05)' }}>
                 {tag}
               </span>
             ))}
@@ -471,10 +471,10 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
 
         {/* Bottom copyright */}
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.5rem' }}>
-          <span className="font-mono text-[10px]" style={{ color: '#4B5563' }}>
+          <span className="font-mono text-xs" style={{ color: '#8B95A3' }}>
             © 2026 DEMEURE AI. ALL PROTOCOLS ENFORCED. BUILT FOR INSTITUTIONAL EXCELLENCE.
           </span>
-          <span className="font-mono text-[10px]" style={{ color: '#4B5563' }}>
+          <span className="font-mono text-xs" style={{ color: '#8B95A3' }}>
             SPEC: CLOUD-NATIVE MICROSERVICES · COMPLIANCE: GDPR &amp; ETHICAL AI
           </span>
         </div>
@@ -513,7 +513,7 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
                 <p className="text-xs font-mono text-slate-gray group-hover:text-warm-ivory/80 leading-relaxed transition-colors duration-300">
                   Institutional Campus OS, Academic operations, Facilities & Fleet, Finance & Fees, Power diagnostics, AWS console.
                 </p>
-                <div className="mt-8 border border-navy-accent text-navy-accent group-hover:border-surface-white group-hover:text-surface-white px-4 py-1 font-mono text-[10px] uppercase tracking-widest transition-colors duration-300">
+                <div className="mt-8 border border-navy-accent text-navy-accent group-hover:border-surface-white group-hover:text-surface-white px-4 py-1 font-mono text-xs uppercase tracking-widest transition-colors duration-300">
                   Initialize
                 </div>
               </button>
@@ -529,7 +529,7 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
                 <p className="text-xs font-mono text-slate-gray group-hover:text-warm-ivory/80 leading-relaxed transition-colors duration-300">
                   Dedicated Hostel OS, Room allocation, Student survey ML model, Security SOC outpass, Hostel welfare & inactivity checks.
                 </p>
-                <div className="mt-8 border border-forest-status text-forest-status group-hover:border-surface-white group-hover:text-surface-white px-4 py-1 font-mono text-[10px] uppercase tracking-widest transition-colors duration-300">
+                <div className="mt-8 border border-forest-status text-forest-status group-hover:border-surface-white group-hover:text-surface-white px-4 py-1 font-mono text-xs uppercase tracking-widest transition-colors duration-300">
                   Initialize
                 </div>
               </button>
@@ -545,7 +545,7 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
                 <p className="text-xs font-mono text-slate-gray group-hover:text-warm-ivory/80 leading-relaxed transition-colors duration-300">
                   Predictive food scaling, wastage telemetry, and dietary planning analytics.
                 </p>
-                <div className="mt-8 border border-amber-600 text-amber-600 group-hover:border-surface-white group-hover:text-surface-white px-4 py-1 font-mono text-[10px] uppercase tracking-widest transition-colors duration-300">
+                <div className="mt-8 border border-amber-600 text-amber-600 group-hover:border-surface-white group-hover:text-surface-white px-4 py-1 font-mono text-xs uppercase tracking-widest transition-colors duration-300">
                   Initialize
                 </div>
               </button>
@@ -561,7 +561,7 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
                 <p className="text-xs font-mono text-slate-gray group-hover:text-warm-ivory/80 leading-relaxed transition-colors duration-300">
                   Personal portal access, complaints ledger, meal scheduling, and leave requests.
                 </p>
-                <div className="mt-8 border border-charcoal text-charcoal group-hover:border-surface-white group-hover:text-surface-white px-4 py-1 font-mono text-[10px] uppercase tracking-widest transition-colors duration-300">
+                <div className="mt-8 border border-charcoal text-charcoal group-hover:border-surface-white group-hover:text-surface-white px-4 py-1 font-mono text-xs uppercase tracking-widest transition-colors duration-300">
                   Initialize
                 </div>
               </button>
@@ -570,7 +570,7 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
 
             {/* Footer */}
             <div className="border-t border-charcoal/10 bg-surface-white/90 p-3 text-center">
-              <span className="text-[10px] text-slate-gray font-mono tracking-widest uppercase">
+              <span className="text-xs text-slate-gray font-mono tracking-widest uppercase">
                 Secure Channel • End-to-End Encrypted • Hardware Token Required For Staff
               </span>
             </div>

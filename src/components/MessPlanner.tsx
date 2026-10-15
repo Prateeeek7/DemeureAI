@@ -219,7 +219,7 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
               { label: 'Meals Per Day', value: '4 Meals', color: 'text-charcoal' },
             ].map(s => (
               <div key={s.label} className="border border-charcoal/10 bg-surface-white p-4 space-y-1">
-                <span className="text-slate-gray uppercase text-[9px] block">{s.label}</span>
+                <span className="text-slate-gray uppercase text-xs block">{s.label}</span>
                 <span className={`font-serif text-xl font-bold ${s.color}`}>{s.value}</span>
               </div>
             ))}
@@ -232,7 +232,7 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
                 <Utensils className="w-5 h-5 text-navy-accent" />
                 <h3 className="font-serif font-bold text-xl text-charcoal">Weekly Mess Menu</h3>
               </div>
-              <span className="font-mono text-[10px] text-slate-gray uppercase bg-warm-ivory border border-charcoal/10 px-2 py-1">
+              <span className="font-mono text-xs text-slate-gray uppercase bg-warm-ivory border border-charcoal/10 px-2 py-1">
                 Today: {todayName}
               </span>
             </div>
@@ -243,7 +243,7 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
                 <button
                   key={m.day}
                   onClick={() => setSelectedDay(m.day)}
-                  className={`px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider border transition-colors ${
+                  className={`px-3 py-1.5 font-mono text-xs uppercase tracking-wider border transition-colors ${
                     selectedDay === m.day
                       ? 'bg-navy-accent text-surface-white border-navy-accent'
                       : m.day === todayName
@@ -252,7 +252,7 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
                   }`}
                 >
                   {m.day.slice(0, 3)}
-                  {m.day === todayName && <span className="ml-1 text-[8px]">●</span>}
+                  {m.day === todayName && <span className="ml-1 text-xs">●</span>}
                 </button>
               ))}
             </div>
@@ -266,7 +266,7 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
                     <div key={meal.key} className={`border ${meal.border} ${meal.bg} p-4 space-y-2`}>
                       <div className="flex items-center gap-2">
                         <Icon className={`w-4 h-4 ${meal.color}`} />
-                        <span className={`font-mono text-[10px] uppercase font-bold tracking-wider ${meal.color}`}>
+                        <span className={`font-mono text-xs uppercase font-bold tracking-wider ${meal.color}`}>
                           {meal.label}
                         </span>
                       </div>
@@ -281,11 +281,11 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
 
             {/* Full week overview table */}
             <details className="border border-charcoal/10">
-              <summary className="px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-slate-gray cursor-pointer hover:bg-warm-ivory select-none">
+              <summary className="px-4 py-2 font-mono text-xs uppercase tracking-wider text-slate-gray cursor-pointer hover:bg-warm-ivory select-none">
                 View Full Week at a Glance ▾
               </summary>
               <div className="overflow-x-auto">
-                <table className="w-full font-mono text-[10px] border-collapse">
+                <table className="w-full font-mono text-xs border-collapse">
                   <thead>
                     <tr className="bg-navy-accent text-surface-white">
                       <th className="p-2 text-left font-bold uppercase">Day</th>
@@ -306,7 +306,7 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
                       >
                         <td className="p-2 font-bold text-charcoal whitespace-nowrap">
                           {row.day}
-                          {row.day === todayName && <span className="ml-1 text-forest-status text-[8px]">TODAY</span>}
+                          {row.day === todayName && <span className="ml-1 text-forest-status text-xs">TODAY</span>}
                         </td>
                         <td className="p-2 text-charcoal/80">{row.breakfast}</td>
                         <td className="p-2 text-charcoal/80">{row.lunch}</td>
@@ -332,14 +332,14 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
             <form onSubmit={handleAddReview} className="space-y-5 font-mono text-xs">
               {/* Meal selector */}
               <div className="space-y-1.5">
-                <label className="text-slate-gray uppercase text-[10px] tracking-wider block">Which Meal Are You Rating?</label>
+                <label className="text-slate-gray uppercase text-xs tracking-wider block">Which Meal Are You Rating?</label>
                 <div className="flex flex-wrap gap-2">
                   {['Breakfast', 'Lunch', 'Snacks', 'Dinner'].map(m => (
                     <button
                       key={m}
                       type="button"
                       onClick={() => setFeedbackMeal(m)}
-                      className={`px-3 py-1.5 border text-[10px] uppercase tracking-wider transition-colors ${
+                      className={`px-3 py-1.5 border text-xs uppercase tracking-wider transition-colors ${
                         feedbackMeal === m ? 'bg-navy-accent text-surface-white border-navy-accent' : 'border-charcoal/10 text-charcoal hover:bg-warm-ivory'
                       }`}
                     >
@@ -370,7 +370,7 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
 
               {/* Suggestion textarea */}
               <div className="space-y-1">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">Your Suggestion / Feedback</label>
+                <label className="block text-slate-gray uppercase text-xs tracking-wider">Your Suggestion / Feedback</label>
                 <textarea
                   aria-label="Your suggestion"
                   maxLength={500}
@@ -384,17 +384,17 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
 
               <button
                 type="submit"
-                className="w-full bg-navy-accent hover:bg-charcoal text-surface-white py-3 uppercase tracking-wider text-[11px] transition-colors"
+                className="w-full bg-navy-accent hover:bg-charcoal text-surface-white py-3 uppercase tracking-wider text-[13px] transition-colors"
               >
                 Submit Food Feedback
               </button>
             </form>
 
             {feedbackError && (
-              <div role="alert" className="border border-red-700/20 p-3 text-center text-[10px] font-mono text-red-700">{feedbackError}</div>
+              <div role="alert" className="border border-red-700/20 p-3 text-center text-xs font-mono text-red-700">{feedbackError}</div>
             )}
             {feedbackSuccess && (
-              <div role="status" className="border border-forest-status/30 bg-green-50 p-3 text-center text-[10px] font-mono text-forest-status flex items-center justify-center gap-2">
+              <div role="status" className="border border-forest-status/30 bg-green-50 p-3 text-center text-xs font-mono text-forest-status flex items-center justify-center gap-2">
                 <CheckCircle className="w-4 h-4" />
                 Feedback submitted! The mess manager can now see it.
               </div>
@@ -412,23 +412,23 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
           {/* Stats strip */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 font-mono text-xs">
             <div className="border border-charcoal/10 bg-surface-white p-4 space-y-1">
-              <span className="text-slate-gray uppercase text-[9px] block">Avg Food Rating</span>
+              <span className="text-slate-gray uppercase text-xs block">Avg Food Rating</span>
               <span className="font-serif text-2xl font-bold text-navy-accent">★ {avgRating} / 5</span>
             </div>
             <div className="border border-charcoal/10 bg-surface-white p-4 space-y-1">
-              <span className="text-slate-gray uppercase text-[9px] block">Total Reviews</span>
+              <span className="text-slate-gray uppercase text-xs block">Total Reviews</span>
               <span className="font-serif text-2xl font-bold text-charcoal">{reviews.length}</span>
             </div>
             <div className="border border-charcoal/10 bg-surface-white p-4 space-y-1">
-              <span className="text-slate-gray uppercase text-[9px] block">Waste Reduction</span>
+              <span className="text-slate-gray uppercase text-xs block">Waste Reduction</span>
               <span className="font-serif text-2xl font-bold text-forest-status">34.2%</span>
             </div>
             <div className="border border-charcoal/10 bg-surface-white p-4 space-y-1">
-              <span className="text-slate-gray uppercase text-[9px] block">Menu Source</span>
+              <span className="text-slate-gray uppercase text-xs block">Menu Source</span>
               <span className={`font-serif text-xl font-bold ${menuApi.data?.days ? 'text-forest-status' : 'text-charcoal'}`}>
                 {menuApi.data?.days ? '✓ Published' : 'Default Template'}
               </span>
-              {menuApi.data?.updatedAt && <span className="text-slate-gray text-[9px] block">{menuApi.data.updatedAt}</span>}
+              {menuApi.data?.updatedAt && <span className="text-slate-gray text-xs block">{menuApi.data.updatedAt}</span>}
             </div>
           </div>
 
@@ -444,7 +444,7 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
                   <h3 className="font-serif font-bold text-lg text-charcoal">Upload Weekly Menu via Excel</h3>
                 </div>
 
-                <p className="font-mono text-[11px] text-slate-gray leading-relaxed">
+                <p className="font-mono text-[13px] text-slate-gray leading-relaxed">
                   Upload an <strong>.xlsx</strong> or <strong>.xls</strong> file following the column format:{' '}
                   <span className="text-navy-accent font-bold">Day | Breakfast | Lunch | Snacks | Dinner</span>.
                   The system will parse and apply the menu instantly across all student views.
@@ -471,7 +471,7 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
                   {uploadStatus === 'idle' && (
                     <div className="space-y-3">
                       <Upload className="w-10 h-10 text-slate-gray mx-auto" />
-                      <div className="font-mono text-[11px] text-slate-gray">
+                      <div className="font-mono text-[13px] text-slate-gray">
                         <strong className="text-charcoal block text-sm">Click to select Excel file</strong>
                         Supported: .xlsx, .xls — Max size: 10 MB
                       </div>
@@ -481,7 +481,7 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
                   {uploadStatus === 'parsing' && (
                     <div className="space-y-3">
                       <RefreshCw className="w-10 h-10 text-amber-600 mx-auto animate-spin" />
-                      <div className="font-mono text-[11px] text-amber-700">
+                      <div className="font-mono text-[13px] text-amber-700">
                         <strong className="block">Parsing Excel data…</strong>
                         Reading sheet rows and extracting menu data
                       </div>
@@ -491,33 +491,33 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
                   {uploadStatus === 'success' && (
                     <div className="space-y-3">
                       <CheckCircle className="w-10 h-10 text-forest-status mx-auto" />
-                      <div className="font-mono text-[11px] text-forest-status">
+                      <div className="font-mono text-[13px] text-forest-status">
                         <strong className="block text-sm">Menu Published to Students!</strong>
                         {uploadFileName} — {weeklyMenu.length} days loaded
                       </div>
-                      <span className="text-[10px] text-slate-gray">Click to upload a different file</span>
+                      <span className="text-xs text-slate-gray">Click to upload a different file</span>
                     </div>
                   )}
 
                   {uploadStatus === 'error' && (
                     <div className="space-y-3">
                       <AlertCircle className="w-10 h-10 text-red-600 mx-auto" />
-                      <div className="font-mono text-[11px] text-red-700">
+                      <div className="font-mono text-[13px] text-red-700">
                         <strong className="block">Parse Error</strong>
                         {uploadError}
                       </div>
-                      <span className="text-[10px] text-slate-gray">Click to try again</span>
+                      <span className="text-xs text-slate-gray">Click to try again</span>
                     </div>
                   )}
                 </div>
 
                 {/* Template hint */}
-                <div className="bg-warm-ivory border border-charcoal/5 p-3 font-mono text-[10px] text-slate-gray space-y-1">
-                  <div className="font-bold text-charcoal uppercase tracking-wider text-[9px]">Expected Excel Format (Row 1 = Headers):</div>
-                  <div className="grid grid-cols-5 gap-1 border border-charcoal/10 p-1 bg-surface-white text-[9px] text-center font-bold text-navy-accent">
+                <div className="bg-warm-ivory border border-charcoal/5 p-3 font-mono text-xs text-slate-gray space-y-1">
+                  <div className="font-bold text-charcoal uppercase tracking-wider text-xs">Expected Excel Format (Row 1 = Headers):</div>
+                  <div className="grid grid-cols-5 gap-1 border border-charcoal/10 p-1 bg-surface-white text-xs text-center font-bold text-navy-accent">
                     <span>Day</span><span>Breakfast</span><span>Lunch</span><span>Snacks</span><span>Dinner</span>
                   </div>
-                  <div className="grid grid-cols-5 gap-1 border border-charcoal/10 p-1 bg-surface-white text-[9px] text-center text-charcoal/70">
+                  <div className="grid grid-cols-5 gap-1 border border-charcoal/10 p-1 bg-surface-white text-xs text-center text-charcoal/70">
                     <span>Monday</span><span>Poha…</span><span>Dal…</span><span>Samosa…</span><span>Paneer…</span>
                   </div>
                 </div>
@@ -537,17 +537,17 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={forecastData} margin={{ top: 10, right: 10, left: -15, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#111827" strokeOpacity={0.06} />
-                        <XAxis dataKey="day" stroke="#4B5563" style={{ fontFamily: 'monospace', fontSize: 10 }} />
-                        <YAxis stroke="#4B5563" style={{ fontFamily: 'monospace', fontSize: 10 }} />
-                        <Tooltip contentStyle={{ backgroundColor: '#F8F6F2', border: '1px solid #111827', borderRadius: 0, fontFamily: 'monospace', fontSize: 10 }} />
-                        <Legend wrapperStyle={{ fontFamily: 'monospace', fontSize: 9, paddingTop: 8 }} />
+                        <XAxis dataKey="day" stroke="#4B5563" style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 12 }} />
+                        <YAxis stroke="#4B5563" style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 12 }} />
+                        <Tooltip contentStyle={{ backgroundColor: '#F8F6F2', border: '1px solid #111827', borderRadius: 0, fontFamily: '"IBM Plex Mono", monospace', fontSize: 12 }} />
+                        <Legend wrapperStyle={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 12, paddingTop: 8 }} />
                         <Bar dataKey="Forecast" name="Model Prediction" fill="#4B5563" />
                         <Bar dataKey="Actual"   name="Actual Swipes"    fill="#1E3A5F" />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
-                <p className="font-mono text-[9px] text-slate-gray">*Model accounts for Friday–Sunday exit trends and exam calendars.</p>
+                <p className="font-mono text-xs text-slate-gray">*Model accounts for Friday–Sunday exit trends and exam calendars.</p>
               </div>
             </div>
 
@@ -560,11 +560,11 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
                   <h3 className="font-serif font-bold text-lg text-charcoal">Food Rating Overview</h3>
                   <div className="text-right">
                     <span className="block font-serif text-2xl font-bold text-navy-accent">★ {avgRating}</span>
-                    <span className="font-mono text-[9px] text-slate-gray">{reviews.length} total feedbacks</span>
+                    <span className="font-mono text-xs text-slate-gray">{reviews.length} total feedbacks</span>
                   </div>
                 </div>
 
-                <div className="space-y-2 font-mono text-[10px]">
+                <div className="space-y-2 font-mono text-xs">
                   {ratingDistribution.map(({ star, count, pct }) => (
                     <div key={star} className="flex items-center gap-2">
                       <span className="text-slate-gray w-4 text-right">{star}★</span>
@@ -589,11 +589,11 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
 
                 <div className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
                   {reviews.map((rev) => (
-                    <div key={rev.id} className="p-3 border border-charcoal/10 bg-warm-ivory font-mono text-[11px] space-y-2">
+                    <div key={rev.id} className="p-3 border border-charcoal/10 bg-warm-ivory font-mono text-[13px] space-y-2">
                       <div className="flex justify-between items-center">
                         <div>
                           <span className="font-bold text-charcoal">{rev.studentName}</span>
-                          <span className="ml-2 text-[9px] border border-charcoal/10 px-1 text-slate-gray uppercase">{rev.meal}</span>
+                          <span className="ml-2 text-xs border border-charcoal/10 px-1 text-slate-gray uppercase">{rev.meal}</span>
                         </div>
                         <div className="flex gap-0.5">
                           {[1, 2, 3, 4, 5].map(s => (
@@ -602,7 +602,7 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
                         </div>
                       </div>
                       <p className="text-charcoal/80 italic leading-relaxed">"{rev.suggestion}"</p>
-                      <div className="text-right text-[9px] text-slate-gray">{rev.timestamp}</div>
+                      <div className="text-right text-xs text-slate-gray">{rev.timestamp}</div>
                     </div>
                   ))}
                 </div>
@@ -611,7 +611,7 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
               {/* Supply procurement quick view */}
               <div className="border border-charcoal/10 bg-surface-white p-6 space-y-3">
                 <h3 className="font-serif font-bold text-sm text-charcoal border-b border-charcoal/5 pb-2 uppercase tracking-wider">Predictive Supply Procurement</h3>
-                <table className="w-full font-mono text-[10px]">
+                <table className="w-full font-mono text-xs">
                   <thead>
                     <tr className="text-slate-gray border-b border-charcoal/5">
                       <th className="text-left pb-1">Material</th>
@@ -648,15 +648,15 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
         <div className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 font-mono text-xs">
             <div className="border border-charcoal/10 bg-surface-white p-4 space-y-1">
-              <span className="text-slate-gray uppercase text-[9px] block">Avg Food Rating</span>
+              <span className="text-slate-gray uppercase text-xs block">Avg Food Rating</span>
               <span className="font-serif text-2xl font-bold text-navy-accent">★ {avgRating} / 5</span>
             </div>
             <div className="border border-charcoal/10 bg-surface-white p-4 space-y-1">
-              <span className="text-slate-gray uppercase text-[9px] block">Waste Reduction</span>
+              <span className="text-slate-gray uppercase text-xs block">Waste Reduction</span>
               <span className="font-serif text-2xl font-bold text-forest-status">34.2%</span>
             </div>
             <div className="border border-charcoal/10 bg-surface-white p-4 space-y-1">
-              <span className="text-slate-gray uppercase text-[9px] block">Student Feedback</span>
+              <span className="text-slate-gray uppercase text-xs block">Student Feedback</span>
               <span className="font-serif text-2xl font-bold text-charcoal">{reviews.length} Reviews</span>
             </div>
           </div>

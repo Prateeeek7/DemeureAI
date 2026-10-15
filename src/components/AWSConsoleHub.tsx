@@ -173,7 +173,7 @@ export default function AWSConsoleHub() {
         <div className="flex items-center gap-3">
           <button 
             onClick={() => { setPolling(!polling); }}
-            className={`flex items-center gap-2 border px-3 py-1.5 font-mono text-[10px] uppercase transition-all shadow-sm ${
+            className={`flex items-center gap-2 border px-3 py-1.5 font-mono text-xs uppercase transition-all shadow-sm ${
               polling 
                 ? 'bg-forest-status/10 border-forest-status/30 text-forest-status' 
                 : 'bg-surface-white border-charcoal/10 text-slate-gray'
@@ -200,7 +200,7 @@ export default function AWSConsoleHub() {
             <div className="flex justify-between items-center border-b border-charcoal/10 pb-2">
               <span className="font-bold text-charcoal text-sm">SYSTEM MODE:</span>
               <span className={`font-bold px-2.5 py-1 text-xs rounded-sm ${
-                isLive ? 'bg-forest-status text-white' : 'bg-amber-600 text-white'
+                isLive ? 'bg-forest-status text-white' : 'bg-amber-700 text-white'
               }`}>
                 {isLive ? 'AWS LIVE CLOUD' : 'MOCK LOCAL MODE'}
               </span>
@@ -314,7 +314,7 @@ export default function AWSConsoleHub() {
             </div>
 
             <div className="pt-2 border-t border-charcoal/10">
-              {pollyStatus && <p className="text-[11px] text-navy-accent font-semibold mb-2">{pollyStatus}</p>}
+              {pollyStatus && <p className="text-[13px] text-navy-accent font-semibold mb-2">{pollyStatus}</p>}
               <button 
                 onClick={triggerPolly}
                 disabled={pollyPlaying}
@@ -366,7 +366,7 @@ export default function AWSConsoleHub() {
               </div>
 
               <div className="pt-2 border-t border-charcoal/10">
-                {sesStatus && <p className="text-[11px] text-navy-accent font-semibold mb-2">{sesStatus}</p>}
+                {sesStatus && <p className="text-[13px] text-navy-accent font-semibold mb-2">{sesStatus}</p>}
                 <button 
                   type="submit"
                   className="w-full bg-charcoal hover:bg-navy-accent text-white text-xs font-semibold uppercase py-3 tracking-wider flex items-center justify-center gap-2 rounded-sm shadow-sm transition-colors"
@@ -409,13 +409,13 @@ export default function AWSConsoleHub() {
                 {s3File ? (
                   <span className="text-xs text-charcoal font-semibold truncate max-w-[180px]">{s3File.name}</span>
                 ) : (
-                  <span className="text-[11px] text-slate-gray">PDF, PNG, JPG up to 5MB</span>
+                  <span className="text-[13px] text-slate-gray">PDF, PNG, JPG up to 5MB</span>
                 )}
               </div>
             </div>
 
             <div className="pt-2 border-t border-charcoal/10">
-              {s3Status && <p className="text-[11px] text-navy-accent font-semibold mb-1 truncate">{s3Status}</p>}
+              {s3Status && <p className="text-[13px] text-navy-accent font-semibold mb-1 truncate">{s3Status}</p>}
               {s3Url && (
                 <a 
                   href={s3Url} 
@@ -447,7 +447,7 @@ export default function AWSConsoleHub() {
             <Terminal className="w-5 h-5 text-navy-accent" />
             <h3 className="font-serif font-bold text-lg text-charcoal">AWS SDK Call Log Console</h3>
           </div>
-          <span className="font-mono text-xs text-forest-status font-bold animate-pulse border border-forest-status/30 bg-emerald-50 px-2.5 py-1 rounded-sm">
+          <span className="font-mono text-xs text-forest-status font-bold border border-forest-status/30 bg-emerald-50 px-2.5 py-1 rounded-sm">
             SDK INTERCEPTOR ACTIVE
           </span>
         </div>

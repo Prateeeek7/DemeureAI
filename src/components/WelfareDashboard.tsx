@@ -58,34 +58,34 @@ export default function WelfareDashboard() {
               <div 
                 key={al.id} 
                 className={`p-4 border flex flex-col md:flex-row justify-between gap-4 items-start md:items-center ${
-                  al.status === 'Unresolved' ? 'border-red-700/20 bg-red-50/5' : 'border-charcoal/10 bg-warm-ivory/50 opacity-60'
+                  al.status === 'Unresolved' ? 'border-red-700/20 bg-red-50/5' : 'border-charcoal/10 bg-warm-ivory'
                 }`}
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-charcoal">{al.name}</span>
                     <span className="text-slate-gray">({al.room})</span>
-                    <span className={`text-[8px] border px-1 ${
+                    <span className={`text-xs border px-1 ${
                       al.status === 'Unresolved' ? 'text-red-700 border-red-700/30' : 'text-forest-status border-forest-status/30'
                     }`}>
                       {al.status.toUpperCase()}
                     </span>
                   </div>
                   <div className="text-charcoal font-semibold">{al.triggerCondition}</div>
-                  <div className="text-slate-gray text-[10px]">Duration Threshold: {al.durationTime}</div>
+                  <div className="text-slate-gray text-xs">Duration Threshold: {al.durationTime}</div>
                 </div>
 
                 {al.status === 'Unresolved' && (
                   <div className="flex gap-2 w-full md:w-auto">
                     <button 
                       onClick={() => handleResolveAlert(al.id, 'Checked')}
-                      className="flex-1 md:flex-none bg-navy-accent hover:bg-charcoal text-surface-white px-3 py-2 text-[10px] uppercase tracking-wider"
+                      className="flex-1 md:flex-none bg-navy-accent hover:bg-charcoal text-surface-white px-3 py-2 text-xs uppercase tracking-wider"
                     >
                       Quiet Check Done
                     </button>
                     <button 
                       onClick={() => handleResolveAlert(al.id, 'False Positive')}
-                      className="flex-1 md:flex-none border border-charcoal/10 hover:bg-charcoal/5 text-charcoal px-3 py-2 text-[10px] uppercase tracking-wider"
+                      className="flex-1 md:flex-none border border-charcoal/10 hover:bg-charcoal/5 text-charcoal px-3 py-2 text-xs uppercase tracking-wider"
                     >
                       Dismiss Alert
                     </button>
@@ -117,7 +117,7 @@ export default function WelfareDashboard() {
             </div>
           </div>
 
-          <div className="border border-charcoal/10 bg-warm-ivory p-4 space-y-2 font-mono text-[11px] text-slate-gray">
+          <div className="border border-charcoal/10 bg-warm-ivory p-4 space-y-2 font-mono text-[13px] text-slate-gray">
             <div className="font-bold text-charcoal uppercase text-xs mb-1">Emergency Protocols</div>
             <div>In the event of medical or structural alarms, wardens click 'Initiate Broad Dispatch' from their physical keypads. Demeure AI broadcasts details to campus security and the institution medical desk in parallel.</div>
           </div>

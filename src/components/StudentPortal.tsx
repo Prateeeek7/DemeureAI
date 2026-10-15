@@ -190,7 +190,7 @@ export default function StudentPortal() {
       {profile.data && (
         <div className="border border-charcoal/10 bg-warm-ivory p-5 font-mono text-xs grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-1">
-            <div className="text-[10px] uppercase tracking-wider text-slate-gray">My Resident Record</div>
+            <div className="text-xs uppercase tracking-wider text-slate-gray">My Resident Record</div>
             <div className="font-serif text-lg font-bold text-charcoal">{profile.data.name}</div>
             <div className="text-slate-gray">{profile.data.regNo} · {profile.data.course} {profile.data.branch}, {profile.data.yearOfStudy}</div>
             <div className="font-bold text-navy-accent">Room {profile.data.room} (Block {profile.data.block})</div>
@@ -204,7 +204,7 @@ export default function StudentPortal() {
           <div className="space-y-1">
             <div className="text-slate-gray">Home Address</div>
             <div className="text-charcoal">{profile.data.homeAddress ?? '—'}</div>
-            <div className="flex items-center gap-1 text-[10px] text-forest-status pt-1">
+            <div className="flex items-center gap-1 text-xs text-forest-status pt-1">
               <Lock className="w-3 h-3" /> Personal details are stored encrypted ({profile.data.encryption?.algorithm ?? 'AES-256-GCM'})
             </div>
           </div>
@@ -319,12 +319,12 @@ export default function StudentPortal() {
                   {proofFile ? `Attached: ${proofFile.name}` : 'Upload Supporting Document (Proof)'}
                   <input type="file" onChange={handleFileChange} className="hidden" accept={ACCEPTED_UPLOADS} />
                 </label>
-                <p className="text-[10px] text-slate-gray mt-1">Accepts PDF, PNG, JPG (Max 5MB)</p>
+                <p className="text-xs text-slate-gray mt-1">Accepts PDF, PNG, JPG (Max 5MB)</p>
               </div>
             </div>
 
             {uploadStatus && (
-              <div role="status" className={`p-2 border font-bold text-[9px] uppercase tracking-wider text-center ${
+              <div role="status" className={`p-2 border font-bold text-xs uppercase tracking-wider text-center ${
                 uploadStatus.includes('failed') ? 'border-red-700/20 bg-red-50/10 text-red-700' : 'border-navy-accent/20 bg-navy-accent/5 text-navy-accent'
               }`}>
                 {uploadStatus}
@@ -356,7 +356,7 @@ export default function StudentPortal() {
                       href={l.proofUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[9px] text-navy-accent flex items-center gap-1 hover:underline"
+                      className="text-xs text-navy-accent flex items-center gap-1 hover:underline"
                     >
                       <Link className="w-3 h-3" /> View Proof Attachment
                     </a>
@@ -402,7 +402,7 @@ export default function StudentPortal() {
               </div>
             </div>
             {visitorStatus && (
-              <div role="status" className={`p-2 border font-bold text-[9px] uppercase tracking-wider text-center ${
+              <div role="status" className={`p-2 border font-bold text-xs uppercase tracking-wider text-center ${
                 visitorStatus.includes('failed') ? 'border-red-700/20 text-red-700' : 'border-navy-accent/20 bg-navy-accent/5 text-navy-accent'
               }`}>{visitorStatus}</div>
             )}
@@ -440,7 +440,7 @@ export default function StudentPortal() {
             </div>
 
             <div className="p-3 bg-warm-ivory border border-charcoal/10 space-y-1">
-              <div className="text-[10px] text-slate-gray uppercase">Transaction Summary</div>
+              <div className="text-xs text-slate-gray uppercase">Transaction Summary</div>
               <div className="flex justify-between font-bold text-charcoal">
                 <span>Total Due:</span>
                 <span className="text-navy-accent">₹{inr(bill.total)}</span>
@@ -448,7 +448,7 @@ export default function StudentPortal() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-[10px] text-slate-gray uppercase" htmlFor="upi-id">Enter Virtual Payment Address (VPA / UPI ID)</label>
+              <label className="block text-xs text-slate-gray uppercase" htmlFor="upi-id">Enter Virtual Payment Address (VPA / UPI ID)</label>
               <input
                 id="upi-id"
                 type="text"
@@ -457,7 +457,7 @@ export default function StudentPortal() {
                 placeholder="username@okicici"
                 className="w-full border border-charcoal/20 p-2.5 bg-white text-xs text-charcoal outline-none focus:border-navy-accent rounded-xs"
               />
-              {paymentError && <div className="text-red-700 text-[10px] font-bold">{paymentError}</div>}
+              {paymentError && <div className="text-red-700 text-xs font-bold">{paymentError}</div>}
             </div>
 
             <div className="flex gap-2 justify-end pt-2">

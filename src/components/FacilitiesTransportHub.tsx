@@ -124,7 +124,7 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
       <div className="border border-charcoal/15 bg-surface-white p-6 rounded-sm shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="bg-navy-accent/10 text-navy-accent font-mono text-[11px] font-bold px-2 py-0.5 uppercase tracking-wider rounded-xs">
+            <span className="bg-navy-accent/10 text-navy-accent font-mono text-[13px] font-bold px-2 py-0.5 uppercase tracking-wider rounded-xs">
               Module Cluster 4, 5, 9 & 14
             </span>
             <span className="text-slate-gray font-mono text-xs">• Infrastructure & Logistics Operations</span>
@@ -190,7 +190,7 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
               <h4 className="font-bold text-charcoal text-sm uppercase">Request Institutional Venue Reservation</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-[11px] text-slate-gray mb-1">Select Facility *</label>
+                  <label className="block text-[13px] text-slate-gray mb-1">Select Facility *</label>
                   <select 
                     value={newFacility} 
                     onChange={(e) => {
@@ -209,7 +209,7 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] text-slate-gray mb-1">Time Slot *</label>
+                  <label className="block text-[13px] text-slate-gray mb-1">Time Slot *</label>
                   <input 
                     type="text" 
                     value={newSlot} 
@@ -219,7 +219,7 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-slate-gray mb-1">Organizer / Club *</label>
+                  <label className="block text-[13px] text-slate-gray mb-1">Organizer / Club *</label>
                   <input 
                     type="text" 
                     value={newOrganizer} 
@@ -229,7 +229,7 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-slate-gray mb-1">Category</label>
+                  <label className="block text-[13px] text-slate-gray mb-1">Category</label>
                   <input 
                     type="text" 
                     value={newFacilityType}
@@ -259,7 +259,7 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
           <div className="overflow-x-auto">
             <table className="w-full text-left font-mono text-xs border border-charcoal/15 border-collapse">
               <thead>
-                <tr className="bg-warm-ivory border-b border-charcoal/20 text-charcoal uppercase text-[11px]">
+                <tr className="bg-warm-ivory border-b border-charcoal/20 text-charcoal uppercase text-[13px]">
                   <th className="p-3 border-r border-charcoal/15">Booking Ref</th>
                   <th className="p-3 border-r border-charcoal/15">Facility Name</th>
                   <th className="p-3 border-r border-charcoal/15">Category</th>
@@ -278,7 +278,7 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
                     <td className="p-3 border-r border-charcoal/15 text-charcoal font-semibold">{b.slot}</td>
                     <td className="p-3 border-r border-charcoal/15 text-charcoal">{b.requestedBy}</td>
                     <td className="p-3">
-                      <span className={`text-[10px] font-bold px-2.5 py-0.5 border rounded-xs ${
+                      <span className={`text-xs font-bold px-2.5 py-0.5 border rounded-xs ${
                         b.status === 'APPROVED' ? 'text-forest-status border-forest-status/30 bg-emerald-50'
                           : b.status === 'REJECTED' ? 'text-rose-700 border-rose-200 bg-rose-50'
                           : 'text-amber-800 border-amber-300 bg-amber-50'
@@ -291,11 +291,11 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
                         {b.status === 'PENDING' ? (
                           <div className="flex gap-2">
                             <button onClick={() => setBookingStatus(b.id, 'APPROVED')}
-                              className="border border-navy-accent text-navy-accent hover:bg-navy-accent hover:text-white px-2 py-0.5 text-[10px] uppercase">Approve</button>
+                              className="border border-navy-accent text-navy-accent hover:bg-navy-accent hover:text-white px-2 py-0.5 text-xs uppercase">Approve</button>
                             <button onClick={() => setBookingStatus(b.id, 'REJECTED')}
-                              className="border border-rose-700 text-rose-700 hover:bg-rose-700 hover:text-white px-2 py-0.5 text-[10px] uppercase">Reject</button>
+                              className="border border-rose-700 text-rose-700 hover:bg-rose-700 hover:text-white px-2 py-0.5 text-xs uppercase">Reject</button>
                           </div>
-                        ) : <span className="text-slate-gray text-[10px]">—</span>}
+                        ) : <span className="text-slate-gray text-xs">—</span>}
                       </td>
                     )}
                   </tr>
@@ -326,17 +326,17 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
               <div key={route.routeNo} className="border border-charcoal/15 bg-warm-ivory/30 p-5 rounded-sm space-y-3 shadow-xs">
                 <div className="flex justify-between items-center border-b border-charcoal/10 pb-2">
                   <span className="font-bold text-navy-accent text-sm">{route.routeNo}</span>
-                  <span className="bg-emerald-50 text-forest-status font-bold text-[10px] px-2 py-0.5 border border-emerald-300 rounded-xs">
+                  <span className="bg-emerald-50 text-forest-status font-bold text-xs px-2 py-0.5 border border-emerald-300 rounded-xs">
                     {route.status}
                   </span>
                 </div>
 
                 <div>
                   <strong className="text-charcoal block text-xs">{route.name}</strong>
-                  <span className="text-[11px] text-slate-gray block mt-0.5">Stops: {route.stops}</span>
+                  <span className="text-[13px] text-slate-gray block mt-0.5">Stops: {route.stops}</span>
                 </div>
 
-                <div className="border-t border-charcoal/10 pt-2 space-y-1 text-slate-gray text-[11px]">
+                <div className="border-t border-charcoal/10 pt-2 space-y-1 text-slate-gray text-[13px]">
                   <div>Timings: <strong className="text-charcoal">{route.timings}</strong></div>
                   <div>Driver: <strong className="text-charcoal">{route.driver}</strong></div>
                 </div>
@@ -370,7 +370,7 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
               <h4 className="font-bold text-charcoal text-sm uppercase">Submit Maintenance Complaint Work-Order</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-[11px] text-slate-gray mb-1">Issue Type</label>
+                  <label className="block text-[13px] text-slate-gray mb-1">Issue Type</label>
                   <select 
                     value={newType} 
                     onChange={(e) => setNewType(e.target.value)}
@@ -383,7 +383,7 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] text-slate-gray mb-1">Exact Location *</label>
+                  <label className="block text-[13px] text-slate-gray mb-1">Exact Location *</label>
                   <input 
                     type="text" 
                     placeholder="e.g. Block A - Room 304"
@@ -394,7 +394,7 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-slate-gray mb-1">Issue Description *</label>
+                  <label className="block text-[13px] text-slate-gray mb-1">Issue Description *</label>
                   <input 
                     type="text" 
                     placeholder="Brief detail of issue..."
@@ -430,15 +430,15 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-navy-accent">{t.id}</span>
-                    <span className="bg-charcoal/10 text-charcoal text-[10px] font-bold px-2 py-0.5 rounded-xs">{t.type}</span>
-                    <span className="text-slate-gray text-[10px]">{t.date}</span>
+                    <span className="bg-charcoal/10 text-charcoal text-xs font-bold px-2 py-0.5 rounded-xs">{t.type}</span>
+                    <span className="text-slate-gray text-xs">{t.date}</span>
                   </div>
                   <h4 className="font-bold text-charcoal text-sm">{t.issue}</h4>
                   <p className="text-xs text-slate-gray">Location: <strong>{t.location}</strong></p>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <span className={`text-[10px] font-bold px-2.5 py-1 border rounded-xs ${
+                  <span className={`text-xs font-bold px-2.5 py-1 border rounded-xs ${
                     t.status === 'COMPLETED' ? 'text-forest-status border-forest-status/30 bg-emerald-50' :
                     t.status === 'IN PROGRESS' ? 'text-amber-800 border-amber-300 bg-amber-50' : 'text-rose-700 border-rose-200 bg-rose-50'
                   }`}>
@@ -446,7 +446,7 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
                   </span>
                   {isAdmin && NEXT_TICKET_STATUS[t.status] && (
                     <button onClick={() => advanceTicket(t)}
-                      className="border border-navy-accent text-navy-accent hover:bg-navy-accent hover:text-white px-2.5 py-1 text-[10px] font-bold uppercase rounded-xs">
+                      className="border border-navy-accent text-navy-accent hover:bg-navy-accent hover:text-white px-2.5 py-1 text-xs font-bold uppercase rounded-xs">
                       Mark {NEXT_TICKET_STATUS[t.status]}
                     </button>
                   )}
@@ -477,14 +477,14 @@ export default function FacilitiesTransportHub({ currentRole }: FacilitiesTransp
               <div key={asset.assetId} className="border border-charcoal/15 bg-warm-ivory/30 p-4 rounded-sm space-y-2 shadow-xs">
                 <div className="flex justify-between items-start">
                   <span className="font-bold text-navy-accent">{asset.assetId}</span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 border rounded-xs ${
+                  <span className={`text-xs font-bold px-2 py-0.5 border rounded-xs ${
                     asset.status === 'OPERATIONAL' || asset.status === 'ASSIGNED' ? 'text-forest-status border-emerald-300 bg-emerald-50' : 'text-rose-700 border-rose-300 bg-rose-50'
                   }`}>
                     {asset.status}
                   </span>
                 </div>
                 <h4 className="font-bold text-charcoal text-sm">{asset.name}</h4>
-                <div className="flex justify-between text-slate-gray text-[11px] border-t border-charcoal/10 pt-2">
+                <div className="flex justify-between text-slate-gray text-[13px] border-t border-charcoal/10 pt-2">
                   <span>Category: <strong>{asset.category}</strong></span>
                   <span>Location: <strong>{asset.location}</strong></span>
                 </div>

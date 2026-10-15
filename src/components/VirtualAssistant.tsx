@@ -154,10 +154,10 @@ export default function VirtualAssistant() {
           <span className="font-serif font-bold text-sm text-charcoal">Virtual RAG Assistant</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[8px] text-navy-accent border border-navy-accent/20 px-1.5 py-0.5 bg-navy-accent/5 font-semibold">
+          <span className="text-xs text-navy-accent border border-navy-accent/20 px-1.5 py-0.5 bg-navy-accent/5 font-semibold">
             AWS POLLY SPEECH ENABLED
           </span>
-          <span className="text-[9px] text-slate-gray border border-charcoal/10 px-1.5 py-0.5 bg-surface-white">
+          <span className="text-xs text-slate-gray border border-charcoal/10 px-1.5 py-0.5 bg-surface-white">
             KNOWLEDGE BASE: HOSTEL RULEBOOKS
           </span>
         </div>
@@ -195,7 +195,7 @@ export default function VirtualAssistant() {
               )}
             </div>
             {msg.citations && msg.citations.length > 0 && (
-              <div className="mt-1 flex items-center gap-1.5 text-[9px] text-slate-gray pl-1">
+              <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-gray pl-1">
                 <BookOpen className="w-3.5 h-3.5 shrink-0 text-navy-accent" />
                 <span>Citations: {msg.citations.map(c => `[${c}]`).join(', ')}</span>
               </div>
@@ -203,7 +203,7 @@ export default function VirtualAssistant() {
           </div>
         ))}
         {typing && (
-          <div className="text-[10px] text-slate-gray animate-pulse font-mono pl-1">
+          <div className="text-xs text-slate-gray animate-pulse font-mono pl-1">
             Querying vector database embeddings...
           </div>
         )}
@@ -212,7 +212,7 @@ export default function VirtualAssistant() {
 
       {/* TTS Notice Banner */}
       {ttsNotice && (
-        <div className="px-3 py-1.5 bg-amber-50 border-t border-amber-200 text-amber-800 text-[10px] font-mono flex justify-between items-center">
+        <div className="px-3 py-1.5 bg-amber-50 border-t border-amber-200 text-amber-800 text-xs font-mono flex justify-between items-center">
           <span>{ttsNotice}</span>
           <button onClick={() => setTtsNotice(null)} className="font-bold text-amber-950">✕</button>
         </div>
@@ -225,7 +225,7 @@ export default function VirtualAssistant() {
             key={idx}
             onClick={() => handleSend(q)}
             disabled={typing}
-            className="text-[9px] bg-surface-white text-charcoal border border-charcoal/10 hover:border-navy-accent px-2.5 py-1 transition-colors uppercase disabled:opacity-50"
+            className="text-xs bg-surface-white text-charcoal border border-charcoal/10 hover:border-navy-accent px-2.5 py-1 transition-colors uppercase disabled:opacity-50"
           >
             {q.replace('What is the ', '').replace('How do I ', '').substring(0, 30)}...
           </button>

@@ -67,3 +67,19 @@ def visitor_resolved(visitor: dict) -> str:
         ({escape(visitor['date'])}) has been <strong>{escape(visitor['status'].upper())}</strong>.</p>{code}""",
         "Visitors must present the pass code and a photo ID at Gate SOC-G1.",
     )
+
+
+def access_code_issued(name: str, email: str, room: str, code: str, reset: bool = False) -> str:
+    action = "has been reset" if reset else "has been created"
+    return _frame(
+        "DEMEURE AI // COMMAND", "#1E3A5F",
+        f"""<p><strong>{'ACCESS CODE RESET' if reset else 'WELCOME TO DEMEURE AI'}</strong></p>
+        <p>Dear <strong>{escape(name)}</strong>, your resident account {action}.</p>
+        <ul>
+            <li>Sign-in e-mail: {escape(email)}</li>
+            <li>Access code: <strong style="letter-spacing: 2px;">{escape(code)}</strong></li>
+            <li>Room: {escape(room)}</li>
+        </ul>
+        <p>Sign in under <em>Resident Student</em>. Do not share this code; staff will never ask for it.</p>""",
+        "Demeure resident onboarding. If you did not expect this e-mail, contact the warden's office.",
+    )
