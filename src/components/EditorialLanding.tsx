@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, Zap, Utensils, MessageSquare, ArrowRight, Users, ShieldAlert, Cpu } from 'lucide-react';
+import { Shield, Zap, Utensils, MessageSquare, ArrowRight, Users, ShieldAlert, Cpu, GraduationCap } from 'lucide-react';
 
 interface EditorialLandingProps {
   onEnterConsole: (role: 'CampusAdmin' | 'HostelAdmin' | 'Admin' | 'Warden' | 'MessManager' | 'Student' | 'Faculty') => void;
@@ -500,12 +500,12 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
             </div>
 
             {/* Matrix Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 divide-y md:divide-y-0 md:divide-x divide-charcoal/10">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-0 divide-y md:divide-y-0 md:divide-x divide-charcoal/10">
               
               {/* Campus Admin Card */}
               <button 
                 onClick={() => onEnterConsole('CampusAdmin')}
-                className="group relative flex flex-col items-center justify-center p-12 text-center hover:bg-navy-accent hover:text-surface-white transition-all duration-300"
+                className="group relative flex flex-col items-center justify-center px-6 py-10 text-center hover:bg-navy-accent hover:text-surface-white transition-all duration-300"
               >
                 <div className="absolute inset-0 bg-navy-accent/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none blueprint-grid-accent" />
                 <Cpu className="w-12 h-12 text-navy-accent group-hover:text-surface-white mb-6 transition-colors duration-300" />
@@ -521,7 +521,7 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
               {/* Hostel Admin Card */}
               <button 
                 onClick={() => onEnterConsole('HostelAdmin')}
-                className="group relative flex flex-col items-center justify-center p-12 text-center hover:bg-forest-status hover:text-surface-white transition-all duration-300"
+                className="group relative flex flex-col items-center justify-center px-6 py-10 text-center hover:bg-forest-status hover:text-surface-white transition-all duration-300"
               >
                 <div className="absolute inset-0 bg-forest-status/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none blueprint-grid" />
                 <ShieldAlert className="w-12 h-12 text-forest-status group-hover:text-surface-white mb-6 transition-colors duration-300" />
@@ -537,7 +537,7 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
               {/* Mess Manager Card */}
               <button 
                 onClick={() => onEnterConsole('MessManager')}
-                className="group relative flex flex-col items-center justify-center p-12 text-center hover:bg-amber-600 hover:text-surface-white transition-all duration-300"
+                className="group relative flex flex-col items-center justify-center px-6 py-10 text-center hover:bg-amber-600 hover:text-surface-white transition-all duration-300"
               >
                 <div className="absolute inset-0 bg-amber-600/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none blueprint-grid" />
                 <Utensils className="w-12 h-12 text-amber-600 group-hover:text-surface-white mb-6 transition-colors duration-300" />
@@ -550,10 +550,25 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
                 </div>
               </button>
 
+              {/* Faculty Card */}
+              <button 
+                onClick={() => onEnterConsole('Faculty')}
+                className="group relative flex flex-col items-center justify-center px-6 py-10 text-center hover:bg-[#5B3A82] hover:text-surface-white transition-all duration-300"
+              >
+                <GraduationCap className="w-12 h-12 text-[#5B3A82] group-hover:text-surface-white mb-6 transition-colors duration-300" />
+                <h3 className="font-serif font-bold text-xl mb-2 text-charcoal group-hover:text-surface-white transition-colors duration-300">Faculty</h3>
+                <p className="text-xs font-mono text-slate-gray group-hover:text-warm-ivory/80 leading-relaxed transition-colors duration-300">
+                  Proctor dashboard, teaching schedule, student and colleague search, and venue bookings.
+                </p>
+                <div className="mt-8 border border-[#5B3A82] text-[#5B3A82] group-hover:border-surface-white group-hover:text-surface-white px-4 py-1 font-mono text-xs uppercase tracking-widest transition-colors duration-300">
+                  Initialize
+                </div>
+              </button>
+
               {/* Student Card */}
               <button 
                 onClick={() => onEnterConsole('Student')}
-                className="group relative flex flex-col items-center justify-center p-12 text-center hover:bg-charcoal hover:text-surface-white transition-all duration-300"
+                className="group relative flex flex-col items-center justify-center px-6 py-10 text-center hover:bg-charcoal hover:text-surface-white transition-all duration-300"
               >
                 <div className="absolute inset-0 bg-charcoal/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none blueprint-grid" />
                 <Users className="w-12 h-12 text-charcoal group-hover:text-surface-white mb-6 transition-colors duration-300" />

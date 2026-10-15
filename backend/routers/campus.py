@@ -165,11 +165,33 @@ def file_complaint(req: ComplaintRequest, services: Services = Depends(get_servi
                    user: SessionUser = Depends(current_user)) -> dict:
     room = user.room if user.role == "Student" else (req.room or "").strip()
     if not room:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Room is required")
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Room is required")
     return services.store.put("complaints", {
         **triage_complaint(req.text), "id": new_id("T"), "room": room,
         "originalText": req.text.strip(), "status": "Open", "filedBy": user.id,
     })
+
+
+class AssignRequest(BaseModel):
+    staffId: str = Field(min_length=6, max_length=12)
+
+
+@router.post("/api/complaints/{complaint_id}/assign")
+def assign_complaint(complaint_id: str, body: AssignRequest, services: Services = Depends(get_services),
+                     user: SessionUser = Depends(staff)) -> dict:
+    """Dispatches a complaint to a named technician; an open complaint moves to Dispatched."""
+    doc = get_or_404(services.store, "complaints", complaint_id, "Complaint")
+    tech = services.personnel.get(body.staffId)
+    if not tech or tech.get("kind") != "Staff" or tech.get("status", "Active") != "Active":
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No active staff member with that ID")
+    if doc["status"] == "Resolved":
+        raise HTTPException(status.HTTP_409_CONFLICT, "Complaint is already resolved")
+    doc["assignedTo"] = {"id": tech["id"], "name": tech["name"], "designation": tech["designation"],
+                         "extension": tech.get("extension", "")}
+    doc["status"] = "Dispatched"
+    doc["dispatchedBy"] = user.name
+    services.aws.log_event("Dispatch", "Assign technician", "SUCCESS", f"{complaint_id} assigned to {tech['name']} ({tech['id']})")
+    return services.store.put("complaints", doc)
 
 
 @router.post("/api/complaints/{complaint_id}/status")

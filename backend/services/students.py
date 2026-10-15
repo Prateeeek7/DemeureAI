@@ -19,7 +19,7 @@ ENCRYPTED_FIELDS = (
 )
 PUBLIC_FIELDS = (
     "id", "studentId", "regNo", "name", "email", "gender", "course", "branch", "yearOfStudy",
-    "block", "room", "roomId", "dietaryPref", "status", "createdAt",
+    "block", "room", "roomId", "dietaryPref", "status", "proctorId", "createdAt",
 )
 PBKDF2_ITERATIONS = 120_000
 

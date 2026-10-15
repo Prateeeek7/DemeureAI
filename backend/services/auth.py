@@ -7,12 +7,15 @@ import secrets
 import threading
 import time
 from dataclasses import asdict, dataclass
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from config import Settings
 from services.students import StudentRegistry, verify_code
 
-ROLES = ("CampusAdmin", "HostelAdmin", "MessManager", "Student")
+if TYPE_CHECKING:
+    from services.personnel import PersonnelRegistry
+
+ROLES = ("CampusAdmin", "HostelAdmin", "MessManager", "Faculty", "Student")
 STAFF_NAMES = {
     "CampusAdmin": "Campus Administrator",
     "HostelAdmin": "Hostel Administrator",
@@ -27,6 +30,7 @@ class SessionUser:
     name: str
     email: str = ""
     room: str = ""
+    ref: str = ""  # institutional ID: registration number for students, employee ID for personnel
 
     def public(self) -> dict:
         return asdict(self)
@@ -45,8 +49,10 @@ def _unb64(data: str) -> bytes:
 
 
 class AuthService:
-    def __init__(self, settings: Settings, registry: Optional[StudentRegistry] = None):
+    def __init__(self, settings: Settings, registry: Optional[StudentRegistry] = None,
+                 personnel: Optional["PersonnelRegistry"] = None):
         self._registry = registry
+        self._personnel = personnel
         self._key = settings.secret_key.encode("utf-8")
         self._ttl = settings.session_ttl_hours * 3600
         # Secrets are kept only as salted PBKDF2 hashes.
@@ -88,19 +94,25 @@ class AuthService:
             self._failures.pop(client, None)
 
     # --- credential checks -----------------------------------------------
-    def authenticate(self, role: str, secret: str, email: Optional[str] = None) -> Optional[SessionUser]:
+    def authenticate(self, role: str, secret: str, email: Optional[str] = None,
+                     employee_id: Optional[str] = None) -> Optional[SessionUser]:
+        if employee_id:
+            return self._authenticate_personnel(role, secret, employee_id)
         if role == "Student":
             email = (email or "").strip().lower()
             record = self._students.get(email)
             if record:
                 salt, digest, user, _ = record
                 ok = hmac.compare_digest(_hash_secret(secret.strip().upper(), salt), digest)
-                return SessionUser(**asdict(user)) if ok else None
+                if not ok:
+                    return None
+                doc = self._registry.get(email) if self._registry else None
+                return SessionUser(**{**asdict(user), "ref": doc.get("regNo", "") if doc else ""})
             doc = self._registry.get(email) if self._registry else None
             if doc and doc.get("status", "Active") == "Active" and "credential" in doc:
                 if verify_code(doc["credential"], secret):
                     return SessionUser(id=doc["id"], role="Student", name=doc["name"],
-                                       email=doc["email"], room=doc.get("room", ""))
+                                       email=doc["email"], room=doc.get("room", ""), ref=doc.get("regNo", ""))
                 return None
             # Burn comparable time so unknown emails are not distinguishable.
             _hash_secret(secret, b"0" * 16)
@@ -113,6 +125,17 @@ class AuthService:
         if not hmac.compare_digest(_hash_secret(pin, salt), digest):
             return None
         return SessionUser(id=f"staff:{role}", role=role, name=STAFF_NAMES[role])
+
+    def _authenticate_personnel(self, role: str, secret: str, employee_id: str) -> Optional[SessionUser]:
+        """Faculty, wardens and staff sign in with their employee ID and personal PIN."""
+        doc = self._personnel.get(employee_id) if self._personnel else None
+        if not doc or "credential" not in doc or doc.get("status", "Active") != "Active":
+            _hash_secret(secret, b"0" * 16)
+            return None
+        if not verify_code(doc["credential"], secret) or doc.get("portalRole") != role:
+            return None
+        return SessionUser(id=f"staff:{doc['id']}", role=doc["portalRole"], name=doc["name"],
+                           email=doc.get("email", ""), ref=doc["id"])
 
     def parent_email_for(self, user: SessionUser) -> str:
         record = self._students.get(user.email)

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   UserCheck, BookOpen, GraduationCap, Briefcase, QrCode, Search,
-  Calendar, CheckCircle, Building, User, ShieldCheck, BookMarked, Users,
+  Calendar, CheckCircle, Building, User, ShieldCheck, BookMarked, Users, Mail, Phone, MapPin, Clock,
 } from 'lucide-react';
 import { useSession } from '../lib/session';
 import { useApi } from '../lib/useApi';
@@ -24,6 +24,13 @@ interface ResidentRecord {
   guardianRelation?: string;
   guardianPhone?: string;
 }
+
+interface Contact { id: string; name: string; designation: string; email?: string; office?: string; officeHours?: string; dutyPhone?: string; extension?: string }
+interface Proctee { ref: string; name: string; title: string; detail: string; email: string; duesPaid: boolean; status: string }
+interface StaffRecord { id: string; name: string; designation: string; department: string; school?: string; office?: string; officeHours?: string; courses?: string[] }
+
+const SLOTS = ['08:30 - 09:50 AM', '10:00 - 11:20 AM', '11:30 - 12:50 PM', '02:00 - 03:30 PM'];
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
 interface DirectoryRow { course: string; branch: string; yearOfStudy: string; block: string; status?: string }
 
@@ -49,7 +56,7 @@ const PLACEMENT_DRIVES = [
   { company: 'Goldman Sachs', role: 'Quantitative Risk Analyst', package: '₹24.0 LPA', deadline: 'Oct 10, 2026', eligibility: 'CGPA ≥ 8.5, All Engineering', applicants: 97, shortlisted: 12, open: false },
 ];
 
-type SubTab = 'profile' | 'records' | 'academics' | 'library' | 'placement';
+type SubTab = 'profile' | 'records' | 'proctees' | 'academics' | 'library' | 'placement';
 
 const card = 'border border-charcoal/15 bg-surface-white p-6 rounded-sm shadow-sm';
 const statusBadge = (status: string) =>
@@ -60,9 +67,13 @@ const statusBadge = (status: string) =>
 export default function AcademicStudentHub() {
   const user = useSession();
   const isStudent = user?.role === 'Student';
-  const [activeSubTab, setActiveSubTab] = useState<SubTab>(isStudent ? 'profile' : 'records');
+  const isFaculty = user?.role === 'Faculty';
+  const [activeSubTab, setActiveSubTab] = useState<SubTab>(isStudent ? 'profile' : isFaculty ? 'proctees' : 'records');
   const me = useApi<ResidentRecord>(isStudent ? '/api/students/me' : null);
-  const directory = useApi<{ students: DirectoryRow[] }>(isStudent ? null : '/api/students');
+  const contacts = useApi<{ proctor: Contact | null; wardens: Contact[] }>(isStudent ? '/api/people/my-contacts' : null);
+  const directory = useApi<{ students: DirectoryRow[] }>(isStudent || isFaculty ? null : '/api/students');
+  const proctees = useApi<Proctee[]>(isFaculty ? '/api/people/proctees' : null);
+  const staffRecord = useApi<StaffRecord>(isFaculty ? '/api/people/me' : null);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBookCategory, setSelectedBookCategory] = useState('ALL');
@@ -81,7 +92,13 @@ export default function AcademicStudentHub() {
     return { total: rows.length, byCourse: count(r => r.course), byYear: count(r => r.yearOfStudy).sort(), byBranch: count(r => `${r.course} ${r.branch}`) };
   }, [directory.data]);
 
-  const tabs = isStudent
+  const tabs = isFaculty
+    ? [
+        { id: 'proctees', label: 'My Proctees', icon: Users },
+        { id: 'academics', label: 'Teaching Schedule', icon: GraduationCap },
+        { id: 'library', label: 'Library', icon: BookOpen },
+      ]
+    : isStudent
     ? [
         { id: 'profile', label: 'My Profile & ID', icon: UserCheck },
         { id: 'academics', label: 'My Timetable', icon: GraduationCap },
@@ -103,11 +120,13 @@ export default function AcademicStudentHub() {
       {/* Header */}
       <div className={`${card} flex flex-col md:flex-row justify-between items-start md:items-center gap-4`}>
         <div>
-          <span className="text-slate-gray font-mono text-xs uppercase tracking-wider">{isStudent ? 'Student Academic Portal' : 'Academic Administration'}</span>
-          <h2 className="font-serif font-bold text-2xl text-charcoal">{isStudent ? 'My Academics' : 'Academic & Student Records'}</h2>
+          <span className="text-slate-gray font-mono text-xs uppercase tracking-wider">{isStudent ? 'Student Academic Portal' : isFaculty ? 'Faculty Portal' : 'Academic Administration'}</span>
+          <h2 className="font-serif font-bold text-2xl text-charcoal">{isStudent ? 'My Academics' : isFaculty ? `${user?.name ?? ''}` : 'Academic & Student Records'}</h2>
           <p className="font-mono text-xs text-slate-gray mt-1">
             {isStudent
               ? 'Your student ID, timetable, library reservations and placement applications.'
+              : isFaculty
+              ? `${staffRecord.data ? `${staffRecord.data.designation}, ${staffRecord.data.department} (${staffRecord.data.school})` : ''}`
               : 'Enrolment overview, programme timetables, library stock and placement drives.'}
           </p>
         </div>
@@ -192,8 +211,54 @@ export default function AcademicStudentHub() {
               To correct any detail, contact the warden's office. Personal details are stored encrypted.
             </p>
           </div>
+
+          <div className={`lg:col-span-12 ${card} space-y-4`}>
+            <h3 className="font-serif font-bold text-lg text-charcoal flex items-center gap-2 border-b border-charcoal/10 pb-3">
+              <Users className="w-5 h-5 text-navy-accent" /> My Proctor & Wardens
+            </h3>
+            {contacts.error && <div role="alert" className="text-red-700 font-mono text-sm">{contacts.error}</div>}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-sm">
+              {[...(contacts.data?.proctor ? [{ ...contacts.data.proctor, role: 'Faculty proctor' }] : []),
+                ...(contacts.data?.wardens ?? []).map(w => ({ ...w, role: w.designation }))].map(c => (
+                <div key={c.id} className="border border-charcoal/10 bg-warm-ivory/50 p-4 space-y-1">
+                  <div className="text-xs uppercase tracking-wider text-slate-gray">{c.role}</div>
+                  <div className="font-semibold text-charcoal">{c.name} <span className="text-xs text-slate-gray">{c.id}</span></div>
+                  {c.email && <div className="text-xs flex items-center gap-1"><Mail className="w-3 h-3" />{c.email}</div>}
+                  {c.dutyPhone && <div className="text-xs flex items-center gap-1"><Phone className="w-3 h-3" />{c.dutyPhone}</div>}
+                  {c.office && <div className="text-xs flex items-center gap-1"><MapPin className="w-3 h-3" />{c.office}</div>}
+                  {c.officeHours && <div className="text-xs flex items-center gap-1"><Clock className="w-3 h-3" />{c.officeHours}</div>}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
         )
+      )}
+
+      {/* FACULTY: proctees */}
+      {isFaculty && activeSubTab === 'proctees' && (
+        <div className={`${card} space-y-4`}>
+          <div className="flex justify-between items-center border-b border-charcoal/10 pb-3">
+            <h3 className="font-serif font-bold text-lg text-charcoal flex items-center gap-2"><Users className="w-5 h-5 text-navy-accent" /> My Proctees</h3>
+            <span className="font-mono text-xs font-bold bg-navy-accent/10 text-navy-accent px-3 py-1">{proctees.data?.length ?? 0} STUDENTS</span>
+          </div>
+          {proctees.error && <div role="alert" className="text-red-700 font-mono text-sm">{proctees.error}</div>}
+          <table className="w-full font-mono text-sm">
+            <thead className="bg-warm-ivory text-slate-gray text-xs uppercase tracking-wider"><tr><th className="text-left p-2">Student</th><th className="text-left p-2">Programme</th><th className="text-left p-2">Room</th><th className="text-left p-2">E-mail</th><th className="text-left p-2">Hostel dues</th></tr></thead>
+            <tbody>
+              {(proctees.data ?? []).map(s => (
+                <tr key={s.ref} className="border-t border-charcoal/10">
+                  <td className="p-2"><div className="font-semibold text-charcoal">{s.name}</div><div className="text-xs text-slate-gray">{s.ref}</div></td>
+                  <td className="p-2 text-charcoal">{s.title}</td>
+                  <td className="p-2 text-navy-accent font-bold">{s.detail.replace('Room ', '')}</td>
+                  <td className="p-2 text-xs">{s.email}</td>
+                  <td className="p-2"><span className={`text-xs font-bold border px-1.5 py-0.5 ${s.duesPaid ? 'text-forest-status border-forest-status/40 bg-forest-status/5' : 'text-amber-800 border-amber-700/40 bg-amber-50'}`}>{s.duesPaid ? 'PAID' : 'DUE'}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="font-mono text-xs text-slate-gray">Open a proctee in People Search to see their guardian contact (access is logged).</p>
+        </div>
       )}
 
       {/* ADMIN: enrolment overview from the resident records */}
@@ -246,13 +311,13 @@ export default function AcademicStudentHub() {
           <div className="flex justify-between items-center border-b border-charcoal/10 pb-3">
             <div>
               <h3 className="font-serif font-bold text-lg text-charcoal flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-navy-accent" /> {isStudent ? 'My Weekly Timetable' : 'Programme Timetable'}
+                <Calendar className="w-5 h-5 text-navy-accent" /> {isStudent ? 'My Weekly Timetable' : isFaculty ? 'My Teaching Schedule' : 'Programme Timetable'}
               </h3>
               <p className="font-mono text-xs text-slate-gray mt-0.5">
-                {isStudent && r ? `${programme} · ${r.yearOfStudy} · Fall 2026` : 'B.Tech CSE · Semester IV · Fall 2026'}
+                {isStudent && r ? `${programme} · ${r.yearOfStudy} · Fall 2026` : isFaculty ? (staffRecord.data?.courses ?? []).join(' · ') : 'B.Tech CSE · Semester IV · Fall 2026'}
               </p>
             </div>
-            <span className="bg-navy-accent/10 text-navy-accent font-mono text-xs font-bold px-3 py-1 rounded-xs">{isStudent ? 'CREDITS: 24.0' : '5 COURSES · 2 LABS'}</span>
+            <span className="bg-navy-accent/10 text-navy-accent font-mono text-xs font-bold px-3 py-1 rounded-xs">{isStudent ? 'CREDITS: 24.0' : isFaculty ? `${staffRecord.data?.courses?.length ?? 0} COURSES` : '5 COURSES · 2 LABS'}</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left font-mono text-sm border border-charcoal/15 border-collapse">
@@ -262,7 +327,18 @@ export default function AcademicStudentHub() {
                 </tr>
               </thead>
               <tbody>
-                {TIMETABLE.map(row => (
+                {isFaculty ? SLOTS.map((slot, si) => (
+                  <tr key={slot} className="border-b border-charcoal/10">
+                    <td className="p-3 border-r border-charcoal/15 font-bold text-navy-accent bg-warm-ivory/30 whitespace-nowrap">{slot}</td>
+                    {DAYS.map((day, di) => {
+                      const courses = staffRecord.data?.courses ?? [];
+                      // Each course meets three times a week; office hours and research fill the rest.
+                      const idx = (si * 5 + di) % 6;
+                      const cell = !courses.length ? '—' : idx < 4 ? courses[idx % courses.length] : idx === 4 ? 'Office hours' : 'Research / Lab';
+                      return <td key={day} className="p-3 border-r border-charcoal/15 text-charcoal">{cell}</td>;
+                    })}
+                  </tr>
+                )) : TIMETABLE.map(row => (
                   <tr key={row.time} className="border-b border-charcoal/10">
                     <td className="p-3 border-r border-charcoal/15 font-bold text-navy-accent bg-warm-ivory/30 whitespace-nowrap">{row.time}</td>
                     {[row.monday, row.tuesday, row.wednesday, row.thursday, row.friday].map((c, i) => <td key={i} className="p-3 border-r border-charcoal/15 text-charcoal">{c}</td>)}
@@ -282,7 +358,7 @@ export default function AcademicStudentHub() {
               <h3 className="font-serif font-bold text-lg text-charcoal flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-navy-accent" /> {isStudent ? 'Library Catalogue' : 'Library Inventory'}
               </h3>
-              <p className="font-mono text-xs text-slate-gray mt-0.5">{isStudent ? 'Search books and reserve an available copy.' : 'Copies held, copies on loan and rack locations.'}</p>
+              <p className="font-mono text-xs text-slate-gray mt-0.5">{isStudent || isFaculty ? 'Search books and reserve an available copy.' : 'Copies held, copies on loan and rack locations.'}</p>
             </div>
             <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
               <div className="relative flex-1 md:w-64">
@@ -312,7 +388,7 @@ export default function AcademicStudentHub() {
                     <span>{book.category}</span><span>{book.location}</span>
                   </div>
                 </div>
-                {isStudent ? (
+                {isStudent || isFaculty ? (
                   <button
                     onClick={() => setReservedBooks(prev => prev.includes(book.id) ? prev.filter(id => id !== book.id) : [...prev, book.id])}
                     disabled={book.status !== 'AVAILABLE'}

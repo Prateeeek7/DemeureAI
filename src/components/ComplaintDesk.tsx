@@ -12,7 +12,10 @@ interface Complaint {
   priority: 'CRITICAL (IMMEDIATE)' | 'HIGH' | 'MEDIUM' | 'LOW';
   eta: string;
   status: 'Open' | 'Dispatched' | 'Resolved';
+  assignedTo?: { id: string; name: string; designation: string; extension?: string };
 }
+
+interface Technician { id: string; name: string; designation: string; shift: string; extension: string }
 
 type Triage = Pick<Complaint, 'category' | 'priority' | 'eta'>;
 const NEXT_STATUS: Record<Complaint['status'], Complaint['status'] | null> = {
@@ -63,6 +66,30 @@ export default function ComplaintDesk() {
     } finally {
       setFiling(false);
     }
+  };
+
+  // Dispatch: choose a technician whose trade matches the complaint category.
+  const [dispatching, setDispatching] = useState<{ ticket: string; options: Technician[]; choice: string } | null>(null);
+
+  const openDispatch = async (ticket: Complaint) => {
+    setError('');
+    try {
+      const options = await api.get<Technician[]>(`/api/people/technicians?category=${encodeURIComponent(ticket.category)}`);
+      setDispatching({ ticket: ticket.id, options, choice: options[0]?.id ?? '' });
+    } catch (err) {
+      setError(errorMessage(err));
+    }
+  };
+
+  const confirmDispatch = async () => {
+    if (!dispatching?.choice) return;
+    try {
+      await api.post(`/api/complaints/${dispatching.ticket}/assign`, { staffId: dispatching.choice });
+      setDispatching(null);
+    } catch (err) {
+      setError(errorMessage(err));
+    }
+    ticketsApi.reload();
   };
 
   const advanceStatus = async (ticket: Complaint) => {
@@ -204,13 +231,38 @@ export default function ComplaintDesk() {
                     {t.status.toUpperCase()}
                   </span>
                 </div>
-                {isStaff && NEXT_STATUS[t.status] && (
-                  <button
-                    onClick={() => advanceStatus(t)}
-                    className="w-full border border-navy-accent text-navy-accent hover:bg-navy-accent hover:text-white py-1 text-xs uppercase tracking-wider transition-colors"
-                  >
-                    Mark {NEXT_STATUS[t.status]}
-                  </button>
+                {t.assignedTo && (
+                  <div className="text-xs text-charcoal border-t border-charcoal/5 pt-2">
+                    Technician: <strong>{t.assignedTo.name}</strong> ({t.assignedTo.designation}, {t.assignedTo.id}{t.assignedTo.extension ? ` · ext. ${t.assignedTo.extension}` : ''})
+                  </div>
+                )}
+                {isStaff && dispatching?.ticket === t.id ? (
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <select aria-label="Technician" value={dispatching.choice} onChange={e => setDispatching({ ...dispatching, choice: e.target.value })}
+                      className="flex-1 border border-charcoal/25 bg-surface-white p-1.5 text-xs text-charcoal">
+                      {dispatching.options.map(o => <option key={o.id} value={o.id}>{o.name} · {o.designation} · {o.shift} shift</option>)}
+                    </select>
+                    <button onClick={confirmDispatch} disabled={!dispatching.choice}
+                      className="bg-navy-accent text-white px-3 py-1.5 text-xs uppercase tracking-wider disabled:opacity-50">Assign</button>
+                    <button onClick={() => setDispatching(null)} className="border border-charcoal/20 px-3 py-1.5 text-xs uppercase tracking-wider">Cancel</button>
+                  </div>
+                ) : isStaff && t.status !== 'Resolved' && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => openDispatch(t)}
+                      className="flex-1 border border-navy-accent text-navy-accent hover:bg-navy-accent hover:text-white py-1 text-xs uppercase tracking-wider transition-colors"
+                    >
+                      {t.assignedTo ? 'Reassign Technician' : 'Dispatch Technician'}
+                    </button>
+                    {t.status === 'Dispatched' && (
+                      <button
+                        onClick={() => advanceStatus(t)}
+                        className="flex-1 border border-forest-status text-forest-status hover:bg-forest-status hover:text-white py-1 text-xs uppercase tracking-wider transition-colors"
+                      >
+                        Mark Resolved
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             ))}

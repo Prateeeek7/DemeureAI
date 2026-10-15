@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-export type ServerRole = 'CampusAdmin' | 'HostelAdmin' | 'MessManager' | 'Student';
+export type ServerRole = 'CampusAdmin' | 'HostelAdmin' | 'MessManager' | 'Faculty' | 'Student';
 
 export interface SessionUser {
   id: string;
@@ -8,6 +8,8 @@ export interface SessionUser {
   name: string;
   email: string;
   room: string;
+  /** Institutional ID: registration number (students) or employee ID (staff). */
+  ref?: string;
 }
 
 export const SessionContext = createContext<SessionUser | null>(null);

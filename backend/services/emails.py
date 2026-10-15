@@ -83,3 +83,17 @@ def access_code_issued(name: str, email: str, room: str, code: str, reset: bool 
         <p>Sign in under <em>Resident Student</em>. Do not share this code; staff will never ask for it.</p>""",
         "Demeure resident onboarding. If you did not expect this e-mail, contact the warden's office.",
     )
+
+
+def staff_pin_issued(name: str, employee_id: str, pin: str, reset: bool = False) -> str:
+    return _frame(
+        "DEMEURE AI // COMMAND", "#1E3A5F",
+        f"""<p><strong>{'PIN RESET' if reset else 'STAFF ACCOUNT CREATED'}</strong></p>
+        <p>Dear <strong>{escape(name)}</strong>, your Demeure AI sign-in {'has been reset' if reset else 'is ready'}.</p>
+        <ul>
+            <li>Employee ID: <strong>{escape(employee_id)}</strong></li>
+            <li>PIN: <strong style="letter-spacing: 2px;">{escape(pin)}</strong></li>
+        </ul>
+        <p>Choose your role card on the sign-in page and use the Employee ID option. Never share your PIN.</p>""",
+        "Demeure staff onboarding. If you did not expect this e-mail, contact the campus administration office.",
+    )

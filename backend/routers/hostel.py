@@ -125,7 +125,7 @@ def list_visitors(services: Services = Depends(get_services), user: SessionUser 
 def request_visitor(req: VisitorRequest, services: Services = Depends(get_services),
                     user: SessionUser = Depends(require_roles("Student"))) -> dict:
     if req.visitAt.replace(tzinfo=None) < datetime.now() - timedelta(hours=1):
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Visit time cannot be in the past")
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Visit time cannot be in the past")
     return services.store.put("visitors", {
         "id": new_id("V"),
         "visitor": req.visitor.strip(),

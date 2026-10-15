@@ -10,9 +10,10 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 class LoginRequest(BaseModel):
-    role: Literal["CampusAdmin", "HostelAdmin", "MessManager", "Student"]
+    role: Literal["CampusAdmin", "HostelAdmin", "MessManager", "Faculty", "Student"]
     secret: str = Field(min_length=1, max_length=64)
     email: Optional[str] = Field(default=None, max_length=254)
+    employeeId: Optional[str] = Field(default=None, max_length=12)
 
 
 @router.post("/login")
@@ -22,7 +23,9 @@ def login(body: LoginRequest, request: Request, response: Response,
     if services.auth.is_throttled(client):
         raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "Too many failed attempts. Try again in 5 minutes.")
 
-    user = services.auth.authenticate(body.role, body.secret, body.email)
+    if body.role == "Faculty" and not body.employeeId:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Faculty sign in with their employee ID")
+    user = services.auth.authenticate(body.role, body.secret, body.email, body.employeeId)
     if not user:
         services.auth.record_failure(client)
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")

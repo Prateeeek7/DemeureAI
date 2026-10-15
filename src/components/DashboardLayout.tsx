@@ -1,5 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
-import { LayoutDashboard, Users, Zap, Shield, AlertTriangle, Utensils, Heart, MessageSquare, LogOut, ClipboardList, CreditCard, Cloud, GraduationCap, Building2, Landmark, IdCard } from 'lucide-react';
+import { LayoutDashboard, Users, Zap, Shield, AlertTriangle, Utensils, Heart, MessageSquare, LogOut, ClipboardList, CreditCard, Cloud, GraduationCap, Building2, Landmark, IdCard, Search } from 'lucide-react';
 import EditorialLanding from './EditorialLanding';
 // Modules are code-split so each role only downloads the screens it opens.
 const RoomAllocation = lazy(() => import('./RoomAllocation'));
@@ -16,6 +16,7 @@ const AcademicStudentHub = lazy(() => import('./AcademicStudentHub'));
 const FacilitiesTransportHub = lazy(() => import('./FacilitiesTransportHub'));
 const CampusOperationsHub = lazy(() => import('./CampusOperationsHub'));
 const StudentDirectory = lazy(() => import('./StudentDirectory'));
+const PeopleDirectory = lazy(() => import('./PeopleDirectory'));
 import { api, errorMessage, UNAUTHORIZED_EVENT } from '../lib/api';
 import { SessionContext, SHOW_DEMO_CREDENTIALS, type SessionUser } from '../lib/session';
 
@@ -35,7 +36,13 @@ const DEMO_PINS: Partial<Record<Role, string>> = {
 };
 
 const landingTabFor = (role: Role) =>
-  role === 'Student' ? 'studentPortal' : role === 'HostelAdmin' ? 'rooms' : role === 'MessManager' ? 'mess' : 'telemetry';
+  role === 'Student' ? 'studentPortal' : role === 'HostelAdmin' ? 'rooms' : role === 'MessManager' ? 'mess'
+    : role === 'Faculty' ? 'academic' : 'telemetry';
+
+// Example employee IDs for each staff role (demo data; every seeded staff PIN is 246810).
+const DEMO_IDS: Partial<Record<Role, string>> = {
+  CampusAdmin: 'STF2001', HostelAdmin: 'WDN101', MessManager: 'STF2005', Faculty: 'FAC1001',
+};
 
 export default function DashboardLayout() {
   const [currentRole, setCurrentRole] = useState<Role>('Student');
@@ -52,6 +59,10 @@ export default function DashboardLayout() {
   // Authentication Overlay states
   const [pendingRole, setPendingRole] = useState<Role | null>(null);
   const [authCodeInput, setAuthCodeInput] = useState('');
+  const [staffMode, setStaffMode] = useState<'id' | 'master'>('id');
+  const [peopleQuery, setPeopleQuery] = useState('');
+  const [headerSearch, setHeaderSearch] = useState('');
+  const [employeeIdInput, setEmployeeIdInput] = useState('');
   const [studentEmailInput, setStudentEmailInput] = useState('');
   const [studentCodeInput, setStudentCodeInput] = useState('');
   const [authError, setAuthError] = useState('');
@@ -100,13 +111,14 @@ export default function DashboardLayout() {
     { id: 'telemetry', label: 'Overview Telemetry', icon: LayoutDashboard, roles: ['CampusAdmin', 'HostelAdmin', 'Admin', 'Warden', 'MessManager', 'Student', 'Faculty'] },
     { id: 'academic', label: 'Academic & Student Hub', icon: GraduationCap, roles: ['CampusAdmin', 'Admin', 'Student', 'Faculty'] },
     { id: 'facilities', label: 'Facilities & Fleet Hub', icon: Building2, roles: ['CampusAdmin', 'Admin', 'Faculty', 'Student'] },
-    { id: 'campusOps', label: 'Finance & Campus Life', icon: Landmark, roles: ['CampusAdmin', 'Admin', 'Faculty', 'Student'] },
+    { id: 'campusOps', label: 'Finance & Campus Life', icon: Landmark, roles: ['CampusAdmin', 'Admin', 'Student'] },
+    { id: 'people', label: currentRole === 'Student' ? 'Faculty & Warden Search' : 'People Search', icon: Search, roles: ['CampusAdmin', 'HostelAdmin', 'MessManager', 'Faculty', 'Student'] },
     { id: 'directory', label: 'Resident Directory', icon: IdCard, roles: ['CampusAdmin', 'HostelAdmin', 'Admin', 'Warden'] },
     { id: 'rooms', label: 'Hostel Room Allocation', icon: Users, roles: ['HostelAdmin', 'Warden'] },
     { id: 'survey', label: 'Student Survey Form', icon: ClipboardList, roles: ['HostelAdmin', 'Warden', 'Student'] },
     { id: 'power', label: 'Power Grid Diagnostics', icon: Zap, roles: ['CampusAdmin', 'Admin'] },
     { id: 'security', label: 'Hostel Security SOC Gate', icon: Shield, roles: ['HostelAdmin', 'Warden'] },
-    { id: 'complaints', label: 'NLP Complaint Desk', icon: AlertTriangle, roles: ['CampusAdmin', 'HostelAdmin', 'Admin', 'Warden', 'Student', 'Faculty'] },
+    { id: 'complaints', label: 'NLP Complaint Desk', icon: AlertTriangle, roles: ['CampusAdmin', 'HostelAdmin', 'Admin', 'Warden', 'Student'] },
     { id: 'mess', label: 'Mess & Food Optimizer', icon: Utensils, roles: ['MessManager', 'Student'] },
     { id: 'welfare', label: 'Hostel Welfare Operations', icon: Heart, roles: ['HostelAdmin', 'Warden'] },
     { id: 'studentPortal', label: 'Student Services', icon: CreditCard, roles: ['Student'] },
@@ -132,14 +144,16 @@ export default function DashboardLayout() {
       ? 'Campus Administrator (Campus OS)' 
       : (pendingRole === 'HostelAdmin' || pendingRole === 'Warden')
       ? 'Hostel Administrator / Warden (Hostel OS)' 
-      : 'Mess Manager';
+      : pendingRole === 'Faculty' ? 'Faculty Member' : 'Mess Manager';
+    const idMode = pendingRole === 'Faculty' || staffMode === 'id';
+    const maxDigits = idMode ? 6 : 12;
       
     const demoPin = DEMO_PINS[pendingRole] ?? '';
 
     const formatAndSetCode = (val: string) => {
       let formatted = '';
       for (let i = 0; i < val.length; i++) {
-        if (i === 4 || i === 8) {
+        if (!idMode && (i === 4 || i === 8)) {
           formatted += '-';
         }
         formatted += val[i];
@@ -150,13 +164,13 @@ export default function DashboardLayout() {
 
     const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       let val = e.target.value.replace(/\D/g, '');
-      if (val.length > 12) val = val.substring(0, 12);
+      if (val.length > maxDigits) val = val.substring(0, maxDigits);
       formatAndSetCode(val);
     };
 
     const handleKeypadPress = (num: string) => {
       let val = authCodeInput.replace(/\D/g, '');
-      if (val.length < 12) {
+      if (val.length < maxDigits) {
         val += num;
         formatAndSetCode(val);
       }
@@ -178,8 +192,12 @@ export default function DashboardLayout() {
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       const isStudent = pendingRole === 'Student';
-      if (!isStudent && authCodeInput.replace(/\D/g, '').length !== 12) {
-        setAuthError('ENTER THE FULL 12-DIGIT ACCESS PIN');
+      if (!isStudent && idMode && !employeeIdInput.trim()) {
+        setAuthError('ENTER YOUR EMPLOYEE ID');
+        return;
+      }
+      if (!isStudent && authCodeInput.replace(/\D/g, '').length !== maxDigits) {
+        setAuthError(idMode ? 'ENTER YOUR 6-DIGIT PIN' : 'ENTER THE FULL 12-DIGIT MASTER PIN');
         return;
       }
       setAuthBusy(true);
@@ -187,7 +205,10 @@ export default function DashboardLayout() {
       try {
         const sessionUser = await api.post<SessionUser>('/api/auth/login', isStudent
           ? { role: 'Student', email: studentEmailInput.trim(), secret: studentCodeInput.trim() }
-          : { role: pendingRole, secret: authCodeInput });
+          : idMode
+            ? { role: pendingRole, employeeId: employeeIdInput.trim(), secret: authCodeInput }
+            : { role: pendingRole, secret: authCodeInput });
+        setEmployeeIdInput('');
         setAuthCodeInput('');
         setStudentEmailInput('');
         setStudentCodeInput('');
@@ -293,25 +314,53 @@ export default function DashboardLayout() {
           </div>
 
           <div className="text-[13px] leading-relaxed text-slate-gray p-2 border-l-2 border-navy-accent space-y-1">
-            <p>Terminals require secure hardware key confirmation. Enter credentials for <strong>{roleName}</strong>.</p>
-            {SHOW_DEMO_CREDENTIALS && demoPin && (
-              <p className="text-xs text-navy-accent font-bold">Demo PIN: <code className="bg-navy-accent/10 px-1 py-0.5 rounded select-all">{demoPin}</code></p>
+            <p>Sign in as <strong>{roleName}</strong> {idMode ? 'with your employee ID and personal PIN.' : 'with the shared master PIN.'}</p>
+            {SHOW_DEMO_CREDENTIALS && idMode && DEMO_IDS[pendingRole] && (
+              <p className="text-xs text-navy-accent font-bold">Demo: <code className="bg-navy-accent/10 px-1 py-0.5 rounded select-all">{DEMO_IDS[pendingRole]}</code> / PIN <code className="bg-navy-accent/10 px-1 py-0.5 rounded select-all">246810</code></p>
+            )}
+            {SHOW_DEMO_CREDENTIALS && !idMode && demoPin && (
+              <p className="text-xs text-navy-accent font-bold">Demo master PIN: <code className="bg-navy-accent/10 px-1 py-0.5 rounded select-all">{demoPin}</code></p>
             )}
           </div>
 
+          {pendingRole !== 'Faculty' && (
+            <div className="grid grid-cols-2 border border-charcoal/15 text-xs uppercase tracking-wider" role="tablist" aria-label="Sign-in method">
+              {(['id', 'master'] as const).map(mode => (
+                <button key={mode} type="button" role="tab" aria-selected={staffMode === mode}
+                  onClick={() => { setStaffMode(mode); setAuthCodeInput(''); setAuthError(''); }}
+                  className={`py-2 font-bold ${staffMode === mode ? 'bg-navy-accent text-surface-white' : 'bg-surface-white text-charcoal hover:bg-charcoal/5'}`}>
+                  {mode === 'id' ? 'Employee ID' : 'Master PIN'}
+                </button>
+              ))}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
+            {idMode && (
+              <input
+                type="text"
+                autoComplete="username"
+                aria-label="Employee ID"
+                placeholder={`Employee ID, e.g. ${DEMO_IDS[pendingRole] ?? 'STF2001'}`}
+                value={employeeIdInput}
+                onChange={e => { setEmployeeIdInput(e.target.value.toUpperCase()); setAuthError(''); }}
+                className="w-full bg-surface-white border border-charcoal/20 p-3 text-center text-base font-bold tracking-widest text-charcoal outline-none focus:border-navy-accent placeholder:text-slate-gray placeholder:font-normal placeholder:tracking-normal"
+                maxLength={12}
+                autoFocus
+              />
+            )}
             <div className="space-y-2">
               <input
                 type="text"
                 inputMode="numeric"
                 autoComplete="off"
                 aria-label="Access PIN"
-                placeholder="____-____-____"
+                placeholder={idMode ? '6-digit PIN' : '____-____-____'}
                 value={authCodeInput}
                 onChange={handleCodeChange}
                 className="w-full bg-surface-white border border-charcoal/20 p-3 text-center text-lg font-bold tracking-widest text-navy-accent outline-none focus:border-navy-accent placeholder:text-navy-accent/40 uppercase"
-                maxLength={14}
-                autoFocus
+                maxLength={idMode ? 6 : 14}
+                autoFocus={!idMode}
               />
             </div>
 
@@ -401,6 +450,9 @@ export default function DashboardLayout() {
       <EditorialLanding
         onEnterConsole={(role) => {
           setPendingRole(role);
+          setStaffMode('id');
+          setEmployeeIdInput('');
+          setAuthCodeInput('');
           setShowExitLanding(false);
         }}
       />
@@ -438,8 +490,24 @@ export default function DashboardLayout() {
           </div>
 
           <div className="flex items-center gap-3">
+            <form
+              className="hidden lg:flex items-center gap-2 border border-charcoal/20 bg-surface-white px-2 py-1 focus-within:border-navy-accent"
+              onSubmit={e => { e.preventDefault(); setPeopleQuery(headerSearch.trim()); setActiveTab('people'); }}
+            >
+              <Search className="w-4 h-4 text-slate-gray" />
+              <input
+                aria-label="Quick people search"
+                value={headerSearch}
+                onChange={e => setHeaderSearch(e.target.value)}
+                placeholder={currentRole === 'Student' ? 'Find faculty by name or ID' : 'Find anyone by name or ID'}
+                className="bg-transparent outline-none font-mono text-xs w-48 text-charcoal"
+              />
+            </form>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-gray uppercase">Active Persona:</span>
+              <div className="text-right leading-tight hidden md:block">
+                <div className="font-semibold text-charcoal text-sm">{user.name}</div>
+                {user.ref && <div className="font-mono text-xs text-slate-gray">{user.ref}</div>}
+              </div>
               <span className="bg-navy-accent/10 text-navy-accent font-bold px-2.5 py-1 text-[13px] rounded-xs border border-navy-accent/20 uppercase font-mono">
                 {currentRole === 'CampusAdmin' || currentRole === 'Admin' 
                   ? 'Campus Administrator' 
@@ -579,6 +647,7 @@ export default function DashboardLayout() {
             {activeTab === 'facilities' && <FacilitiesTransportHub currentRole={currentRole} />}
             {activeTab === 'campusOps' && <CampusOperationsHub currentRole={currentRole} />}
             {activeTab === 'directory' && <StudentDirectory />}
+            {activeTab === 'people' && <PeopleDirectory initialQuery={peopleQuery} key={peopleQuery} />}
             {activeTab === 'rooms' && <RoomAllocation />}
             {activeTab === 'survey' && <StudentSurveyForm currentRole={currentRole} />}
             {activeTab === 'power' && <PowerMonitor />}

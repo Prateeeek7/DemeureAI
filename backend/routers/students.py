@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from deps import STAFF_ROLES, Services, get_or_404, get_services, require_roles
 from routers.billing import load_billing
-from services import emails
+from services import emails, personnel
 from services.auth import SessionUser
 from services.crypto import ALGORITHM
 from services.rooms import BLOCK_GENDER, Hostel, block_allows, parse_room, parse_room_text, room_id, room_label
@@ -176,6 +176,14 @@ def _onboard(body: ResidentCreate, services: Services, hostel: Hostel, taken_reg
     )
     if body.dateOfBirth:
         profile["dateOfBirth"] = body.dateOfBirth.isoformat()
+    faculty = [f for f in services.personnel.all() if f.get("kind") == "Faculty"]
+    load: dict[str, int] = {}
+    for other in services.store.list(COLLECTION):
+        if other.get("proctorId"):
+            load[other["proctorId"]] = load.get(other["proctorId"], 0) + 1
+    proctor = personnel.choose_proctor(faculty, body.branch, load)
+    if proctor:
+        profile["proctorId"] = proctor
     code = generate_access_code()
     doc = services.store.put(COLLECTION, build_record(profile, code, services.cipher))
     _save_rooms(services, hostel)
@@ -275,7 +283,7 @@ def update_resident(sid: str, body: ResidentUpdate, services: Services = Depends
         if changes.get("roomId") and parse_room_text(changes["roomId"]) != current:
             target = parse_room_text(changes["roomId"])
             if not target:
-                raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, f"Unknown room {changes['roomId']}")
+                raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, f"Unknown room {changes['roomId']}")
         changes.pop("roomId", None)
 
         hostel = None

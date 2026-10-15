@@ -31,7 +31,7 @@ def test_me_and_logout(login):
     client = login("Student")
     me = client.get("/api/auth/me").json()
     assert me == {"id": "student:student@test.edu", "role": "Student", "name": "Test Student",
-                  "email": "student@test.edu", "room": "RM-101"}
+                  "email": "student@test.edu", "room": "RM-101", "ref": ""}
     client.post("/api/auth/logout")
     assert client.get("/api/auth/me").status_code == 401
 
@@ -317,7 +317,11 @@ def test_resident_pii_is_encrypted_at_rest(app):
                 assert doc[field].startswith("enc:v1:"), (doc["id"], field)
     # The raw database file never contains a plaintext phone number or guardian e-mail.
     raw = open(app.state.services.settings.db_path, "rb").read()
-    assert b"@example.com" not in raw and b"+91 " not in raw
+    cipher = app.state.services.cipher
+    for doc in docs:
+        for field in ("phone", "guardianEmail", "homeAddress"):
+            if field in doc:
+                assert cipher.decrypt(doc[field], doc["id"], field).encode() not in raw, (doc["id"], field)
 
 
 def test_ciphertext_is_bound_to_record_and_field(app):
@@ -462,3 +466,90 @@ def test_only_students_file_grievances(login):
     body = {"subject": "Noise after curfew", "category": "Hostel / Warden Complaint", "isAnonymous": False}
     assert login("CampusAdmin").post("/api/grievances/file", json=body).status_code == 403
     assert login("MessManager").post("/api/grievances/file", json=body).status_code == 403
+
+
+# --- institutional IDs, people search ------------------------------------------------------------
+def _staff_login(app, role, employee_id, pin="246810"):
+    from fastapi.testclient import TestClient
+    client = TestClient(app)
+    res = client.post("/api/auth/login", json={"role": role, "employeeId": employee_id, "secret": pin})
+    return client, res
+
+
+def test_personnel_roster_has_unique_ids(app):
+    people = app.state.services.personnel.all()
+    kinds = {k: [p for p in people if p["kind"] == k] for k in ("Faculty", "Warden", "Staff")}
+    assert {k: len(v) for k, v in kinds.items()} == {"Faculty": 20, "Warden": 10, "Staff": 20}
+    assert len({p["id"] for p in people}) == 50 and len({p["email"] for p in people}) == 50
+    assert all(p["phone"].startswith("enc:v1:") for p in people)
+    assert sum("credential" in p for p in people) == 34  # 20 faculty, 10 wardens, 4 staff with portal access
+    students = app.state.services.store.list("students")
+    assert all(s.get("proctorId", "").startswith("FAC") for s in students)
+
+
+def test_employee_id_sign_in(app):
+    client, res = _staff_login(app, "HostelAdmin", "wdn101")
+    assert res.status_code == 200 and res.json()["ref"] == "WDN101" and res.json()["name"] == "Mr. Ramesh Pillai"
+    _, faculty = _staff_login(app, "Faculty", "FAC1001")
+    assert faculty.status_code == 200 and faculty.json()["role"] == "Faculty"
+    assert _staff_login(app, "CampusAdmin", "WDN101")[1].status_code == 401   # role must match the record
+    assert _staff_login(app, "HostelAdmin", "WDN101", "000000")[1].status_code == 401
+    assert _staff_login(app, "HostelAdmin", "STF2007")[1].status_code == 401  # electrician: no portal access
+    me = client.get("/api/people/me").json()
+    assert me["block"] == "A" and me["phone"].startswith("+91 ")
+
+
+def test_search_is_scoped_by_role(app, login):
+    student = login("Student")
+    faculty = student.get("/api/people/search", params={"q": "FAC1003"}).json()
+    assert faculty["results"][0]["name"] == "Dr. Sanjay Kulkarni"
+    assert student.get("/api/people/search", params={"kind": "Student"}).status_code == 403
+    assert all(r["kind"] in ("Faculty", "Warden") for r in student.get("/api/people/search", params={"q": "a"}).json()["results"])
+    warden = login("HostelAdmin")
+    by_id = warden.get("/api/people/search", params={"q": "de25cse013"}).json()["results"]
+    assert by_id[0]["name"] == "Mahesh Trivedi"
+    by_name = warden.get("/api/people/search", params={"q": "naveen"}).json()["results"]
+    assert any(r["ref"] == "DE26AIM001" for r in by_name)
+    # Students see only official contacts of staff; the admin sees personal details (audited).
+    assert "phone" not in student.get("/api/people/FAC1003").json()
+    assert login("CampusAdmin").get("/api/people/FAC1003").json()["phone"].startswith("+91 ")
+
+
+def test_proctor_sees_own_proctees_contacts_only(app, login):
+    store = app.state.services.store
+    s = next(d for d in store.list("students") if d.get("regNo") == "DE26AIM001")
+    proctor, res = _staff_login(app, "Faculty", s["proctorId"])
+    assert res.status_code == 200
+    assert any(p["ref"] == "DE26AIM001" for p in proctor.get("/api/people/proctees").json())
+    assert proctor.get("/api/people/DE26AIM001").json()["guardianPhone"].startswith("+91 ")
+    other = next(f for f in app.state.services.personnel.all() if f["kind"] == "Faculty" and f["id"] != s["proctorId"])
+    stranger, _ = _staff_login(app, "Faculty", other["id"])
+    assert "guardianPhone" not in stranger.get("/api/people/DE26AIM001").json()
+
+
+def test_complaint_dispatch_to_technician(login):
+    warden = login("HostelAdmin")
+    c = login("Student").post("/api/complaints", json={"text": "Sparking socket near my bed"}).json()
+    techs = warden.get("/api/people/technicians", params={"category": c["category"]}).json()
+    assert techs and all(t["designation"] == "Electrician" for t in techs)
+    done = warden.post(f"/api/complaints/{c['id']}/assign", json={"staffId": techs[0]["id"]}).json()
+    assert done["status"] == "Dispatched" and done["assignedTo"]["id"] == techs[0]["id"]
+    assert warden.post(f"/api/complaints/{c['id']}/assign", json={"staffId": "FAC1001"}).status_code == 404
+
+
+def test_admin_registers_staff_with_next_id(app, login):
+    admin = login("CampusAdmin")
+    body = {"kind": "Warden", "name": "Mr. Test Warden", "gender": "Male", "designation": "Floor Warden",
+            "department": "Hostel Administration", "email": "test.warden@demeure.ac.in", "block": "A", "floors": "2"}
+    res = admin.post("/api/people", json=body).json()
+    assert res["person"]["id"] == "WDN111" and len(res["pin"]) == 6 and res["person"]["portalRole"] == "HostelAdmin"
+    client, signin = _staff_login(app, "HostelAdmin", "WDN111", res["pin"])
+    assert signin.status_code == 200
+    assert admin.post("/api/people", json=body).status_code == 409                       # duplicate e-mail
+    assert admin.post("/api/people", json={**body, "email": "x@y.in", "block": None}).status_code == 422
+    assert login("HostelAdmin").post("/api/people", json={**body, "email": "z@y.in"}).status_code == 403
+    admin.patch("/api/people/WDN111", json={"status": "Inactive"})
+    assert _staff_login(app, "HostelAdmin", "WDN111", res["pin"])[1].status_code == 401
+    admin.patch("/api/people/WDN111", json={"status": "Active"})
+    new_pin = admin.post("/api/people/WDN111/reset-pin").json()["pin"]
+    assert _staff_login(app, "HostelAdmin", "WDN111", new_pin)[1].status_code == 200

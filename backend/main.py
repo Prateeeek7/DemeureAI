@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 
 from config import settings
 from deps import Services, get_services
-from routers import auth, aws, billing, campus, chat, hostel, students
+from routers import auth, aws, billing, campus, chat, hostel, people, students
 from services.seed import seed_demo_data
 
 logging.basicConfig(
@@ -96,7 +96,7 @@ async def unhandled_error(request: Request, exc: Exception):
     return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 
-for module in (auth, chat, aws, billing, hostel, campus, students):
+for module in (auth, chat, aws, billing, hostel, campus, students, people):
     app.include_router(module.router)
 
 

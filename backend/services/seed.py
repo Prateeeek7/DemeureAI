@@ -15,6 +15,7 @@ from services.crypto import FieldCipher
 from services.domain import GENESIS_HASH, ledger_hash
 from services.rooms import Hostel, room_id, room_label
 from services.store import Store
+from services import personnel
 from services.students import COLLECTION as STUDENTS, build_record, student_id
 
 SEED_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "seed")
@@ -141,6 +142,13 @@ def build_demo_dataset(cipher: FieldCipher) -> dict[str, list[dict]]:
         s["allocatedRoom"] = profile["room"]
         profiles.append((profile, DATASET_ACCESS_CODE))
 
+    # Staff roster first: every resident gets a faculty proctor from their own department.
+    roster = personnel.demo_roster()
+    faculty = [f for f in roster if f["kind"] == "Faculty"]
+    load: dict[str, int] = {}
+    for prof, _ in profiles:
+        prof["proctorId"] = personnel.choose_proctor(faculty, prof["branch"], load)
+
     people = [{"id": student_id(p["email"]), **p} for p, _ in profiles]
     by_id = {p["id"]: p for p in people}
     p = people  # p[0] is the demo student; p[1..100] follow the survey order
@@ -195,8 +203,13 @@ def build_demo_dataset(cipher: FieldCipher) -> dict[str, list[dict]]:
         ("T-978", who(90), "Crack in the wall near the window, plaster falling off.", "Structural", "MEDIUM", "24 Hours", "Resolved"),
         ("T-977", who(33), "LAN port in the room is not working.", "IT / WiFi", "MEDIUM", "24 Hours", "Resolved"),
     ]
+    def assignee(category: str) -> dict:
+        tech = personnel.technicians(roster, category)[0]
+        return {"id": tech["id"], "name": tech["name"], "designation": tech["designation"], "extension": tech["extension"]}
+
     complaint_docs = [{"id": cid, "room": st["room"], "originalText": text, "category": cat, "priority": prio,
-                       "eta": eta, "status": status, "filedBy": st["id"]}
+                       "eta": eta, "status": status, "filedBy": st["id"],
+                       **({"assignedTo": assignee(cat)} if status != "Open" else {})}
                       for cid, st, text, cat, prio, eta, status in complaints]
 
     grievances = [
@@ -276,6 +289,7 @@ def build_demo_dataset(cipher: FieldCipher) -> dict[str, list[dict]]:
 
     assert len(by_id) == len(people), "duplicate student e-mail in the dataset"
     return {
+        personnel.COLLECTION: [personnel.build_record(person, personnel.DEMO_PIN, cipher) for person in roster],
         STUDENTS: [build_record(prof, code, cipher) for prof, code in profiles],
         "surveys": surveys,
         "room_allocations": hostel.allocation_docs(),
@@ -298,7 +312,7 @@ def seed_demo_data(store: Store, cipher: FieldCipher) -> list[str]:
     """Seeds each collection exactly once; returns the collections that were seeded."""
     seeded = []
     dataset = None
-    for collection in ("students", "surveys", "room_allocations", "billing", "payments", "leaves", "visitors",
+    for collection in ("personnel", "students", "surveys", "room_allocations", "billing", "payments", "leaves", "visitors",
                        "complaints", "grievances", "mess_reviews", "welfare_alerts", "bookings", "maintenance",
                        "power_anomalies", "gate_ledger"):
         marker = f"seeded:{collection}"
@@ -310,4 +324,22 @@ def seed_demo_data(store: Store, cipher: FieldCipher) -> list[str]:
                 store.put(collection, doc)
             seeded.append(collection)
         store.put("_meta", {"id": marker})
+    assign_missing_proctors(store)
     return seeded
+
+
+def assign_missing_proctors(store: Store) -> int:
+    """Gives every resident without a proctor one from their department (e.g. databases seeded before staff existed)."""
+    faculty = [p for p in store.list(personnel.COLLECTION) if p.get("kind") == "Faculty"]
+    students = store.list(STUDENTS)
+    load: dict[str, int] = {}
+    for s in students:
+        if s.get("proctorId"):
+            load[s["proctorId"]] = load.get(s["proctorId"], 0) + 1
+    changed = 0
+    for s in students:
+        if not s.get("proctorId") and faculty:
+            s["proctorId"] = personnel.choose_proctor(faculty, s.get("branch", ""), load)
+            store.put(STUDENTS, s)
+            changed += 1
+    return changed

@@ -10,6 +10,7 @@ from services.aws_service import AWSService
 from services.crypto import FieldCipher, derive_key, parse_key
 from services.rag_service import RAGService
 from services.store import DynamoStore, SQLiteStore, Store
+from services.personnel import PersonnelRegistry
 from services.students import StudentRegistry
 
 SESSION_COOKIE = "demeure_session"
@@ -30,7 +31,8 @@ class Services:
         else:
             self.cipher = FieldCipher(derive_key(settings.secret_key), "derived from SECRET_KEY (development)")
         self.students = StudentRegistry(self.store, self.cipher)
-        self.auth = AuthService(settings, self.students)
+        self.personnel = PersonnelRegistry(self.store, self.cipher)
+        self.auth = AuthService(settings, self.students, self.personnel)
         self.rag = RAGService(settings.rulebooks_dir)
 
 

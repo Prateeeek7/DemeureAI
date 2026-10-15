@@ -151,11 +151,25 @@ These defaults apply only when `APP_ENV` is not `production`, and the login scre
 
 | Persona | Sign-In Identifier | Access Key / PIN | Lands on |
 | :--- | :--- | :--- | :--- |
-| **Campus Administrator** | — | `0000-0000-0000` | Overview, Academics, Facilities, Finance, Resident Directory, Power, AWS Hub |
-| **Hostel Administrator / Warden** | — | `1111-1111-1111` | Resident Directory, Room Allocation, Survey ML Feed, Security SOC Gate, Welfare |
-| **Mess Manager** | — | `2222-2222-2222` | Mess & Food Optimizer |
+| **Campus Administrator** | `STF2001` (or master PIN) | `246810` / master `0000-0000-0000` | Overview, Academics, Facilities, Finance, Resident Directory, Power, AWS Hub |
+| **Hostel Administrator / Warden** | `WDN101`–`WDN110` (or master PIN) | `246810` / master `1111-1111-1111` | Resident Directory, Room Allocation, Survey ML Feed, Security SOC Gate, Welfare |
+| **Mess Manager** | `STF2005` (or master PIN) | `246810` / master `2222-2222-2222` | Mess & Food Optimizer |
+| **Faculty** | `FAC1001`–`FAC1020` | `246810` | My Proctees, Teaching Schedule, People Search, Facilities, Assistant |
 | **Resident Student** | `pratik2024@vit.student.ac.in` | `VIT2024` | Student Services, Survey, Complaints, Mess, Assistant |
 | **Any of the 100 seeded residents** | e.g. `naveen.reddy@demeure.ac.in`, `arya.kumar@demeure.ac.in` (see *Resident Directory*) | `VIT2026` | Same as above, with their own room, dues and history |
+
+### Institutional IDs
+
+Everyone has an institutional ID that is also their sign-in name and is searchable in **People Search**:
+
+| Group | ID format | Seeded | Signs in as | Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| Students | University registration number, e.g. `24BML0027`, `DE25CSE013` | 101 | Resident Student (e-mail + access code) | Each has a faculty proctor and block/floor wardens |
+| Faculty | `FAC1001`–`FAC1020` | 20 (2 per department) | Faculty (Employee ID + PIN) | Proctor dashboard, teaching schedule, student search |
+| Wardens | `WDN101`–`WDN110` | 10 (Blocks A, B, C) | Hostel Admin / Warden (Employee ID + PIN) | Chief and floor wardens per block |
+| Staff | `STF2001`–`STF2020` | 20 | Campus Admin (`STF2001`–`STF2003`) or Mess Manager (`STF2005`); others have no portal access | Electricians, plumbers, carpenters and network engineers receive complaint dispatches |
+
+Demo PIN for every seeded faculty, warden and staff account: `246810`. The shared role PINs above still work under **Master PIN**. The campus administrator registers new staff in People Search (the next free ID and a one-time PIN are issued), and can reset PINs or deactivate accounts.
 
 ---
 
