@@ -1,6 +1,6 @@
 # Demeure AI: Intelligent Campus Infrastructure 🏢
 
-> **Built for WebForge - A Smart Campus Webathon - 2026**
+> **Intelligent campus operating system for hostels and universities**
 > 
 > *A unified, intelligent campus management platform integrating real-time telemetry, AI-driven rulebook assistance, resident welfare tracking, security operations, and a production-ready AWS cloud integration system.*
 

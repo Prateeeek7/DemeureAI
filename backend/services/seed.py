@@ -153,7 +153,7 @@ def build_demo_dataset(cipher: FieldCipher) -> dict[str, list[dict]]:
          "status": "Pending", "consent": "Parent Notified (Email)"},
         {"id": "L-102", "s": who(4), "start": "2026-10-18", "end": "2026-10-18", "reason": "Dental appointment in Vellore town",
          "status": "Pending", "consent": "Parent Notified (Email)"},
-        {"id": "L-103", "s": who(12), "start": "2026-10-20", "end": "2026-10-23", "reason": "Inter-university hackathon, Bengaluru",
+        {"id": "L-103", "s": who(12), "start": "2026-10-20", "end": "2026-10-23", "reason": "Inter-university technical symposium, Bengaluru",
          "status": "Pending", "consent": "Parent Notified (Email)"},
         {"id": "L-104", "s": who(23), "start": "2026-10-09", "end": "2026-10-12", "reason": "Family function at home",
          "status": "Approved", "consent": "Parent Verified (OTP)"},

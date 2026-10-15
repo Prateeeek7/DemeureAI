@@ -133,19 +133,20 @@ Vellore Institute of Technology, Vellore -- 632 014\par
 \chapter*{Executive Summary}
 \addcontentsline{toc}{chapter}{Executive Summary}
 \setstretch{1.15}
-Hostel and campus administration in many Indian universities still relies on paper outpass registers, complaints
-posted in chat groups, roommate surveys kept in spreadsheets and manually reconciled dues. Approvals are slow,
-safety-critical issues go unnoticed and there is no audit trail. This project presents Demeure AI, a role-based campus
-operating system for administrators, wardens, mess managers and students. A React 19 single-page application
-uses a FastAPI service that verifies every sign-in on the server, issues signed HttpOnly session cookies
-and enforces role-based access on every endpoint. Records persist in SQLite or Amazon DynamoDB, with residents'
-personal details encrypted field by field (AES-256-GCM). Staff onboard residents individually or from a
-spreadsheet; the system assigns beds and issues one-time access codes stored only as hashes. It also offers
-a retrieval-augmented handbook assistant, weighted roommate matching over a 100-resident dataset, rule-based
-complaint triage and a hash-chained gate ledger. In evaluation, the assistant answered all 24 test questions from
-the correct rulebook; core API calls completed within 6~ms at the 95th percentile; 41 automated tests
-and 57 browser checks passed; and a readability audit removed all on-screen text below 12~px. The work
-supports SDGs 3, 4, 7, 12 and 16.
+Hostel administration in many Indian universities still depends on paper outpass registers, complaints posted in
+chat groups and roommates allocated by hand from spreadsheets. Requests are slow to approve, urgent maintenance
+problems are missed, and there is no reliable record of who approved what.
+
+Demeure AI brings these workflows into one web platform shared by four roles: campus administrator, warden, mess
+manager and student. Students apply for leave and visitor passes, pay hostel dues, report complaints and ask questions
+about hostel rules; staff approve requests, allocate rooms, register residents and monitor campus services. The server
+checks every request against the user's role, and residents' personal details are stored encrypted.
+
+Three features reduce manual work: an assistant that answers policy questions only from the institution's own
+rulebooks, roommate matching based on students' lifestyle surveys, and automatic prioritisation of complaints. In
+testing with 100 resident records, the assistant answered all 24 test questions correctly, every resident's best
+roommate match scored at least 85\%, and all 30 sample complaints were classified correctly. The platform runs on a
+single low-cost server or on Amazon Web Services.
 \onehalfspacing
 
 \clearpage
@@ -165,8 +166,8 @@ available, and urgent issues such as a sparking socket can sit unread in a chat 
 
 Demeure AI is a web-based campus operating system that brings these processes onto one platform. It gives four
 personas (Campus Administrator, Hostel Administrator/Warden, Mess Manager and Resident Student) a workspace scoped to
-their responsibilities and keeps every record in one persisted source of truth. The platform began as a prototype for
-the WebForge Smart Campus Webathon 2026 and was then engineered for production: server-side authentication, role-based authorisation, durable storage with encrypted resident records, input
+their responsibilities and keeps every record in one persisted source of truth. The platform began as a prototype and
+was then engineered for production: server-side authentication, role-based authorisation, durable storage with encrypted resident records, input
 validation, automated tests and a deployable container image. It also integrates
 four Amazon Web Services (DynamoDB, S3, SES and Polly) through a hybrid design that runs entirely on one machine when
 cloud credentials are absent.
@@ -784,7 +785,7 @@ optimistic, and a larger held-out set of real campus complaints is needed for an
 (Section~\ref{sec:limits}).
 
 \section{Engineering quality}
-Table~\ref{tab:quality} compares the hackathon prototype with this release. Route-level code splitting cut the
+Table~\ref{tab:quality} compares the initial prototype with this release. Route-level code splitting cut the
 JavaScript downloaded on first visit by 81\% (Fig.~\ref{fig:quality}, right): modules such as the Excel parser and the
 charting library load only on the screens that use them.
 
@@ -845,16 +846,16 @@ is stricter than the published policy.
 % ================================================================== 6
 \chapter{CONCLUSION AND FUTURE WORK}
 \section{Summary}
-Demeure AI turns a hackathon prototype into a deployable campus operating system. It unifies leave and visitor
-approvals, room allocation, complaints, mess planning, grievances, facilities, billing and payment for four personas on
-one persisted record, including 100 resident records whose personal details are encrypted at rest. Staff can
-register residents individually or from a spreadsheet, with automatic bed assignment and hashed one-time access codes. Security is enforced on the server through hashed credentials, signed sessions, role and
-ownership checks, validated input and private file storage. The hybrid design runs on a single machine or on AWS
-DynamoDB, S3, SES and Polly without code changes. The intelligent features measured well: the handbook assistant
-cited the right rulebook and answered correctly for all 24 evaluation questions; roommate matching gives every
-student a best match scoring at least 85 while respecting single-gender blocks; and complaint triage classified all 30
-labelled complaints after the word-matching fix. Fourteen end-to-end scenarios (57 browser checks) and 41 automated tests pass,
-core API calls complete within 6~ms, and all on-screen text is at least 12~px.
+Demeure AI replaces paper registers, chat-group complaints and spreadsheet allocation with a single platform shared
+by administrators, wardens, mess managers and students. Leave and visitor approvals, room allocation, complaints, mess
+planning, grievances, billing and resident records now live in one persistent system, in which the server checks every
+request against the user's role and residents' personal details are encrypted.
+
+The evaluation supports this design. The rulebook assistant answered all 24 test questions from the correct source;
+roommate matching gave each of the 100 residents a best match of at least 85\% while keeping single-gender blocks;
+complaint triage classified all 30 labelled complaints after the word-matching fix; and core requests completed within
+6~ms. All 41 automated tests and 57 browser checks pass. The main limitations, set out below, are simulated payments
+and data sources, small evaluation sets and the handling of the encryption key.
 
 \section{Limitations and Constraints}\label{sec:limits}
 \begin{itemize}
@@ -929,7 +930,7 @@ The project ran from June to October 2026 in the phases shown in Table~\ref{tab:
 \begin{tabularx}{\linewidth}{P{1.3in}P{1.75in}L}
 \toprule\head \textbf{Period} & \textbf{Phase} & \textbf{Key outputs}\\\midrule
 Early June & Problem study and design & Requirements, Figma wireframes for nine modules, 100-student survey dataset\\
-13--14 June & WebForge hackathon prototype & React modules, FastAPI back end, RAG assistant over hostel rulebooks\\
+13--14 June & Working prototype & React modules, FastAPI back end, RAG assistant over hostel rulebooks\\
 July -- August & AWS integration & DynamoDB, S3, SES and Polly adapters; AWS Console Hub; hybrid mock mode\\
 September & Feature expansion & Academic, facilities and finance hubs; documentation\\
 October (weeks 1--2) & Production hardening & Server-side auth, persistence for all modules, validation, missing workflows\\

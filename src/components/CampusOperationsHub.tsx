@@ -40,7 +40,7 @@ const FEE_BREAKDOWN = [
 ];
 
 const CAMPUS_CLUBS = [
-  { name: 'ACM Student Chapter', members: '340 Members', category: 'Technical / Coding', event: 'Annual Hackathon (TechSprint 2026)', status: 'JOINED' },
+  { name: 'ACM Student Chapter', members: '340 Members', category: 'Technical / Coding', event: 'Annual Coding Contest (TechSprint 2026)', status: 'JOINED' },
   { name: 'IEEE Robotics Society', members: '210 Members', category: 'Engineering / Hardware', event: 'Autonomous Bot Challenge', status: 'OPEN' },
   { name: 'Music & Cultural Club', members: '480 Members', category: 'Arts & Performing', event: 'Rhythm Night 2026', status: 'JOINED' },
   { name: 'Environment & Green Club', members: '190 Members', category: 'Social / Sustainability', event: 'Tree Plantation Drive', status: 'OPEN' },
