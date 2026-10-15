@@ -1,59 +1,82 @@
-import React, { useState, useEffect } from 'react';
-import { AreaChart, Area, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { Zap, AlertTriangle, ShieldCheck, Cpu } from 'lucide-react';
+import { useState } from 'react';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { Zap, ShieldCheck, Cpu } from 'lucide-react';
+import { api, errorMessage } from '../lib/api';
+import { useApi } from '../lib/useApi';
+
+type Zone = 'Block A' | 'Block B' | 'Mess Hall';
 
 interface Anomaly {
   id: string;
   time: string;
   location: string;
+  zone?: Zone;
   deviceType: string;
   loadSpike: string;
   confidence: number;
   status: 'Investigating' | 'Resolved' | 'Ignored';
 }
 
-export default function PowerMonitor() {
-  const [activeZone, setActiveZone] = useState<'Block A' | 'Block B' | 'Mess Hall'>('Block A');
-  const [billing, setBilling] = useState({ powerRate: 8.50, baseFee: 75000 });
-  const [inputRate, setInputRate] = useState('8.50');
+interface Billing {
+  powerRate: number;
+  baseFee: number;
+  cycleId: string;
+}
 
-  const fetchBilling = async () => {
+// Sampled feeder telemetry (kW) per zone, at two-hour intervals.
+const HOURS = ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'];
+const ZONE_SERIES: Record<Zone, { baseline: number[]; usage: number[] }> = {
+  'Block A':   { baseline: [120, 135, 150, 145, 130, 180, 210, 160], usage: [115, 142, 210, 138, 132, 195, 222, 165] },
+  'Block B':   { baseline: [110, 118, 126, 124, 115, 168, 196, 150], usage: [108, 121, 129, 158, 119, 171, 190, 147] },
+  'Mess Hall': { baseline: [180, 95, 210, 80, 70, 160, 205, 60],     usage: [176, 99, 214, 84, 73, 158, 201, 92] },
+};
+const zoneData = (zone: Zone) =>
+  HOURS.map((time, i) => ({ time, baseline: ZONE_SERIES[zone].baseline[i], usage: ZONE_SERIES[zone].usage[i] }));
+const currentDraw = (zone: Zone) => ZONE_SERIES[zone].usage.at(-1) ?? 0;
+
+export default function PowerMonitor() {
+  const [activeZone, setActiveZone] = useState<Zone>('Block A');
+  const billingApi = useApi<Billing>('/api/billing');
+  const anomaliesApi = useApi<Anomaly[]>('/api/power/anomalies');
+  const [inputRate, setInputRate] = useState<string | null>(null);
+  const [billingStatus, setBillingStatus] = useState<{ ok: boolean; text: string } | null>(null);
+  const [dispatching, setDispatching] = useState(false);
+
+  const billing = billingApi.data;
+  const rateField = inputRate ?? (billing ? billing.powerRate.toFixed(2) : '');
+  const anomalies = anomaliesApi.data ?? [];
+  const openAlerts = anomalies.filter(an => an.status !== 'Resolved').length;
+  const data = zoneData(activeZone);
+  const totalDraw = (Object.keys(ZONE_SERIES) as Zone[]).reduce((sum, z) => sum + currentDraw(z), 0);
+  const totalBaseline = (Object.keys(ZONE_SERIES) as Zone[]).reduce((sum, z) => sum + (ZONE_SERIES[z].baseline.at(-1) ?? 0), 0);
+  const drawDelta = ((totalDraw - totalBaseline) / totalBaseline) * 100;
+
+  const resolveAnomaly = async (id: string) => {
     try {
-      const res = await fetch('/api/billing');
-      const data = await res.json();
-      setBilling(data);
-      setInputRate(data.powerRate.toString());
-    } catch (e) {
-      console.error(e);
+      await api.post(`/api/power/anomalies/${id}/resolve`);
+    } catch (err) {
+      setBillingStatus({ ok: false, text: errorMessage(err) });
     }
+    anomaliesApi.reload();
   };
 
-  useEffect(() => {
-    fetchBilling();
-  }, []);
-
-  // Mock time-series consumption data
-  const data = [
-    { time: '08:00', baseline: 120, usage: 115, anomaly: false },
-    { time: '10:00', baseline: 135, usage: 142, anomaly: false },
-    { time: '12:00', baseline: 150, usage: 210, anomaly: true }, // Spike here
-    { time: '14:00', baseline: 145, usage: 138, anomaly: false },
-    { time: '16:00', baseline: 130, usage: 132, anomaly: false },
-    { time: '18:00', baseline: 180, usage: 195, anomaly: false },
-    { time: '20:00', baseline: 210, usage: 222, anomaly: false },
-    { time: '22:00', baseline: 160, usage: 165, anomaly: false },
-  ];
-
-  const initialAnomalies: Anomaly[] = [
-    { id: '1', time: '12:14:05', location: 'RM-304, Block A', deviceType: 'Heavy Inductive Load (Heater)', loadSpike: '+1.8 kW', confidence: 94.6, status: 'Investigating' },
-    { id: '2', time: '09:44:12', location: 'Elevator Shaft 2', deviceType: 'Motor Voltage Oscillation', loadSpike: '+4.2 kW', confidence: 88.2, status: 'Resolved' },
-    { id: '3', time: 'Yesterday', location: 'Kitchen Oven C', deviceType: 'Thermocouple Failure', loadSpike: 'Leakage Current', confidence: 91.0, status: 'Resolved' },
-  ];
-
-  const [anomalies, setAnomalies] = useState<Anomaly[]>(initialAnomalies);
-
-  const resolveAnomaly = (id: string) => {
-    setAnomalies(prev => prev.map(an => an.id === id ? { ...an, status: 'Resolved' } : an));
+  const dispatchBills = async () => {
+    const rate = Number(rateField);
+    if (!Number.isFinite(rate) || rate <= 0 || rate > 100) {
+      setBillingStatus({ ok: false, text: 'Enter a rate between ₹0.01 and ₹100 per kWh.' });
+      return;
+    }
+    setDispatching(true);
+    try {
+      const updated = await api.post<Billing>('/api/billing/update', { powerRate: rate });
+      billingApi.setData(() => updated);
+      setInputRate(null);
+      setBillingStatus({ ok: true, text: `Cycle ${updated.cycleId} dispatched to all student portals.` });
+    } catch (err) {
+      setBillingStatus({ ok: false, text: errorMessage(err) });
+    } finally {
+      setDispatching(false);
+    }
   };
 
   return (
@@ -69,15 +92,19 @@ export default function PowerMonitor() {
         <div className="border border-charcoal/10 bg-surface-white p-5 space-y-2">
           <span className="font-mono text-[10px] text-slate-gray block uppercase">Total Power Draw (Live)</span>
           <div className="flex justify-between items-end">
-            <span className="font-serif text-4xl font-bold text-charcoal">44.8 kW</span>
-            <span className="font-mono text-xs text-forest-status font-bold">-6.2% vs baseline</span>
+            <span className="font-serif text-4xl font-bold text-charcoal">{totalDraw} kW</span>
+            <span className={`font-mono text-xs font-bold ${drawDelta > 0 ? 'text-red-700' : 'text-forest-status'}`}>
+              {drawDelta > 0 ? '+' : ''}{drawDelta.toFixed(1)}% vs baseline
+            </span>
           </div>
         </div>
         <div className="border border-charcoal/10 bg-surface-white p-5 space-y-2">
           <span className="font-mono text-[10px] text-slate-gray block uppercase">Isolation Forest Telemetry</span>
           <div className="flex justify-between items-end">
-            <span className="font-serif text-4xl font-bold text-charcoal">1 Alert</span>
-            <span className="font-mono text-xs text-red-700 font-bold animate-pulse-dot">● ACTION REQ</span>
+            <span className="font-serif text-4xl font-bold text-charcoal">{openAlerts} Alert{openAlerts === 1 ? '' : 's'}</span>
+            {openAlerts > 0
+              ? <span className="font-mono text-xs text-red-700 font-bold animate-pulse-dot">● ACTION REQ</span>
+              : <span className="font-mono text-xs text-forest-status font-bold">ALL CLEAR</span>}
           </div>
         </div>
         <div className="border border-charcoal/10 bg-surface-white p-5 space-y-2">
@@ -149,6 +176,7 @@ export default function PowerMonitor() {
               </div>
 
               <div className="space-y-3 font-mono text-xs">
+                {anomaliesApi.error && <div className="text-red-700">{anomaliesApi.error}</div>}
                 {anomalies.map((an) => (
                   <div key={an.id} className={`p-3 border ${an.status === 'Resolved' ? 'border-charcoal/10 bg-warm-ivory/50 opacity-60' : 'border-red-700/20 bg-red-50/20'}`}>
                     <div className="flex justify-between items-start">
@@ -161,6 +189,7 @@ export default function PowerMonitor() {
                     </div>
                     <div className="mt-2 space-y-1">
                       <div className="font-bold text-charcoal">{an.location}</div>
+                      <div className="text-[10px] text-slate-gray">{an.deviceType}</div>
                       <div className="flex justify-between text-[10px] pt-1">
                         <span>LOAD IMPACT: <strong className="text-charcoal">{an.loadSpike}</strong></span>
                         <span>CONF: <strong>{an.confidence}%</strong></span>
@@ -188,43 +217,42 @@ export default function PowerMonitor() {
             </div>
             
             <div className="font-mono text-xs space-y-3">
+              {billingApi.error && <div className="text-red-700">{billingApi.error}</div>}
               <div className="flex justify-between items-center bg-warm-ivory/50 p-2 border border-charcoal/10">
                 <span className="text-slate-gray">Current Power Rate</span>
-                <span className="font-bold">₹{billing.powerRate.toFixed(2)} / kWh</span>
+                <span className="font-bold">{billing ? `₹${billing.powerRate.toFixed(2)} / kWh` : '—'}</span>
               </div>
               <div className="flex justify-between items-center bg-warm-ivory/50 p-2 border border-charcoal/10">
                 <span className="text-slate-gray">Base Hostel Fee</span>
-                <span className="font-bold">₹{billing.baseFee.toLocaleString()} / Sem</span>
+                <span className="font-bold">{billing ? `₹${billing.baseFee.toLocaleString()} / Sem` : '—'}</span>
               </div>
 
               <div className="pt-2">
-                <label className="block text-slate-gray mb-1 text-[10px] uppercase">Update Power Rate (₹)</label>
-                <input 
-                  type="number" 
-                  value={inputRate} 
+                <label className="block text-slate-gray mb-1 text-[10px] uppercase" htmlFor="power-rate">Update Power Rate (₹)</label>
+                <input
+                  id="power-rate"
+                  type="number"
+                  min="0.01"
+                  max="100"
+                  value={rateField}
                   onChange={e => setInputRate(e.target.value)}
-                  step="0.10" 
-                  className="w-full bg-surface-white border border-charcoal/20 p-2 focus:outline-none focus:border-navy-accent" 
+                  step="0.10"
+                  className="w-full bg-surface-white border border-charcoal/20 p-2 focus:outline-none focus:border-navy-accent"
                 />
               </div>
-              
-              <button 
-                className="w-full bg-navy-accent hover:bg-charcoal text-surface-white uppercase tracking-wider py-2 transition-colors mt-2"
-                onClick={async () => {
-                  try {
-                    await fetch('/api/billing/update', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ powerRate: parseFloat(inputRate) })
-                    });
-                    fetchBilling();
-                    alert("Billing rates updated and dispatched to student portals successfully.");
-                  } catch (e) {
-                    console.error(e);
-                  }
-                }}
+
+              {billingStatus && (
+                <div role="status" className={`p-2 border text-[10px] font-bold ${billingStatus.ok ? 'border-forest-status/30 text-forest-status' : 'border-red-700/30 text-red-700'}`}>
+                  {billingStatus.text}
+                </div>
+              )}
+
+              <button
+                className="w-full bg-navy-accent hover:bg-charcoal text-surface-white uppercase tracking-wider py-2 transition-colors mt-2 disabled:opacity-50"
+                disabled={dispatching || !billing}
+                onClick={dispatchBills}
               >
-                Dispatch Monthly Bills
+                {dispatching ? 'Dispatching...' : 'Dispatch Monthly Bills'}
               </button>
             </div>
           </div>

@@ -43,7 +43,10 @@ export default function ThemedSelect({
       {/* Trigger button */}
       <button
         type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
         onClick={() => setOpen(prev => !prev)}
+        onKeyDown={(e) => { if (e.key === 'Escape') setOpen(false); }}
         className={`
           w-full flex items-center justify-between
           bg-warm-ivory border px-3 py-2.5
@@ -54,17 +57,17 @@ export default function ThemedSelect({
           }
         `}
       >
-        <span className={value ? 'text-charcoal font-medium' : 'text-slate-gray/60'}>
+        <span className={value ? 'text-charcoal font-medium' : 'text-charcoal/70'}>
           {value ? selectedLabel : placeholder}
         </span>
         <ChevronDown
-          className={`w-3.5 h-3.5 text-slate-gray transition-transform duration-200 flex-shrink-0 ml-2 ${open ? 'rotate-180' : ''}`}
+          className={`w-3.5 h-3.5 text-charcoal transition-transform duration-200 flex-shrink-0 ml-2 ${open ? 'rotate-180' : ''}`}
         />
       </button>
 
       {/* Dropdown panel */}
       {open && (
-        <div className="
+        <div role="listbox" className="
           absolute z-50 top-full left-0 right-0 mt-0.5
           bg-surface-white border border-navy-accent/20
           shadow-[0_4px_24px_rgba(30,58,95,0.10)]
@@ -73,10 +76,12 @@ export default function ThemedSelect({
           {/* Placeholder / reset row */}
           <button
             type="button"
+            role="option"
+            aria-selected={!value}
             onClick={() => { onChange(''); setOpen(false); }}
             className="
               w-full flex items-center gap-2 px-3 py-2.5
-              text-left text-slate-gray/70 italic
+              text-left text-charcoal/70 italic
               border-b border-charcoal/5
               hover:bg-warm-ivory transition-colors
             "
@@ -89,6 +94,8 @@ export default function ThemedSelect({
             <button
               key={opt.value}
               type="button"
+              role="option"
+              aria-selected={value === opt.value}
               onClick={() => { onChange(opt.value); setOpen(false); }}
               className={`
                 w-full flex items-center gap-2 px-3 py-2.5

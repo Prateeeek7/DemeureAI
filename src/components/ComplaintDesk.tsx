@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { MessageSquare, AlertTriangle, CheckCircle2, Send, Cpu } from 'lucide-react';
+import { MessageSquare, AlertTriangle, Cpu } from 'lucide-react';
+import { api, errorMessage } from '../lib/api';
+import { useApi } from '../lib/useApi';
+import { useSession } from '../lib/session';
 
 interface Complaint {
   id: string;
@@ -11,83 +14,66 @@ interface Complaint {
   status: 'Open' | 'Dispatched' | 'Resolved';
 }
 
+type Triage = Pick<Complaint, 'category' | 'priority' | 'eta'>;
+const NEXT_STATUS: Record<Complaint['status'], Complaint['status'] | null> = {
+  Open: 'Dispatched',
+  Dispatched: 'Resolved',
+  Resolved: null,
+};
+
 export default function ComplaintDesk() {
+  const user = useSession();
+  const isStaff = user?.role === 'CampusAdmin' || user?.role === 'HostelAdmin';
   const [inputText, setInputText] = useState('');
+  const [room, setRoom] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
-  const [predictedResult, setPredictedResult] = useState<Partial<Complaint> | null>(null);
+  const [filing, setFiling] = useState(false);
+  const [error, setError] = useState('');
+  const [predictedResult, setPredictedResult] = useState<Triage | null>(null);
+  const ticketsApi = useApi<Complaint[]>('/api/complaints');
+  const tickets = ticketsApi.data ?? [];
 
-  const [tickets, setTickets] = useState<Complaint[]>([
-    { id: 'T-984', room: 'A-304', originalText: 'Water leakage from the ceiling dripping on electrical sockets.', category: 'Plumbing', priority: 'CRITICAL (IMMEDIATE)', eta: '2 Hours', status: 'Dispatched' },
-    { id: 'T-982', room: 'B-108', originalText: 'High latency and dropping connections on WiFi access point A2.', category: 'IT / WiFi', priority: 'HIGH', eta: '6 Hours', status: 'Open' },
-    { id: 'T-979', room: 'A-201', originalText: 'Main tube light flickering during evening study hours.', category: 'Electrical', priority: 'MEDIUM', eta: '24 Hours', status: 'Resolved' },
-  ]);
-
-  // Simulated NLP analysis logic
-  const handleAnalyzeNLP = (e: React.FormEvent) => {
+  const handleAnalyzeNLP = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim()) return;
-
     setAnalyzing(true);
     setPredictedResult(null);
-
-    setTimeout(() => {
-      const lower = inputText.toLowerCase();
-      let category: Complaint['category'] = 'General';
-      let priority: Complaint['priority'] = 'LOW';
-      let eta = '48 Hours';
-
-      // Simple keyword match simulator
-      if (lower.includes('water') || lower.includes('leak') || lower.includes('pipe') || lower.includes('clog')) {
-        category = 'Plumbing';
-        priority = 'HIGH';
-        eta = '12 Hours';
-      }
-      if (lower.includes('electricity') || lower.includes('power') || lower.includes('fuse') || lower.includes('shock') || lower.includes('wire') || lower.includes('light')) {
-        category = 'Electrical';
-        priority = 'HIGH';
-        eta = '8 Hours';
-      }
-      if (lower.includes('wifi') || lower.includes('router') || lower.includes('internet') || lower.includes('connection')) {
-        category = 'IT / WiFi';
-        priority = 'MEDIUM';
-        eta = '24 Hours';
-      }
-      if (lower.includes('ceiling') || lower.includes('crack') || lower.includes('door') || lower.includes('lock')) {
-        category = 'Structural';
-        priority = 'MEDIUM';
-        eta = '24 Hours';
-      }
-      if (lower.includes('socket') || lower.includes('dripping') || lower.includes('fuse board') || lower.includes('fire') || lower.includes('emergency')) {
-        priority = 'CRITICAL (IMMEDIATE)';
-        eta = '2 Hours';
-      }
-
-      setPredictedResult({
-        room: 'Student Sandbox (Rm 204)',
-        originalText: inputText,
-        category,
-        priority,
-        eta,
-        status: 'Open'
-      });
+    setError('');
+    try {
+      setPredictedResult(await api.post<Triage>('/api/complaints/classify', { text: inputText }));
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
       setAnalyzing(false);
-    }, 1500);
+    }
   };
 
-  const fileTicket = () => {
+  const fileTicket = async () => {
     if (!predictedResult) return;
-    const finalTicket: Complaint = {
-      id: `T-${Math.floor(100 + Math.random() * 900)}`,
-      room: predictedResult.room || 'Rm 204',
-      originalText: predictedResult.originalText || '',
-      category: predictedResult.category || 'General',
-      priority: predictedResult.priority || 'LOW',
-      eta: predictedResult.eta || '48 Hours',
-      status: 'Open'
-    };
-    setTickets(prev => [finalTicket, ...prev]);
-    setInputText('');
-    setPredictedResult(null);
+    setFiling(true);
+    setError('');
+    try {
+      await api.post('/api/complaints', { text: inputText, room: isStaff ? room : undefined });
+      setInputText('');
+      setRoom('');
+      setPredictedResult(null);
+      ticketsApi.reload();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setFiling(false);
+    }
+  };
+
+  const advanceStatus = async (ticket: Complaint) => {
+    const next = NEXT_STATUS[ticket.status];
+    if (!next) return;
+    try {
+      await api.post(`/api/complaints/${ticket.id}/status`, { status: next });
+    } catch (err) {
+      setError(errorMessage(err));
+    }
+    ticketsApi.reload();
   };
 
   return (
@@ -110,9 +96,22 @@ export default function ComplaintDesk() {
           </p>
 
           <form onSubmit={handleAnalyzeNLP} className="space-y-4 font-mono text-xs">
+            {isStaff && (
+              <input
+                value={room}
+                onChange={(e) => setRoom(e.target.value)}
+                required
+                maxLength={20}
+                aria-label="Room or location"
+                placeholder="Room / location (e.g. A-302)"
+                className="w-full bg-warm-ivory border border-charcoal/10 p-3 text-charcoal outline-none focus:border-navy-accent"
+              />
+            )}
             <textarea
               value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
+              maxLength={1000}
+              aria-label="Issue description"
+              onChange={(e) => { setInputText(e.target.value); setPredictedResult(null); }}
               placeholder="Describe the maintenance issue (e.g. Water is dripping from the AC unit onto the study table in A-302, please send help)"
               className="w-full h-28 bg-warm-ivory border border-charcoal/10 p-3 text-charcoal outline-none focus:border-navy-accent resize-none placeholder-slate-gray/50"
               required
@@ -126,6 +125,8 @@ export default function ComplaintDesk() {
               {analyzing ? 'Processing NLP Framework...' : 'Submit to NLP Desk'}
             </button>
           </form>
+
+          {error && <div role="alert" className="p-2 border border-red-700/20 text-red-700 font-mono text-xs">{error}</div>}
 
           {predictedResult && (
             <div className="border border-navy-accent/20 bg-warm-ivory p-4 space-y-4 font-mono text-xs">
@@ -152,14 +153,15 @@ export default function ComplaintDesk() {
                 </div>
                 <div>
                   <span className="text-slate-gray uppercase text-[8px] block">Classification Model</span>
-                  <span className="text-slate-gray">RoBERTa-Hostel v2</span>
+                  <span className="text-slate-gray">Keyword triage rules v1</span>
                 </div>
               </div>
               <button
                 onClick={fileTicket}
-                className="w-full bg-forest-status text-surface-white py-2 uppercase tracking-widest text-[10px] hover:bg-charcoal transition-colors"
+                disabled={filing || (isStaff && !room.trim())}
+                className="w-full bg-forest-status text-surface-white py-2 uppercase tracking-widest text-[10px] hover:bg-charcoal transition-colors disabled:opacity-50"
               >
-                Log Ticket to Core Registry
+                {filing ? 'Logging...' : 'Log Ticket to Core Registry'}
               </button>
             </div>
           )}
@@ -168,11 +170,13 @@ export default function ComplaintDesk() {
         {/* RIGHT COLUMN: Active Ticket Logs */}
         <div className="lg:col-span-6 border border-charcoal/10 bg-surface-white p-6 space-y-4 flex flex-col h-[480px]">
           <div className="flex justify-between items-center border-b border-charcoal/5 pb-3">
-            <h3 className="font-serif font-bold text-lg text-charcoal">Core Complaint Ledger</h3>
-            <span className="font-mono text-xs text-slate-gray">{tickets.length} Active Tickets</span>
+            <h3 className="font-serif font-bold text-lg text-charcoal">{isStaff ? 'Core Complaint Ledger' : 'My Complaints'}</h3>
+            <span className="font-mono text-xs text-slate-gray">{tickets.filter(t => t.status !== 'Resolved').length} Active Tickets</span>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+            {ticketsApi.error && <div className="text-red-700 font-mono text-xs">{ticketsApi.error}</div>}
+            {ticketsApi.data?.length === 0 && <div className="text-slate-gray font-mono text-xs">No complaints filed yet.</div>}
             {tickets.map((t) => (
               <div key={t.id} className="border border-charcoal/10 p-3 bg-warm-ivory flex flex-col justify-between space-y-3 font-mono text-xs">
                 <div className="flex justify-between items-start">
@@ -198,6 +202,14 @@ export default function ComplaintDesk() {
                     {t.status.toUpperCase()}
                   </span>
                 </div>
+                {isStaff && NEXT_STATUS[t.status] && (
+                  <button
+                    onClick={() => advanceStatus(t)}
+                    className="w-full border border-navy-accent text-navy-accent hover:bg-navy-accent hover:text-white py-1 text-[10px] uppercase tracking-wider transition-colors"
+                  >
+                    Mark {NEXT_STATUS[t.status]}
+                  </button>
+                )}
               </div>
             ))}
           </div>

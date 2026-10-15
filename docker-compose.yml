@@ -1,0 +1,18 @@
+services:
+  demeure:
+    build: .
+    image: demeure-ai:latest
+    ports:
+      - "8000:8000"
+    env_file:
+      - backend/.env
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      # Set COOKIE_SECURE=false only when testing over plain http://localhost.
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+    volumes:
+      - demeure-data:/data
+    restart: unless-stopped
+
+volumes:
+  demeure-data:

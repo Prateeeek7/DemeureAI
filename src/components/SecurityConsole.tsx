@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Shield, Eye, ShieldAlert, Key, UserCheck, RefreshCw } from 'lucide-react';
+import { api, errorMessage } from '../lib/api';
+import { useApi } from '../lib/useApi';
 
 interface EntryLog {
   id: string;
@@ -9,6 +11,11 @@ interface EntryLog {
   roomOrPurpose: string;
   status: 'GRANTED' | 'DENIED' | 'REVOKED';
   hash: string;
+}
+
+interface Ledger {
+  verified: boolean;
+  entries: EntryLog[];
 }
 
 interface VisitorRequest {
@@ -28,42 +35,41 @@ interface LeaveRequest {
   reason: string;
   consent: string;
   status: string;
+  proofUrl?: string | null;
 }
 
 export default function SecurityConsole() {
-  const [visitors, setVisitors] = useState<VisitorRequest[]>([]);
-  const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
+  const visitorsApi = useApi<VisitorRequest[]>('/api/visitors');
+  const leavesApi = useApi<LeaveRequest[]>('/api/leaves');
+  const ledgerApi = useApi<Ledger>('/api/gate/ledger');
+  const [actionError, setActionError] = useState('');
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-  const fetchLeaves = async () => {
+  const visitors = (visitorsApi.data ?? []).filter(v => v.status === 'Pending');
+  const leaves = leavesApi.data ?? [];
+  const logs = ledgerApi.data?.entries ?? [];
+
+  const resolve = async (path: string, id: string, reload: () => void) => {
+    setBusyId(id);
+    setActionError('');
     try {
-      const res = await fetch('/api/leaves');
-      const data = await res.json();
-      setLeaves(data);
-    } catch (e) {
-      console.error(e);
+      await api.post(path);
+    } catch (err) {
+      setActionError(errorMessage(err));
+    } finally {
+      setBusyId(null);
+      reload();
     }
   };
 
-  const fetchVisitors = async () => {
+  const recordGateEvent = async (event: Omit<EntryLog, 'id' | 'time' | 'hash'>) => {
     try {
-      const res = await fetch('/api/visitors');
-      const data = await res.json();
-      setVisitors(data);
-    } catch (e) {
-      console.error(e);
+      await api.post('/api/gate/events', event);
+      ledgerApi.reload();
+    } catch (err) {
+      setActionError(errorMessage(err));
     }
   };
-
-  useEffect(() => {
-    fetchVisitors();
-    fetchLeaves();
-  }, []);
-  const [logs, setLogs] = useState<EntryLog[]>([
-    { id: '1', time: '12:25:02', name: 'Pratik Kumar', type: 'Resident', roomOrPurpose: 'RM-302', status: 'GRANTED', hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' },
-    { id: '2', time: '12:18:44', name: 'Rajesh Patel', type: 'Visitor', roomOrPurpose: 'Parent Visit (Rm 104)', status: 'GRANTED', hash: '8f7d9834279ab84149cdfc90192e42d628ab4231d683794d2938af911bc901a1' },
-    { id: '3', time: '11:59:10', name: 'Unknown Subject', type: 'Visitor', roomOrPurpose: 'Tailgating Attempt', status: 'DENIED', hash: '7c8d9319de84910ea82b491028eab749c90df1a92e46830fa982bc1947e63b81' },
-    { id: '4', time: '11:15:32', name: 'Sunita Sharma', type: 'Staff', roomOrPurpose: 'Housekeeping (Zone B)', status: 'GRANTED', hash: '12a9bf843e9cd1a48e281b94ea8e7e1f48cbe8b2e104e75d4a92c81d893fde09' },
-  ]);
 
   // Face Scan Simulator States
   const [scanStatus, setScanStatus] = useState<'IDLE' | 'SCANNING' | 'COMPLETED' | 'FAILED'>('IDLE');
@@ -92,20 +98,10 @@ export default function SecurityConsole() {
         setLivenessCheck(prev => ({ ...prev, microExpressions: true }));
         setScanStatus('COMPLETED');
         setIdentifiedName('Aarav Mehta (Room A-101)');
-        
-        // Add to ledger logs
-        const newLog: EntryLog = {
-          id: String(Date.now()),
-          time: new Date().toTimeString().split(' ')[0],
-          name: 'Aarav Mehta',
-          type: 'Resident',
-          roomOrPurpose: 'RM-101',
-          status: 'GRANTED',
-          hash: Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2)
-        };
-        setLogs(prev => [newLog, ...prev]);
+        recordGateEvent({ name: 'Aarav Mehta', type: 'Resident', roomOrPurpose: 'RM-101', status: 'GRANTED' });
       } else {
         setScanStatus('FAILED');
+        recordGateEvent({ name: 'Unknown Subject', type: 'Visitor', roomOrPurpose: 'Liveness spoof attempt', status: 'DENIED' });
       }
     }, 2200);
   };
@@ -220,6 +216,13 @@ export default function SecurityConsole() {
         {/* RIGHT COLUMN: Visitor Auth & Access Ledger */}
         <div className="lg:col-span-7 space-y-6">
           
+          {actionError && (
+            <div role="alert" className="p-3 border border-red-700/20 bg-red-50/10 text-red-700 font-mono text-xs flex justify-between">
+              <span>{actionError}</span>
+              <button onClick={() => setActionError('')} aria-label="Dismiss" className="font-bold">✕</button>
+            </div>
+          )}
+
           {/* VISITOR PRE-AUTHORIZATION PANEL */}
           <div className="border border-charcoal/10 bg-surface-white p-6 space-y-4">
             <div className="flex justify-between items-center border-b border-charcoal/5 pb-3">
@@ -243,18 +246,14 @@ export default function SecurityConsole() {
                       <span className="text-xs text-slate-gray font-mono">Host: {req.host} • {req.date}</span>
                     </div>
                     <div className="flex gap-2 w-full sm:w-auto">
-                      <button className="flex-1 sm:flex-none border border-navy-accent text-navy-accent hover:bg-navy-accent hover:text-white px-3 py-1 font-mono text-[10px] uppercase transition-colors" 
-                        onClick={async () => {
-                          await fetch(`/api/visitors/${req.id}/approve`, { method: 'POST' });
-                          fetchVisitors();
-                        }}>
-                        Approve & Gen QR
+                      <button className="flex-1 sm:flex-none border border-navy-accent text-navy-accent hover:bg-navy-accent hover:text-white px-3 py-1 font-mono text-[10px] uppercase transition-colors disabled:opacity-50"
+                        disabled={busyId === req.id}
+                        onClick={() => resolve(`/api/visitors/${req.id}/approve`, req.id, visitorsApi.reload)}>
+                        Approve & Issue Pass
                       </button>
-                      <button className="flex-1 sm:flex-none border border-red-700 text-red-700 hover:bg-red-700 hover:text-white px-3 py-1 font-mono text-[10px] uppercase transition-colors" 
-                        onClick={async () => {
-                          await fetch(`/api/visitors/${req.id}/deny`, { method: 'POST' });
-                          fetchVisitors();
-                        }}>
+                      <button className="flex-1 sm:flex-none border border-red-700 text-red-700 hover:bg-red-700 hover:text-white px-3 py-1 font-mono text-[10px] uppercase transition-colors disabled:opacity-50"
+                        disabled={busyId === req.id}
+                        onClick={() => resolve(`/api/visitors/${req.id}/deny`, req.id, visitorsApi.reload)}>
                         Deny
                       </button>
                     </div>
@@ -275,7 +274,7 @@ export default function SecurityConsole() {
             </div>
             
             <div className="space-y-3 font-mono text-xs">
-              {leaves.length === 0 ? (
+              {leaves.filter(l => l.status === 'Pending').length === 0 ? (
                 <div className="text-slate-gray font-mono text-xs p-4 border border-charcoal/10 bg-warm-ivory/30">No pending leave requests.</div>
               ) : (
                 leaves.filter(l => l.status === 'Pending').map(leave => (
@@ -283,23 +282,29 @@ export default function SecurityConsole() {
                     <div className="space-y-1">
                       <div className="font-bold text-charcoal">{leave.name} <span className="text-slate-gray font-normal">({leave.room})</span></div>
                       <div className="text-slate-gray">{leave.duration} — {leave.reason}</div>
+                      {leave.proofUrl && (
+                        <a 
+                          href={leave.proofUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-[10px] text-navy-accent font-bold hover:underline block mt-1"
+                        >
+                          View Proof Attachment →
+                        </a>
+                      )}
                       <div className={`text-[10px] ${leave.consent.includes('Verified') ? 'text-forest-status' : 'text-red-700'}`}>
                         {leave.consent}
                       </div>
                     </div>
                     <div className="flex gap-2 w-full sm:w-auto">
-                      <button className="flex-1 sm:flex-none border border-navy-accent text-navy-accent hover:bg-navy-accent hover:text-white px-3 py-1 font-mono text-[10px] uppercase transition-colors" 
-                        onClick={async () => {
-                          await fetch(`/api/leaves/${leave.id}/approve`, { method: 'POST' });
-                          fetchLeaves();
-                        }}>
+                      <button className="flex-1 sm:flex-none border border-navy-accent text-navy-accent hover:bg-navy-accent hover:text-white px-3 py-1 font-mono text-[10px] uppercase transition-colors disabled:opacity-50"
+                        disabled={busyId === leave.id}
+                        onClick={() => resolve(`/api/leaves/${leave.id}/approve`, leave.id, leavesApi.reload)}>
                         Approve
                       </button>
-                      <button className="flex-1 sm:flex-none border border-red-700 text-red-700 hover:bg-red-700 hover:text-white px-3 py-1 font-mono text-[10px] uppercase transition-colors" 
-                        onClick={async () => {
-                          await fetch(`/api/leaves/${leave.id}/deny`, { method: 'POST' });
-                          fetchLeaves();
-                        }}>
+                      <button className="flex-1 sm:flex-none border border-red-700 text-red-700 hover:bg-red-700 hover:text-white px-3 py-1 font-mono text-[10px] uppercase transition-colors disabled:opacity-50"
+                        disabled={busyId === leave.id}
+                        onClick={() => resolve(`/api/leaves/${leave.id}/deny`, leave.id, leavesApi.reload)}>
                         Deny
                       </button>
                     </div>
@@ -316,13 +321,16 @@ export default function SecurityConsole() {
                 <Key className="w-5 h-5 text-navy-accent" />
                 <h3 className="font-serif font-bold text-lg text-charcoal">Cryptographic Gate Ledger</h3>
               </div>
-              <span className="font-mono text-xs text-forest-status flex items-center gap-1">
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Live Sync Active
-              </span>
+              {ledgerApi.data && (
+                <span className={`font-mono text-xs flex items-center gap-1 ${ledgerApi.data.verified ? 'text-forest-status' : 'text-red-700 font-bold'}`}>
+                  <RefreshCw className="w-3.5 h-3.5" /> {ledgerApi.data.verified ? 'Hash Chain Verified' : 'CHAIN INTEGRITY FAILURE'}
+                </span>
+              )}
             </div>
             <p className="text-xs text-slate-gray font-mono">
-              Every gate transaction logs a cryptographic verification block hash ensuring tamper-proof security auditing.
+              Every gate transaction is a SHA-256 block chained to the previous entry, so any edit to past records breaks verification.
             </p>
+            {ledgerApi.error && <p className="text-xs text-red-700 font-mono">{ledgerApi.error}</p>}
 
             <div className="overflow-x-auto">
               <table className="w-full text-left font-mono text-[10px] border-collapse">

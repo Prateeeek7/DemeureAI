@@ -1,0 +1,15 @@
+.git
+.github
+node_modules
+dist
+**/.DS_Store
+**/__pycache__
+**/*.pyc
+backend/venv
+backend/.env
+backend/data/runtime
+backend/data/uploads
+backend/tests
+report
+Wireframe
+data

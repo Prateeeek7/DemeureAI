@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Compass, Shield, Zap, Utensils, MessageSquare, ArrowRight, Activity, ClipboardList, Users, ShieldAlert, Cpu } from 'lucide-react';
+import { Shield, Zap, Utensils, MessageSquare, ArrowRight, Users, ShieldAlert, Cpu } from 'lucide-react';
 
 interface EditorialLandingProps {
-  onEnterConsole: (role: 'Admin' | 'Warden' | 'MessManager' | 'Student') => void;
+  onEnterConsole: (role: 'CampusAdmin' | 'HostelAdmin' | 'Admin' | 'Warden' | 'MessManager' | 'Student' | 'Faculty') => void;
 }
 
 export default function EditorialLanding({ onEnterConsole }: EditorialLandingProps) {
@@ -12,15 +12,13 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
   const [randomCoords, setRandomCoords] = useState<{ x: number; y: number; lat: string; lng: string; id: number }[]>([]);
   const [showRoleSelection, setShowRoleSelection] = useState(false);
 
+  // Coordinates are only rendered while hovered, so there is nothing to reset on mouse-out.
   React.useEffect(() => {
-    if (!isHovered) {
-      setRandomCoords([]);
-      return;
-    }
+    if (!isHovered) return;
 
     const generateCoords = () => {
       const coordsCount = Math.floor(Math.random() * 3) + 3; // 3 to 5 coordinate points
-      const newCoords = Array.from({ length: coordsCount }).map((_, idx) => {
+      const newCoords = Array.from({ length: coordsCount }, () => {
         const x = Math.random() * 80 + 10;
         const y = Math.random() * 80 + 10;
         const latVal = (28.6100 + Math.random() * 0.01).toFixed(4);
@@ -54,7 +52,7 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
       <header className="border-b border-charcoal/10 px-8 py-6 flex justify-between items-center bg-surface-white">
         <div className="flex flex-col">
           <span className="font-mono text-xs uppercase tracking-widest text-slate-gray">Institutional Digital Protocol</span>
-          <span className="font-serif text-2xl font-bold tracking-tight text-navy-accent">DEMEURE AI</span>
+          <span className="font-serif text-2xl font-bold tracking-tight text-navy-accent">DEMEURE AI // CAMPUS OS</span>
         </div>
         <div className="flex items-center gap-6 font-mono text-xs text-slate-gray">
           <span>LATITUDE: 28.6139° N</span>
@@ -73,15 +71,15 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-8">
           <div className="lg:col-span-5 flex flex-col justify-center space-y-6">
             <div className="inline-block border border-navy-accent px-3 py-1 font-mono text-xs uppercase tracking-wider text-navy-accent w-fit bg-surface-white">
-              Project Specification v1.0.4
+              Project Specification • 18 Integrated Domains
             </div>
             <h1 className="font-serif text-5xl lg:text-7xl font-bold leading-[1.05] tracking-tighter text-charcoal">
-              The Intelligent <br />
-              Campus Living <br />
-              Framework.
+              The Complete <br />
+              Institutional Campus <br />
+              Operating System.
             </h1>
             <p className="text-slate-gray text-lg max-w-xl leading-relaxed">
-              Demeure AI re-architects university accommodation into a self-optimizing ecosystem. A unified institutional operating system uniting predictive maintenance, machine learning-driven resource management, and high-fidelity security diagnostics.
+              Demeure AI unites all 18 institutional campus domains into a self-optimizing ecosystem — from Academic Timetables, Course Registrations & Digital IDs, to Campus Facilities, Shuttle Logistics, Finance & Fee Ledgers, Health Clinics, and Anti-Ragging Governance.
             </p>
             <div className="flex items-center gap-4 pt-4">
               <button 
@@ -419,7 +417,7 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
                 </p>
               </div>
               <button 
-                onClick={onEnterConsole}
+                onClick={() => onEnterConsole('Student')}
                 className="text-navy-accent font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 hover:text-charcoal transition-colors self-start"
               >
                 Launch dashboard to inspect <ArrowRight className="w-4 h-4" />
@@ -504,32 +502,32 @@ export default function EditorialLanding({ onEnterConsole }: EditorialLandingPro
             {/* Matrix Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 divide-y md:divide-y-0 md:divide-x divide-charcoal/10">
               
-              {/* Admin Card */}
+              {/* Campus Admin Card */}
               <button 
-                onClick={() => onEnterConsole('Admin')}
+                onClick={() => onEnterConsole('CampusAdmin')}
                 className="group relative flex flex-col items-center justify-center p-12 text-center hover:bg-navy-accent hover:text-surface-white transition-all duration-300"
               >
                 <div className="absolute inset-0 bg-navy-accent/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none blueprint-grid-accent" />
                 <Cpu className="w-12 h-12 text-navy-accent group-hover:text-surface-white mb-6 transition-colors duration-300" />
-                <h3 className="font-serif font-bold text-xl mb-2 text-charcoal group-hover:text-surface-white transition-colors duration-300">Administrator</h3>
+                <h3 className="font-serif font-bold text-xl mb-2 text-charcoal group-hover:text-surface-white transition-colors duration-300">Campus Admin</h3>
                 <p className="text-xs font-mono text-slate-gray group-hover:text-warm-ivory/80 leading-relaxed transition-colors duration-300">
-                  Full structural override, financial ledger access, and institutional control parameters.
+                  Institutional Campus OS, Academic operations, Facilities & Fleet, Finance & Fees, Power diagnostics, AWS console.
                 </p>
                 <div className="mt-8 border border-navy-accent text-navy-accent group-hover:border-surface-white group-hover:text-surface-white px-4 py-1 font-mono text-[10px] uppercase tracking-widest transition-colors duration-300">
                   Initialize
                 </div>
               </button>
 
-              {/* Warden Card */}
+              {/* Hostel Admin Card */}
               <button 
-                onClick={() => onEnterConsole('Warden')}
+                onClick={() => onEnterConsole('HostelAdmin')}
                 className="group relative flex flex-col items-center justify-center p-12 text-center hover:bg-forest-status hover:text-surface-white transition-all duration-300"
               >
                 <div className="absolute inset-0 bg-forest-status/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none blueprint-grid" />
                 <ShieldAlert className="w-12 h-12 text-forest-status group-hover:text-surface-white mb-6 transition-colors duration-300" />
-                <h3 className="font-serif font-bold text-xl mb-2 text-charcoal group-hover:text-surface-white transition-colors duration-300">Hostel Warden</h3>
+                <h3 className="font-serif font-bold text-xl mb-2 text-charcoal group-hover:text-surface-white transition-colors duration-300">Hostel Admin / Warden</h3>
                 <p className="text-xs font-mono text-slate-gray group-hover:text-warm-ivory/80 leading-relaxed transition-colors duration-300">
-                  Security operations, biometric gate logs, and student leave authorization matrix.
+                  Dedicated Hostel OS, Room allocation, Student survey ML model, Security SOC outpass, Hostel welfare & inactivity checks.
                 </p>
                 <div className="mt-8 border border-forest-status text-forest-status group-hover:border-surface-white group-hover:text-surface-white px-4 py-1 font-mono text-[10px] uppercase tracking-widest transition-colors duration-300">
                   Initialize

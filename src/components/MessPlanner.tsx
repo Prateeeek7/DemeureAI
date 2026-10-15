@@ -2,6 +2,13 @@ import React, { useState, useRef } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from 'recharts';
 import { Utensils, Star, RefreshCw, Upload, FileSpreadsheet, CheckCircle, AlertCircle, Coffee, Sun, Cookie, Moon } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { api, errorMessage } from '../lib/api';
+import { useApi } from '../lib/useApi';
+
+interface PublishedMenu {
+  days: WeeklyMenuItem[] | null;
+  updatedAt: string | null;
+}
 
 interface StudentReview {
   id: string;
@@ -21,7 +28,7 @@ interface WeeklyMenuItem {
 }
 
 interface MessPlannerProps {
-  currentRole: 'Admin' | 'Warden' | 'MessManager' | 'Student';
+  currentRole: string;
 }
 
 const DEFAULT_WEEKLY_MENU: WeeklyMenuItem[] = [
@@ -44,7 +51,9 @@ const MEAL_CONFIG = [
 ];
 
 export default function MessPlanner({ currentRole }: MessPlannerProps) {
-  const [weeklyMenu, setWeeklyMenu] = useState<WeeklyMenuItem[]>(DEFAULT_WEEKLY_MENU);
+  const menuApi = useApi<PublishedMenu>('/api/mess/menu');
+  const weeklyMenu = menuApi.data?.days ?? DEFAULT_WEEKLY_MENU;
+  const [feedbackError, setFeedbackError] = useState('');
   const [selectedDay, setSelectedDay] = useState<string>('Monday');
   const [feedbackRating, setFeedbackRating] = useState<number>(0);
   const [feedbackMeal, setFeedbackMeal] = useState<string>('Lunch');
@@ -55,13 +64,8 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
   const [uploadError, setUploadError] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [reviews, setReviews] = useState<StudentReview[]>([
-    { id: '1', studentName: 'Aarav Mehta',   rating: 5, meal: 'Dinner',    suggestion: 'Loved the lentil curry today! Very home-like flavor.',               timestamp: '08:30 PM' },
-    { id: '2', studentName: 'Dev Sharma',    rating: 2, meal: 'Lunch',     suggestion: 'The quinoa bowl was a bit dry. Can we get some sauce on the side?',  timestamp: '01:15 PM' },
-    { id: '3', studentName: 'Ananya Patel',  rating: 4, meal: 'Breakfast', suggestion: 'Oatmeal breakfast is great, but could we add fresh cut fruits?',     timestamp: 'Yesterday' },
-    { id: '4', studentName: 'Priya Nair',    rating: 3, meal: 'Snacks',    suggestion: 'The samosa could be crispier. Loved the chutney though!',           timestamp: 'Yesterday' },
-    { id: '5', studentName: 'Karan Joshi',   rating: 5, meal: 'Dinner',    suggestion: 'Saturday biryani is legendary. Please keep it on the menu!',        timestamp: '2 days ago' },
-  ]);
+  const reviewsApi = useApi<StudentReview[]>('/api/mess/reviews');
+  const reviews = reviewsApi.data ?? [];
 
   const forecastData = [
     { day: 'Mon', Forecast: 320, Actual: 312 },
@@ -80,27 +84,39 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
   const ratingDistribution = [1, 2, 3, 4, 5].map(star => ({
     star,
     count: reviews.filter(r => r.rating === star).length,
-    pct: Math.round((reviews.filter(r => r.rating === star).length / reviews.length) * 100),
+    pct: reviews.length ? Math.round((reviews.filter(r => r.rating === star).length / reviews.length) * 100) : 0,
   })).reverse();
 
-  const handleAddReview = (e: React.FormEvent) => {
+  const handleAddReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (feedbackRating === 0 || !studentSuggestion.trim()) return;
+    if (feedbackRating === 0 || !studentSuggestion.trim()) {
+      setFeedbackError('Choose a star rating and write a short suggestion.');
+      return;
+    }
+    setFeedbackError('');
+    try {
+      const saved = await api.post<StudentReview>('/api/mess/reviews', {
+        rating: feedbackRating, meal: feedbackMeal, suggestion: studentSuggestion.trim(),
+      });
+      reviewsApi.setData(prev => [saved, ...(prev ?? [])]);
+      setFeedbackSuccess(true);
+      setStudentSuggestion('');
+      setFeedbackRating(0);
+      setTimeout(() => setFeedbackSuccess(false), 3000);
+    } catch (err) {
+      setFeedbackError(errorMessage(err));
+    }
+  };
 
-    const newReview: StudentReview = {
-      id: String(Date.now()),
-      studentName: 'Neha Iyer',
-      rating: feedbackRating,
-      meal: feedbackMeal,
-      suggestion: studentSuggestion,
-      timestamp: 'Just Now',
-    };
-
-    setReviews(prev => [newReview, ...prev]);
-    setFeedbackSuccess(true);
-    setStudentSuggestion('');
-    setFeedbackRating(0);
-    setTimeout(() => setFeedbackSuccess(false), 3000);
+  const publishMenu = async (days: WeeklyMenuItem[]) => {
+    try {
+      const published = await api.put<PublishedMenu>('/api/mess/menu', { days });
+      menuApi.setData(() => published);
+      setUploadStatus('success');
+    } catch (err) {
+      setUploadStatus('error');
+      setUploadError(`Parsed, but publishing failed: ${errorMessage(err)}`);
+    }
   };
 
   // ── OCR / Excel parsing ───────────────────────────────────────────────────
@@ -126,9 +142,9 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
 
         // Find header row - look for "Day" column
         let headerRow = -1;
-        let colMap: Record<string, number> = {};
+        const colMap: Record<string, number> = {};
         for (let i = 0; i < Math.min(rows.length, 5); i++) {
-          const r = rows[i].map((c: any) => String(c ?? '').toLowerCase().trim());
+          const r = rows[i].map((c: unknown) => String(c ?? '').toLowerCase().trim());
           if (r.includes('day')) {
             headerRow = i;
             r.forEach((col, idx) => { colMap[col] = idx; });
@@ -158,12 +174,14 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
         }
 
         if (parsed.length === 0) throw new Error('No valid menu rows found in the sheet.');
+        if (parsed.length > 7) throw new Error('The sheet has more than 7 day rows.');
+        const tooLong = parsed.find(p => [p.breakfast, p.lunch, p.snacks, p.dinner].some(m => m.length > 200));
+        if (tooLong) throw new Error(`A menu cell for ${tooLong.day} is longer than 200 characters.`);
 
-        setWeeklyMenu(parsed);
-        setUploadStatus('success');
-      } catch (err: any) {
+        publishMenu(parsed);
+      } catch (err) {
         setUploadStatus('error');
-        setUploadError(err.message ?? 'Failed to parse the file.');
+        setUploadError(errorMessage(err) || 'Failed to parse the file.');
       }
     };
     reader.readAsArrayBuffer(file);
@@ -339,6 +357,8 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
                     <button
                       key={star}
                       type="button"
+                      aria-label={`${star} star${star === 1 ? '' : 's'}`}
+                      aria-pressed={star <= feedbackRating}
                       onClick={() => setFeedbackRating(star)}
                       className="hover:scale-125 transition-transform"
                     >
@@ -352,6 +372,8 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
               <div className="space-y-1">
                 <label className="block text-slate-gray uppercase text-[10px] tracking-wider">Your Suggestion / Feedback</label>
                 <textarea
+                  aria-label="Your suggestion"
+                  maxLength={500}
                   value={studentSuggestion}
                   onChange={(e) => setStudentSuggestion(e.target.value)}
                   placeholder="E.g. The paneer was too spicy, please make it milder or substitute with mushroom curry next time…"
@@ -368,10 +390,13 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
               </button>
             </form>
 
+            {feedbackError && (
+              <div role="alert" className="border border-red-700/20 p-3 text-center text-[10px] font-mono text-red-700">{feedbackError}</div>
+            )}
             {feedbackSuccess && (
-              <div className="border border-forest-status/30 bg-green-50 p-3 text-center text-[10px] font-mono text-forest-status flex items-center justify-center gap-2">
+              <div role="status" className="border border-forest-status/30 bg-green-50 p-3 text-center text-[10px] font-mono text-forest-status flex items-center justify-center gap-2">
                 <CheckCircle className="w-4 h-4" />
-                Feedback submitted! AI menu planner has been notified.
+                Feedback submitted! The mess manager can now see it.
               </div>
             )}
           </div>
@@ -400,9 +425,10 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
             </div>
             <div className="border border-charcoal/10 bg-surface-white p-4 space-y-1">
               <span className="text-slate-gray uppercase text-[9px] block">Menu Source</span>
-              <span className={`font-serif text-xl font-bold ${uploadStatus === 'success' ? 'text-forest-status' : 'text-charcoal'}`}>
-                {uploadStatus === 'success' ? '✓ Excel Upload' : 'Default Template'}
+              <span className={`font-serif text-xl font-bold ${menuApi.data?.days ? 'text-forest-status' : 'text-charcoal'}`}>
+                {menuApi.data?.days ? '✓ Published' : 'Default Template'}
               </span>
+              {menuApi.data?.updatedAt && <span className="text-slate-gray text-[9px] block">{menuApi.data.updatedAt}</span>}
             </div>
           </div>
 
@@ -466,7 +492,7 @@ export default function MessPlanner({ currentRole }: MessPlannerProps) {
                     <div className="space-y-3">
                       <CheckCircle className="w-10 h-10 text-forest-status mx-auto" />
                       <div className="font-mono text-[11px] text-forest-status">
-                        <strong className="block text-sm">Menu Imported Successfully!</strong>
+                        <strong className="block text-sm">Menu Published to Students!</strong>
                         {uploadFileName} — {weeklyMenu.length} days loaded
                       </div>
                       <span className="text-[10px] text-slate-gray">Click to upload a different file</span>

@@ -12,6 +12,7 @@
 ## Section 3: Dietary Preferences
 - Changes between Vegetarian and Non-Vegetarian menus must be applied for on the 25th of the preceding month.
 - Specific allergy notifications must be registered with the Chief Medical Officer and the Mess Manager.
+- Vegetarian, Non-Vegetarian, Jain and Vegan meal plans are offered. Residents choose their plan in the room survey or through the Mess Manager.
 
 
 # OVERARCHING INSTITUTIONAL ANNEXURES AND PROCEDURAL CLAUSES

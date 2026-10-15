@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Activity, AlertTriangle, CheckCircle, ShieldAlert, Heart } from 'lucide-react';
+import { useState } from 'react';
+import { Heart } from 'lucide-react';
+import { api, errorMessage } from '../lib/api';
+import { useApi } from '../lib/useApi';
 
 interface WelfareAlert {
   id: string;
@@ -12,14 +14,18 @@ interface WelfareAlert {
 
 export default function WelfareDashboard() {
 
-  const [alerts, setAlerts] = useState<WelfareAlert[]>([
-    { id: 'W-01', name: 'Dev Sharma', room: 'A-102', triggerCondition: 'Zero Gate Swipe & Zero Mess Log', durationTime: '36 Hours', status: 'Unresolved' },
-    { id: 'W-02', name: 'Kabir Malhotra', room: 'A-104', triggerCondition: 'Consecutive Absenteeism Pattern', durationTime: '48 Hours', status: 'Unresolved' },
-    { id: 'W-03', name: 'Vikram Rao', room: 'A-105', triggerCondition: 'High Complaint Stress Words', durationTime: 'Completed Check', status: 'Checked' },
-  ]);
+  const alertsApi = useApi<WelfareAlert[]>('/api/welfare/alerts');
+  const alerts = alertsApi.data ?? [];
+  const [error, setError] = useState('');
 
-  const handleResolveAlert = (id: string, action: 'Checked' | 'False Positive') => {
-    setAlerts(prev => prev.map(al => al.id === id ? { ...al, status: action } : al));
+  const handleResolveAlert = async (id: string, action: 'Checked' | 'False Positive') => {
+    setError('');
+    try {
+      const updated = await api.post<WelfareAlert>(`/api/welfare/alerts/${id}/resolve`, { status: action });
+      alertsApi.setData(prev => (prev ?? []).map(al => al.id === id ? updated : al));
+    } catch (err) {
+      setError(errorMessage(err));
+    }
   };
 
   return (
@@ -47,6 +53,7 @@ export default function WelfareDashboard() {
           <h3 className="font-serif font-bold text-lg text-charcoal border-b border-charcoal/5 pb-2">Active Operational Welfare Warnings</h3>
           
           <div className="space-y-4 font-mono text-xs">
+            {(error || alertsApi.error) && <div role="alert" className="text-red-700">{error || alertsApi.error}</div>}
             {alerts.map((al) => (
               <div 
                 key={al.id} 

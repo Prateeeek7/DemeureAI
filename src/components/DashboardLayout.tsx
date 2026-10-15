@@ -1,26 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, Zap, Shield, AlertTriangle, Utensils, Heart, MessageSquare, ChevronRight, LogOut, ClipboardList, CreditCard } from 'lucide-react';
-import RoomAllocation from './RoomAllocation';
-import PowerMonitor from './PowerMonitor';
-import SecurityConsole from './SecurityConsole';
-import ComplaintDesk from './ComplaintDesk';
-import MessPlanner from './MessPlanner';
-import WelfareDashboard from './WelfareDashboard';
-import VirtualAssistant from './VirtualAssistant';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { LayoutDashboard, Users, Zap, Shield, AlertTriangle, Utensils, Heart, MessageSquare, LogOut, ClipboardList, CreditCard, Cloud, GraduationCap, Building2, Landmark, IdCard } from 'lucide-react';
 import EditorialLanding from './EditorialLanding';
-import StudentSurveyForm from './StudentSurveyForm';
-import StudentPortal from './StudentPortal';
-import type { SurveyEntry } from './StudentSurveyForm';
+// Modules are code-split so each role only downloads the screens it opens.
+const RoomAllocation = lazy(() => import('./RoomAllocation'));
+const PowerMonitor = lazy(() => import('./PowerMonitor'));
+const SecurityConsole = lazy(() => import('./SecurityConsole'));
+const ComplaintDesk = lazy(() => import('./ComplaintDesk'));
+const MessPlanner = lazy(() => import('./MessPlanner'));
+const WelfareDashboard = lazy(() => import('./WelfareDashboard'));
+const VirtualAssistant = lazy(() => import('./VirtualAssistant'));
+const StudentSurveyForm = lazy(() => import('./StudentSurveyForm'));
+const StudentPortal = lazy(() => import('./StudentPortal'));
+const AWSConsoleHub = lazy(() => import('./AWSConsoleHub'));
+const AcademicStudentHub = lazy(() => import('./AcademicStudentHub'));
+const FacilitiesTransportHub = lazy(() => import('./FacilitiesTransportHub'));
+const CampusOperationsHub = lazy(() => import('./CampusOperationsHub'));
+const StudentDirectory = lazy(() => import('./StudentDirectory'));
+import { api, errorMessage, UNAUTHORIZED_EVENT } from '../lib/api';
+import { SessionContext, SHOW_DEMO_CREDENTIALS, type SessionUser } from '../lib/session';
 
-type Role = 'Admin' | 'Warden' | 'MessManager' | 'Student';
+type Role = 'CampusAdmin' | 'HostelAdmin' | 'Admin' | 'Warden' | 'MessManager' | 'Student' | 'Faculty';
+
+interface Health {
+  env: string;
+  storage: string;
+  awsLive: boolean;
+  assistant: string;
+}
+
+const DEMO_PINS: Partial<Record<Role, string>> = {
+  CampusAdmin: '0000-0000-0000',
+  HostelAdmin: '1111-1111-1111',
+  MessManager: '2222-2222-2222',
+};
+
+const landingTabFor = (role: Role) =>
+  role === 'Student' ? 'studentPortal' : role === 'HostelAdmin' ? 'rooms' : role === 'MessManager' ? 'mess' : 'telemetry';
 
 export default function DashboardLayout() {
   const [currentRole, setCurrentRole] = useState<Role>('Student');
   const [activeTab, setActiveTab] = useState<string>('telemetry');
   const [time, setTime] = useState<string>('');
   const [showExitLanding, setShowExitLanding] = useState(true);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [hasAuthenticated, setHasAuthenticated] = useState(false);
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
+  const [user, setUser] = useState<SessionUser | null>(null);
+  const [booting, setBooting] = useState(true);
+  const [authBusy, setAuthBusy] = useState(false);
+  const [health, setHealth] = useState<Health | null>(null);
+  const hasAuthenticated = user !== null;
 
   // Authentication Overlay states
   const [pendingRole, setPendingRole] = useState<Role | null>(null);
@@ -28,14 +55,35 @@ export default function DashboardLayout() {
   const [studentEmailInput, setStudentEmailInput] = useState('');
   const [studentCodeInput, setStudentCodeInput] = useState('');
   const [authError, setAuthError] = useState('');
-  // Shared survey submissions — student fills form, admin sees responses live
-  const [surveySubmissions, setSurveySubmissions] = useState<SurveyEntry[]>([]);
 
-  const addSurveySubmission = (entry: SurveyEntry) =>
-    setSurveySubmissions(prev => [entry, ...prev]);
+  const startSession = (sessionUser: SessionUser) => {
+    setUser(sessionUser);
+    setCurrentRole(sessionUser.role);
+    setActiveTab(landingTabFor(sessionUser.role));
+    setPendingRole(null);
+    setShowExitLanding(false);
+  };
 
-  const removeSurveySubmission = (id: string) =>
-    setSurveySubmissions(prev => prev.filter(e => e.id !== id));
+  const endSession = () => {
+    setUser(null);
+    setCurrentRole('Student');
+    setShowExitLanding(true);
+    setPendingRole(null);
+  };
+
+  // Restore an existing session on load, and drop back to the landing page when it expires.
+  useEffect(() => {
+    api.get<{ user: SessionUser | null }>('/api/auth/session')
+      .then(({ user: existing }) => { if (existing) startSession(existing); }, () => undefined)
+      .finally(() => setBooting(false));
+    window.addEventListener(UNAUTHORIZED_EVENT, endSession);
+    return () => window.removeEventListener(UNAUTHORIZED_EVENT, endSession);
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    api.get<Health>('/api/health').then(setHealth, () => setHealth(null));
+  }, [user]);
 
   // Live Clock effect
   useEffect(() => {
@@ -49,16 +97,21 @@ export default function DashboardLayout() {
   }, []);
 
   const navigationTabs = [
-    { id: 'telemetry', label: 'Overview Telemetry',    icon: LayoutDashboard, roles: ['Admin', 'Warden', 'MessManager', 'Student'] },
-    { id: 'rooms',     label: 'Room Allocation',        icon: Users,           roles: ['Admin', 'Warden'] },
-    { id: 'survey',    label: 'Student Survey Form',    icon: ClipboardList,   roles: ['Admin', 'Warden', 'Student'] },
-    { id: 'power',     label: 'Power Grid Diagnostics', icon: Zap,             roles: ['Admin'] },
-    { id: 'security',  label: 'Security SOC Gate',      icon: Shield,          roles: ['Admin', 'Warden'] },
-    { id: 'complaints',label: 'NLP Complaint Desk',     icon: AlertTriangle,   roles: ['Admin', 'Warden', 'Student'] },
-    { id: 'mess',      label: 'Mess & Food Optimizer',  icon: Utensils,        roles: ['Admin', 'MessManager', 'Student'] },
-    { id: 'welfare',   label: 'Welfare Operations',     icon: Heart,           roles: ['Admin', 'Warden'] },
-    { id: 'studentPortal', label: 'Student Services',   icon: CreditCard,      roles: ['Student'] },
-    { id: 'assistant', label: 'AI Handbook RAG',        icon: MessageSquare,   roles: ['Admin', 'Warden', 'MessManager', 'Student'] },
+    { id: 'telemetry', label: 'Overview Telemetry', icon: LayoutDashboard, roles: ['CampusAdmin', 'HostelAdmin', 'Admin', 'Warden', 'MessManager', 'Student', 'Faculty'] },
+    { id: 'academic', label: 'Academic & Student Hub', icon: GraduationCap, roles: ['CampusAdmin', 'Admin', 'Student', 'Faculty'] },
+    { id: 'facilities', label: 'Facilities & Fleet Hub', icon: Building2, roles: ['CampusAdmin', 'Admin', 'Faculty', 'Student'] },
+    { id: 'campusOps', label: 'Finance & Campus Life', icon: Landmark, roles: ['CampusAdmin', 'Admin', 'Faculty', 'MessManager', 'Student'] },
+    { id: 'directory', label: 'Resident Directory', icon: IdCard, roles: ['CampusAdmin', 'HostelAdmin', 'Admin', 'Warden'] },
+    { id: 'rooms', label: 'Hostel Room Allocation', icon: Users, roles: ['HostelAdmin', 'Warden'] },
+    { id: 'survey', label: 'Student Survey Form', icon: ClipboardList, roles: ['HostelAdmin', 'Warden', 'Student'] },
+    { id: 'power', label: 'Power Grid Diagnostics', icon: Zap, roles: ['CampusAdmin', 'Admin'] },
+    { id: 'security', label: 'Hostel Security SOC Gate', icon: Shield, roles: ['HostelAdmin', 'Warden'] },
+    { id: 'complaints', label: 'NLP Complaint Desk', icon: AlertTriangle, roles: ['CampusAdmin', 'HostelAdmin', 'Admin', 'Warden', 'Student', 'Faculty'] },
+    { id: 'mess', label: 'Mess & Food Optimizer', icon: Utensils, roles: ['MessManager', 'Student'] },
+    { id: 'welfare', label: 'Hostel Welfare Operations', icon: Heart, roles: ['HostelAdmin', 'Warden'] },
+    { id: 'studentPortal', label: 'Student Services', icon: CreditCard, roles: ['Student'] },
+    { id: 'assistant', label: 'AI Handbook RAG', icon: MessageSquare, roles: ['CampusAdmin', 'HostelAdmin', 'Admin', 'Warden', 'MessManager', 'Student', 'Faculty'] },
+    { id: 'aws', label: 'AWS Console Hub', icon: Cloud, roles: ['CampusAdmin', 'Admin'] },
   ];
 
   // Helper to check authorization
@@ -75,8 +128,13 @@ export default function DashboardLayout() {
   const renderAuthOverlay = () => {
     if (!pendingRole) return null;
 
-    const roleName = pendingRole === 'Admin' ? 'Administrator' : pendingRole === 'Warden' ? 'Hostel Warden' : 'Mess Manager';
-    const expectedCode = pendingRole === 'Admin' ? '0000-0000-0000' : pendingRole === 'Warden' ? '1111-1111-1111' : '2222-2222-2222';
+    const roleName = (pendingRole === 'CampusAdmin' || pendingRole === 'Admin') 
+      ? 'Campus Administrator (Campus OS)' 
+      : (pendingRole === 'HostelAdmin' || pendingRole === 'Warden')
+      ? 'Hostel Administrator / Warden (Hostel OS)' 
+      : 'Mess Manager';
+      
+    const demoPin = DEMO_PINS[pendingRole] ?? '';
 
     const formatAndSetCode = (val: string) => {
       let formatted = '';
@@ -117,38 +175,30 @@ export default function DashboardLayout() {
       setAuthError('');
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
-      if (pendingRole === 'Student') {
-        if (studentEmailInput === 'webforge@mit.edu' && studentCodeInput === 'MIT1122') {
-          setCurrentRole(pendingRole);
-          setPendingRole(null);
-          setStudentEmailInput('');
-          setStudentCodeInput('');
-          setHasAuthenticated(true);
-          // Reset active tab if unauthorized in the new role
-          const newTabInfo = navigationTabs.find(t => t.id === activeTab);
-          if (newTabInfo && !newTabInfo.roles.includes('Student')) {
-            setActiveTab('telemetry');
-          }
-        } else {
-          setAuthError('INVALID CREDENTIALS // AUTHENTICATION REVOKED');
-        }
+      const isStudent = pendingRole === 'Student';
+      if (!isStudent && authCodeInput.replace(/\D/g, '').length !== 12) {
+        setAuthError('ENTER THE FULL 12-DIGIT ACCESS PIN');
         return;
       }
-
-      if (authCodeInput === expectedCode) {
-        setCurrentRole(pendingRole);
-        setPendingRole(null);
+      setAuthBusy(true);
+      setAuthError('');
+      try {
+        const sessionUser = await api.post<SessionUser>('/api/auth/login', isStudent
+          ? { role: 'Student', email: studentEmailInput.trim(), secret: studentCodeInput.trim() }
+          : { role: pendingRole, secret: authCodeInput });
         setAuthCodeInput('');
-        setHasAuthenticated(true);
-        // Reset active tab if unauthorized in the new role
-        const newTabInfo = navigationTabs.find(t => t.id === activeTab);
-        if (newTabInfo && !newTabInfo.roles.includes(pendingRole)) {
-            setActiveTab('telemetry');
-        }
-      } else {
-        setAuthError('INVALID SECURITY SIGNATURE // AUTHENTICATION REVOKED');
+        setStudentEmailInput('');
+        setStudentCodeInput('');
+        startSession(sessionUser);
+      } catch (err) {
+        const message = errorMessage(err);
+        setAuthError(message === 'Invalid credentials'
+          ? (isStudent ? 'INVALID CREDENTIALS // AUTHENTICATION REVOKED' : 'INVALID SECURITY SIGNATURE // AUTHENTICATION REVOKED')
+          : message.toUpperCase());
+      } finally {
+        setAuthBusy(false);
       }
     };
 
@@ -161,8 +211,14 @@ export default function DashboardLayout() {
               <span className="text-[9px] text-red-700 animate-pulse-dot font-bold">LOCKED</span>
             </div>
 
-            <div className="text-[11px] leading-relaxed text-slate-gray p-2 border-l-2 border-navy-accent">
-              Enter your institutional email and the secure access code sent to your inbox.
+            <div className="text-[11px] leading-relaxed text-slate-gray p-2 border-l-2 border-navy-accent space-y-1">
+              <p>Enter your institutional email and the secure access code sent to your inbox.</p>
+              {SHOW_DEMO_CREDENTIALS && (
+                <p className="text-[10px] text-navy-accent font-bold">Demo Student: <code className="bg-navy-accent/10 px-1 py-0.5 rounded select-all">pratik2024@vit.student.ac.in</code> / <code className="bg-navy-accent/10 px-1 py-0.5 rounded select-all">VIT2024</code></p>
+              )}
+              {SHOW_DEMO_CREDENTIALS && (
+                <p className="text-[10px] text-navy-accent font-bold">Any of the 100 seeded residents, e.g. <code className="bg-navy-accent/10 px-1 py-0.5 rounded select-all">naveen.reddy@demeure.ac.in</code> / <code className="bg-navy-accent/10 px-1 py-0.5 rounded select-all">VIT2026</code></p>
+              )}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -172,22 +228,24 @@ export default function DashboardLayout() {
                   <input
                     type="email"
                     required
-                    placeholder="webforge@mit.edu"
+                    placeholder="you@vit.student.ac.in"
+                    autoComplete="username"
                     value={studentEmailInput}
                     onChange={(e) => setStudentEmailInput(e.target.value)}
-                    className="w-full bg-surface-white border border-charcoal/10 p-2 font-mono text-[11px] outline-none focus:border-navy-accent placeholder-slate-gray/30"
+                    className="w-full bg-surface-white border border-charcoal/20 p-2 font-mono text-[11px] outline-none focus:border-navy-accent placeholder:text-navy-accent/50 font-medium"
                     autoFocus
                   />
                 </div>
                 <div>
                   <label className="block text-[10px] uppercase text-slate-gray mb-1">Access Code (from email)</label>
                   <input
-                    type="text"
+                    type="password"
                     required
-                    placeholder="MIT1122"
+                    autoComplete="current-password"
+                    placeholder="••••••••"
                     value={studentCodeInput}
                     onChange={(e) => setStudentCodeInput(e.target.value.toUpperCase())}
-                    className="w-full bg-surface-white border border-charcoal/10 p-2 font-mono text-[11px] outline-none focus:border-navy-accent placeholder-slate-gray/30 tracking-widest"
+                    className="w-full bg-surface-white border border-charcoal/20 p-2 font-mono text-[11px] outline-none focus:border-navy-accent placeholder:text-navy-accent/50 tracking-widest font-medium"
                   />
                 </div>
               </div>
@@ -202,15 +260,11 @@ export default function DashboardLayout() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (!hasAuthenticated) {
-                      setShowExitLanding(true);
-                      setPendingRole(null);
-                    } else {
-                      setPendingRole(null);
-                      setStudentEmailInput('');
-                      setStudentCodeInput('');
-                      setAuthError('');
-                    }
+                    setShowExitLanding(true);
+                    setPendingRole(null);
+                    setStudentEmailInput('');
+                    setStudentCodeInput('');
+                    setAuthError('');
                   }}
                   className="flex-1 bg-surface-white border border-charcoal/10 hover:bg-charcoal/5 py-2.5 uppercase tracking-wider text-[10px]"
                 >
@@ -218,9 +272,10 @@ export default function DashboardLayout() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-navy-accent hover:bg-charcoal text-surface-white py-2.5 uppercase tracking-wider text-[10px]"
+                  disabled={authBusy}
+                  className="flex-1 bg-navy-accent hover:bg-charcoal text-surface-white py-2.5 uppercase tracking-wider text-[10px] disabled:opacity-50"
                 >
-                  Login
+                  {authBusy ? 'Verifying...' : 'Login'}
                 </button>
               </div>
             </form>
@@ -237,18 +292,24 @@ export default function DashboardLayout() {
             <span className="text-[9px] text-red-700 animate-pulse-dot font-bold">LOCKED</span>
           </div>
 
-          <div className="text-[11px] leading-relaxed text-slate-gray p-2 border-l-2 border-navy-accent">
-            Terminals require secure hardware key confirmation. Enter credentials for <strong>{roleName}</strong>.
+          <div className="text-[11px] leading-relaxed text-slate-gray p-2 border-l-2 border-navy-accent space-y-1">
+            <p>Terminals require secure hardware key confirmation. Enter credentials for <strong>{roleName}</strong>.</p>
+            {SHOW_DEMO_CREDENTIALS && demoPin && (
+              <p className="text-[10px] text-navy-accent font-bold">Demo PIN: <code className="bg-navy-accent/10 px-1 py-0.5 rounded select-all">{demoPin}</code></p>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <input
                 type="text"
-                placeholder="XXXX-XXXX-XXXX"
+                inputMode="numeric"
+                autoComplete="off"
+                aria-label="Access PIN"
+                placeholder="____-____-____"
                 value={authCodeInput}
                 onChange={handleCodeChange}
-                className="w-full bg-surface-white border border-charcoal/10 p-3 text-center text-lg font-bold tracking-widest text-navy-accent outline-none focus:border-navy-accent placeholder-slate-gray/20 uppercase"
+                className="w-full bg-surface-white border border-charcoal/20 p-3 text-center text-lg font-bold tracking-widest text-navy-accent outline-none focus:border-navy-accent placeholder:text-navy-accent/40 uppercase"
                 maxLength={14}
                 autoFocus
               />
@@ -299,14 +360,10 @@ export default function DashboardLayout() {
               <button
                 type="button"
                 onClick={() => {
-                  if (!hasAuthenticated) {
-                    setShowExitLanding(true);
-                    setPendingRole(null);
-                  } else {
-                    setPendingRole(null);
-                    setAuthCodeInput('');
-                    setAuthError('');
-                  }
+                  setShowExitLanding(true);
+                  setPendingRole(null);
+                  setAuthCodeInput('');
+                  setAuthError('');
                 }}
                 className="flex-1 bg-surface-white border border-charcoal/10 hover:bg-charcoal/5 py-2.5 uppercase tracking-wider text-[10px]"
               >
@@ -314,9 +371,10 @@ export default function DashboardLayout() {
               </button>
               <button
                 type="submit"
-                className="flex-1 bg-navy-accent hover:bg-charcoal text-surface-white py-2.5 uppercase tracking-wider text-[10px]"
+                disabled={authBusy}
+                className="flex-1 bg-navy-accent hover:bg-charcoal text-surface-white py-2.5 uppercase tracking-wider text-[10px] disabled:opacity-50"
               >
-                Verify Key
+                {authBusy ? 'Verifying...' : 'Verify Key'}
               </button>
             </div>
           </form>
@@ -330,6 +388,14 @@ export default function DashboardLayout() {
     );
   };
 
+  if (booting) {
+    return (
+      <div className="min-h-screen bg-warm-ivory flex items-center justify-center font-mono text-xs text-slate-gray uppercase tracking-wider">
+        Establishing secure session...
+      </div>
+    );
+  }
+
   if (showExitLanding) {
     return (
       <EditorialLanding
@@ -341,9 +407,15 @@ export default function DashboardLayout() {
     );
   }
 
+  // Nothing renders behind the sign-in dialog until the server has authenticated the user.
+  if (!hasAuthenticated) {
+    return <div className="min-h-screen bg-warm-ivory blueprint-grid-accent">{renderAuthOverlay()}</div>;
+  }
+
   return (
+    <SessionContext.Provider value={user}>
     <div className="flex flex-col min-h-screen bg-warm-ivory text-charcoal font-sans">
-      
+
       {/* SYSTEM VITALS HEADER BAR */}
       <header className="bg-surface-white border-b border-charcoal/10 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4 z-20">
         <div className="flex items-center gap-4">
@@ -364,61 +436,36 @@ export default function DashboardLayout() {
           <div className="text-slate-gray text-[10px] hidden md:block">
             {time}
           </div>
-          
-          <div className="flex items-center gap-2 relative">
-            <span className="text-[10px] text-slate-gray uppercase">Persona:</span>
-            <div className="relative">
-              <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="bg-warm-ivory border border-charcoal/10 px-3 py-1.5 text-charcoal font-semibold text-[11px] hover:border-navy-accent flex items-center gap-1.5 uppercase font-mono tracking-wider"
-              >
-                <span>{currentRole === 'Admin' ? 'Administrator' : currentRole === 'Warden' ? 'Hostel Warden' : currentRole === 'MessManager' ? 'Mess Manager' : 'Resident Student'}</span>
-                <span className="text-[9px] text-slate-gray">▼</span>
-              </button>
-              
-              {isDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 w-48 bg-surface-white border border-charcoal/10 z-50 flex flex-col font-mono text-[11px] uppercase tracking-wider">
-                  {([
-                    { value: 'Admin', label: 'Administrator' },
-                    { value: 'Warden', label: 'Hostel Warden' },
-                    { value: 'MessManager', label: 'Mess Manager' },
-                    { value: 'Student', label: 'Resident Student' }
-                  ] as { value: Role; label: string }[]).map((r) => (
-                    <button
-                      key={r.value}
-                      onClick={() => {
-                        setIsDropdownOpen(false);
-                        setPendingRole(r.value);
-                        setAuthCodeInput('');
-                        setStudentEmailInput('');
-                        setStudentCodeInput('');
-                        setAuthError('');
-                      }}
-                      className={`px-3 py-2 text-left w-full hover:bg-navy-accent hover:text-surface-white transition-colors ${
-                        currentRole === r.value ? 'bg-warm-ivory font-bold' : ''
-                      }`}
-                    >
-                      {r.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
 
-          <button
-            onClick={() => setShowExitLanding(true)}
-            className="flex items-center gap-1 border border-charcoal/10 px-2 py-1 hover:bg-charcoal/5 text-[10px] uppercase tracking-wider"
-            title="Return to Storyboard"
-          >
-            <LogOut className="w-3.5 h-3.5" /> Storyboard
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-slate-gray uppercase">Active Persona:</span>
+              <span className="bg-navy-accent/10 text-navy-accent font-bold px-2.5 py-1 text-[11px] rounded-xs border border-navy-accent/20 uppercase font-mono">
+                {currentRole === 'CampusAdmin' || currentRole === 'Admin' 
+                  ? 'Campus Administrator' 
+                  : currentRole === 'HostelAdmin' || currentRole === 'Warden' 
+                  ? 'Hostel Administrator' 
+                  : currentRole === 'MessManager' 
+                  ? 'Mess Manager' 
+                  : currentRole === 'Faculty' 
+                  ? 'Faculty Member' 
+                  : 'Resident Student'}
+              </span>
+            </div>
+
+            <button
+              onClick={() => setShowSignOutConfirm(true)}
+              className="flex items-center gap-1.5 bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-700 hover:text-white px-3 py-1 text-xs font-mono font-semibold uppercase tracking-wider transition-colors rounded-xs shadow-xs"
+            >
+              <LogOut className="w-3.5 h-3.5" /> Sign Out
+            </button>
+          </div>
         </div>
       </header>
 
       {/* CORE WORKSPACE PANEL */}
       <div className="flex-1 flex flex-col md:flex-row">
-        
+
         {/* SIDEBAR NAVIGATION */}
         <aside className="w-full md:w-64 bg-surface-white border-b md:border-b-0 md:border-r border-charcoal/10 p-4 space-y-4">
           <div className="font-mono text-[10px] text-slate-gray uppercase border-b border-charcoal/5 pb-2">
@@ -427,33 +474,27 @@ export default function DashboardLayout() {
 
           <nav className="space-y-1">
             {navigationTabs
-              .filter((tab) => currentRole !== 'Student' || isAuthorized(tab.roles))
+              .filter((tab) => isAuthorized(tab.roles))
               .map((tab) => {
-                const auth = isAuthorized(tab.roles);
                 const isSelected = activeTab === tab.id;
-              
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => selectTab(tab.id, tab.roles)}
-                  disabled={!auth}
-                  className={`w-full flex items-center justify-between p-3 transition-colors ${
-                    !auth 
-                      ? 'opacity-30 cursor-not-allowed text-slate-gray bg-transparent' 
-                      : isSelected
+
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => selectTab(tab.id, tab.roles)}
+                    className={`w-full flex items-center justify-between p-3 transition-colors ${
+                      isSelected
                         ? 'bg-navy-accent text-surface-white font-semibold'
                         : 'text-charcoal hover:bg-warm-ivory bg-transparent'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <tab.icon className={`w-4 h-4 ${isSelected ? 'text-surface-white' : 'text-slate-gray'}`} />
-                    <span className="font-mono text-xs uppercase tracking-wider text-left">{tab.label}</span>
-                  </div>
-                  {!auth && <span className="text-[8px] border border-charcoal/20 px-1 font-bold">LOCKED</span>}
-                  {auth && isSelected && <ChevronRight className="w-3.5 h-3.5" />}
-                </button>
-              );
-            })}
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <tab.icon className={`w-4 h-4 ${isSelected ? 'text-surface-white' : 'text-slate-gray'}`} />
+                      <span className="font-mono text-xs uppercase tracking-wider text-left">{tab.label}</span>
+                    </div>
+                  </button>
+                );
+              })}
           </nav>
 
           {/* Sidebar footer telemetry */}
@@ -467,7 +508,7 @@ export default function DashboardLayout() {
         {/* WORKSPACE CONTENT AREA */}
         <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
           <div className="bg-surface-white border border-charcoal/10 p-6 md:p-8">
-            
+
             {activeTab === 'telemetry' && (
               <div className="space-y-8">
                 {/* Dashboard Summary Header */}
@@ -481,46 +522,29 @@ export default function DashboardLayout() {
                   <div className="space-y-6">
                     <h3 className="font-serif text-xl font-bold text-charcoal">System Command Center</h3>
                     <p className="text-sm text-slate-gray leading-relaxed font-mono">
-                      Welcome to the Demeure AI platform console. Switch your persona in the top header to examine role-based access rules. This prototype simulates machine learning workflows (Isolation Forest, RAG, and NLP models) interacting seamlessly in an institutional operating environment.
+                      Welcome to the Demeure AI platform console, {user.name}. The modules in the sidebar are scoped to your role; every action is authorised and persisted by the Demeure core service.
                     </p>
 
                     <div className="border border-charcoal/10 bg-warm-ivory p-4 space-y-3 font-mono text-xs">
                       <div className="font-bold text-navy-accent uppercase">Current Session Diagnostics</div>
                       <div className="space-y-1">
                         <div className="flex justify-between"><span>User Role:</span><span className="font-bold text-charcoal">{currentRole}</span></div>
-                        <div className="flex justify-between"><span>Active Node ID:</span><span>SOC-G1-VITE</span></div>
-                        <div className="flex justify-between"><span>Sandbox Environment:</span><span className="text-forest-status">SIMULATOR ACTIVE</span></div>
+                        <div className="flex justify-between"><span>Environment:</span><span className="uppercase">{health?.env ?? '—'}</span></div>
+                        <div className="flex justify-between"><span>Data Store:</span><span className="uppercase">{health ? (health.storage === 'dynamodb' ? 'DynamoDB (AWS)' : 'Local SQLite') : '—'}</span></div>
+                        <div className="flex justify-between"><span>AWS Services:</span><span className={health?.awsLive ? 'text-forest-status' : 'text-slate-gray'}>{health ? (health.awsLive ? 'LIVE' : 'MOCK MODE') : '—'}</span></div>
+                        <div className="flex justify-between"><span>Handbook Assistant:</span><span className={health?.assistant === 'ready' ? 'text-forest-status' : 'text-amber-700'}>{health?.assistant?.toUpperCase() ?? '—'}</span></div>
                       </div>
                     </div>
                   </div>
 
                   {/* Right Column: Visual illustration mockup (Architectural style) */}
-                  <div className="border border-charcoal/10 bg-warm-ivory p-6 relative flex flex-col justify-between h-[300px] blueprint-grid">
-                    <div className="font-mono text-[8px] text-slate-gray">SYS_LAYOUT // V0.4</div>
-                    
-                    <div className="flex-1 flex items-center justify-center p-4">
-                      {/* Stylized structural layout representing data flow */}
-                      <svg viewBox="0 0 300 150" className="w-full h-full text-navy-accent" stroke="currentColor" fill="none" strokeWidth="1">
-                        <rect x="10" y="50" width="60" height="50" strokeWidth="1.5" />
-                        <rect x="120" y="10" width="60" height="50" strokeWidth="1.5" />
-                        <rect x="120" y="90" width="60" height="50" strokeWidth="1.5" />
-                        <rect x="230" y="50" width="60" height="50" strokeWidth="1.5" />
-                        
-                        <path d="M 70,75 L 120,35" strokeDasharray="3 3" />
-                        <path d="M 70,75 L 120,115" strokeDasharray="3 3" />
-                        <path d="M 180,35 L 230,75" strokeDasharray="3 3" />
-                        <path d="M 180,115 L 230,75" strokeDasharray="3 3" />
-
-                        <text x="17" y="77" className="fill-navy-accent font-mono text-[7px] stroke-none">BIOMETRICS</text>
-                        <text x="131" y="37" className="fill-navy-accent font-mono text-[7px] stroke-none">ML_POWER</text>
-                        <text x="128" y="117" className="fill-navy-accent font-mono text-[7px] stroke-none">MESS_PLAN</text>
-                        <text x="242" y="77" className="fill-navy-accent font-mono text-[7px] stroke-none">LEDGER</text>
-                      </svg>
-                    </div>
-
-                    <div className="font-mono text-[9px] text-slate-gray text-center border-t border-charcoal/10 pt-2">
-                      DEMEURE NETWORK NODES SIGNAL SUMMARY
-                    </div>
+                  {/* Right Column: Visual CAD blueprint illustration */}
+                  <div className="border border-charcoal/10 bg-[#0d131f] p-2 relative flex flex-col justify-between h-[300px] overflow-hidden">
+                    <img 
+                      src="/Inside%20img.png" 
+                      alt="System Topology Blueprint" 
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                 </div>
 
@@ -546,30 +570,30 @@ export default function DashboardLayout() {
               </div>
             )}
 
-            {activeTab === 'rooms'      && <RoomAllocation />}
-            {activeTab === 'survey' && (
-              <StudentSurveyForm
-                currentRole={currentRole}
-                submissions={surveySubmissions}
-                onAddSubmission={addSurveySubmission}
-                onRemoveSubmission={removeSurveySubmission}
-              />
-            )}
-            {activeTab === 'power'      && <PowerMonitor />}
-            {activeTab === 'security'   && <SecurityConsole />}
+            <Suspense fallback={<div className="font-mono text-xs text-slate-gray uppercase tracking-wider p-8 text-center">Loading module...</div>}>
+            {activeTab === 'academic' && <AcademicStudentHub />}
+            {activeTab === 'facilities' && <FacilitiesTransportHub currentRole={currentRole} />}
+            {activeTab === 'campusOps' && <CampusOperationsHub currentRole={currentRole} />}
+            {activeTab === 'directory' && <StudentDirectory />}
+            {activeTab === 'rooms' && <RoomAllocation />}
+            {activeTab === 'survey' && <StudentSurveyForm currentRole={currentRole} />}
+            {activeTab === 'power' && <PowerMonitor />}
+            {activeTab === 'security' && <SecurityConsole />}
             {activeTab === 'complaints' && <ComplaintDesk />}
-            {activeTab === 'mess'       && <MessPlanner currentRole={currentRole} />}
-            {activeTab === 'welfare'    && <WelfareDashboard />}
+            {activeTab === 'mess' && <MessPlanner currentRole={currentRole} />}
+            {activeTab === 'welfare' && <WelfareDashboard />}
             {activeTab === 'studentPortal' && <StudentPortal />}
-            {activeTab === 'assistant'  && <VirtualAssistant />}
-            
+            {activeTab === 'assistant' && <VirtualAssistant />}
+            {activeTab === 'aws' && <AWSConsoleHub />}
+            </Suspense>
+
           </div>
         </main>
       </div>
-      
+
       {activeTab === 'telemetry' && (
         <footer style={{ background: 'linear-gradient(180deg, #0a0f1a 0%, #060a12 100%)', borderTop: '1px solid rgba(255,255,255,0.06)' }} className="text-warm-ivory px-6 pt-16 pb-8 z-10">
-          
+
           {/* Top accent rule */}
           <div className="max-w-7xl mx-auto">
             <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, #1E3A5F, #4B8BFF, #1E3A5F, transparent)', marginBottom: '3rem' }} />
@@ -660,7 +684,44 @@ export default function DashboardLayout() {
         </footer>
       )}
 
-      {renderAuthOverlay()}
+      {/* Sign Out Confirmation Modal */}
+      {showSignOutConfirm && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-surface-white border border-charcoal/20 max-w-md w-full p-6 space-y-4 shadow-xl rounded-sm font-mono">
+            <div className="flex items-center gap-2 border-b border-charcoal/10 pb-3">
+              <LogOut className="w-5 h-5 text-rose-700" />
+              <h3 className="font-serif font-bold text-lg text-charcoal">Confirm Sign Out</h3>
+            </div>
+            <p className="text-xs text-charcoal/80 leading-relaxed font-medium">
+              Are you sure you want to sign out? You will end your session as <strong>{
+                currentRole === 'CampusAdmin' || currentRole === 'Admin' ? 'Campus Administrator' :
+                currentRole === 'HostelAdmin' || currentRole === 'Warden' ? 'Hostel Administrator' :
+                currentRole === 'MessManager' ? 'Mess Manager' :
+                currentRole === 'Faculty' ? 'Faculty Member' : 'Resident Student'
+              }</strong> and return to the institutional landing page.
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setShowSignOutConfirm(false)}
+                className="px-4 py-2 border border-charcoal/20 text-charcoal hover:bg-warm-ivory text-xs font-bold uppercase rounded-xs"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowSignOutConfirm(false);
+                  api.post('/api/auth/logout').catch(() => undefined).finally(endSession);
+                }}
+                className="px-4 py-2 bg-rose-700 hover:bg-charcoal text-white text-xs font-bold uppercase rounded-xs shadow-xs"
+              >
+                Confirm Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
+    </SessionContext.Provider>
   );
 }

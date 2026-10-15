@@ -1,6 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { Users, ShieldCheck, Database, Cpu, BookOpen, ArrowRight, Info } from 'lucide-react';
 import ThemedSelect from './ThemedSelect';
+import { api, errorMessage } from '../lib/api';
+import { useApi } from '../lib/useApi';
+
+interface CompatibilityResult {
+  name: string;
+  score: number;
+  room: string;
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type RoomType = 'Single' | 'Double' | 'Suite';
@@ -16,47 +24,28 @@ interface Room {
   compatibility: number;
 }
 
-// ── Static mock occupant pools per block ─────────────────────────────────────
-const OCCUPANT_POOL: Record<string, string[][]> = {
-  A: [
-    ['Aarav Mehta'], [], ['Kabir Malhotra', 'Aditya Joshi'], ['Dev Sharma'], [],
-    ['Vikram Rao', 'Rohan Deshmukh'], ['Siddharth Sen'], ['Ananya Patel', 'Priya Sharma'], [], ['Karan Joshi'],
-  ],
-  B: [
-    ['Neha Iyer'], ['Riya Banerjee', 'Simran Kaur'], [], ['Pooja Verma'], ['Meera Nair', 'Sneha Pillai'],
-    [], ['Divya Joshi'], ['Tanvi Shah', 'Anushka Rao'], [], ['Lakshmi Menon'],
-  ],
-  C: [
-    ['Rahul Singh', 'Arjun Nair'], [], ['Prashant Gupta'], ['Abhishek Kumar'], ['Nikhil Tiwari', 'Deepak Mishra'],
-    [], ['Suresh Iyer'], ['Rajesh Patel', 'Mahesh Sharma'], [], ['Ajay Reddy'],
-  ],
-};
-
+// Floor layout mirrors the server's seed (backend/services/seed.py): 10 rooms per floor.
 const ROOM_TYPES: RoomType[] = [
   'Double', 'Single', 'Double', 'Suite', 'Double',
   'Single', 'Double', 'Suite', 'Single', 'Double',
 ];
 const MAX_OCCUPANTS = { Single: 1, Double: 2, Suite: 4 };
 
-// ── Room generator (deterministic from block + floor) ─────────────────────────
+// ── Room generator: empty floor plan; occupants come from the allocation registry ─
 function generateFloorRooms(block: string, floor: number): Room[] {
-  const pool = OCCUPANT_POOL[block] ?? OCCUPANT_POOL['A'];
   return Array.from({ length: 10 }, (_, i) => {
     const roomNum = i + 1;
     const type = ROOM_TYPES[i];
     const maxOcc = MAX_OCCUPANTS[type];
-    // Deterministic occupants based on block hash
-    const occupants = pool[i]?.slice(0, maxOcc) ?? [];
-    const isFull = occupants.length >= maxOcc;
-    // Fake "maintenance" on room 5 of every even floor
+    // Room 5 on every even floor is out of service.
     const isMaint = floor % 2 === 0 && roomNum === 5;
     return {
       id: `${block}${floor}${roomNum}`,
-      number: `${block}-${floor}0${roomNum}`,
+      number: `${block}-${floor}${String(roomNum).padStart(2, '0')}`,
       type,
-      occupants: isMaint ? [] : occupants,
+      occupants: [],
       maxOccupants: maxOcc,
-      status: isMaint ? 'Maintenance' : isFull ? 'Full' : 'Available',
+      status: isMaint ? 'Maintenance' : 'Available',
       // Compatibility score varies per room
       compatibility: Math.min(99, 60 + (roomNum * 7 + floor * 3 + block.charCodeAt(0)) % 40),
     };
@@ -67,30 +56,30 @@ function generateFloorRooms(block: string, floor: number): Room[] {
 const DATA_SOURCES = [
   {
     icon: BookOpen,
-    title: 'Student Onboarding Questionnaire',
-    desc: 'Lifestyle vectors collected during admission — sleep cycle, study habits, noise tolerance, cleanliness index, social preference score.',
+    title: 'Room Preference Survey',
+    desc: 'Lifestyle answers submitted by students in the Survey module: sleep cycle, study environment, cleanliness and social preference.',
     badge: 'PRIMARY',
     color: 'text-navy-accent',
   },
   {
-    icon: Database,
-    title: 'Historical Room Transfer Logs',
-    desc: '3-year dataset of room-change requests. Patterns train the model to detect friction-prone pairings before allocation.',
-    badge: 'TRAINING DATA',
-    color: 'text-forest-status',
-  },
-  {
     icon: Cpu,
-    title: 'Cosine Similarity Engine (ML Model)',
-    desc: 'Student preference vectors are embedded and scored via cosine similarity. Pairs with score < 50% are flagged for manual review.',
-    badge: 'AI INFERENCE',
+    title: 'Weighted Similarity Engine',
+    desc: 'Each habit is mapped to an ordinal scale and compared with your inputs (sleep 30%, study 25%, cleanliness 25%, social 20%), plus a small bonus for the same preferred block.',
+    badge: 'SCORING',
     color: 'text-amber-700',
   },
   {
+    icon: Database,
+    title: 'Allocation Registry',
+    desc: 'Residents you allocate are saved centrally, so occupancy and capacity checks stay consistent for every warden session.',
+    badge: 'PERSISTED',
+    color: 'text-forest-status',
+  },
+  {
     icon: Users,
-    title: 'Live Occupancy Feed',
-    desc: 'Real-time room occupancy pulled from the campus biometric swipe-in system. Updates every 15 minutes.',
-    badge: 'LIVE',
+    title: 'Capacity Enforcement',
+    desc: 'The server rejects allocations beyond a room\'s bed count or duplicate names in the same room.',
+    badge: 'VALIDATED',
     color: 'text-red-700',
   },
 ];
@@ -102,32 +91,86 @@ export default function RoomAllocation() {
   const [selectedFloor, setSelectedFloor] = useState('1');
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [showDataSources, setShowDataSources] = useState(false);
+  const [showAllocateModal, setShowAllocateModal] = useState(false);
+  const [residentNameInput, setResidentNameInput] = useState('');
+  const allocationsApi = useApi<Record<string, string[]>>('/api/rooms/allocations');
+  const customOccupantsMap = allocationsApi.data ?? {};
+  const [allocating, setAllocating] = useState(false);
+  const [allocationError, setAllocationError] = useState('');
+  const [compatibilityError, setCompatibilityError] = useState('');
+  const [candidateCount, setCandidateCount] = useState(0);
 
   // Compatibility form
   const [sleepHabit,  setSleepHabit]  = useState('');
   const [studyHabit,  setStudyHabit]  = useState('');
   const [cleanliness, setCleanliness] = useState('');
   const [socialPref,  setSocialPref]  = useState('');
-  const [compatibilityResults, setCompatibilityResults] = useState<{ name: string; score: number; room: string }[] | null>(null);
+  const [compatibilityResults, setCompatibilityResults] = useState<CompatibilityResult[] | null>(null);
 
-  // Derived rooms grid
-  const rooms = useMemo(
+  // Derived rooms grid with custom allocations applied
+  const baseRooms = useMemo(
     () => generateFloorRooms(selectedBlock, parseInt(selectedFloor)),
     [selectedBlock, selectedFloor],
   );
+
+  const rooms = baseRooms.map(r => {
+    if (customOccupantsMap[r.id]) {
+      const occs = customOccupantsMap[r.id];
+      const isFull = occs.length >= r.maxOccupants;
+      return {
+        ...r,
+        occupants: occs,
+        status: isFull ? ('Full' as const) : ('Available' as const)
+      };
+    }
+    return r;
+  });
+
+  // Sync selectedRoom if customOccupantsMap changes
+  const activeSelectedRoom = selectedRoom ? (rooms.find(r => r.id === selectedRoom.id) || selectedRoom) : null;
+
+  const handleConfirmAllocate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedRoom || !residentNameInput.trim()) return;
+    const room = activeSelectedRoom ?? selectedRoom;
+    setAllocating(true);
+    setAllocationError('');
+    try {
+      const saved = await api.post<{ id: string; occupants: string[] }>(`/api/rooms/${room.id}/allocate`, {
+        name: residentNameInput.trim(),
+        currentOccupants: room.occupants,
+        maxOccupants: room.maxOccupants,
+      });
+      allocationsApi.setData(prev => ({ ...(prev ?? {}), [saved.id]: saved.occupants }));
+      setResidentNameInput('');
+      setShowAllocateModal(false);
+    } catch (err) {
+      setAllocationError(errorMessage(err));
+    } finally {
+      setAllocating(false);
+    }
+  };
 
   // Reset selection when block/floor changes
   const handleBlockChange = (val: string) => { setSelectedBlock(val); setSelectedRoom(null); };
   const handleFloorChange = (val: string) => { setSelectedFloor(val); setSelectedRoom(null); };
 
-  const handleCalculateCompatibility = (e: React.FormEvent) => {
+  const handleCalculateCompatibility = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!sleepHabit || !studyHabit || !cleanliness || !socialPref) return;
-    setCompatibilityResults([
-      { name: `Sameer Verma (${selectedBlock}-${selectedFloor}03)`, score: 94, room: `${selectedBlock}-${selectedFloor}03` },
-      { name: `Abhishek Kumar (${selectedBlock}-${selectedFloor}08)`, score: 86, room: `${selectedBlock}-${selectedFloor}08` },
-      { name: `Riya Banerjee (${selectedBlock}-${selectedFloor}04)`, score: 79, room: `${selectedBlock}-${selectedFloor}04` },
-    ]);
+    if (!sleepHabit || !studyHabit || !cleanliness || !socialPref) {
+      setCompatibilityError('Select all four lifestyle preferences first.');
+      return;
+    }
+    setCompatibilityError('');
+    try {
+      const res = await api.post<{ candidates: number; results: CompatibilityResult[] }>('/api/rooms/compatibility', {
+        sleep: sleepHabit, study: studyHabit, clean: cleanliness, social: socialPref, block: selectedBlock,
+      });
+      setCandidateCount(res.candidates);
+      setCompatibilityResults(res.results);
+    } catch (err) {
+      setCompatibilityError(errorMessage(err));
+    }
   };
 
   // Summary counters
@@ -276,18 +319,22 @@ export default function RoomAllocation() {
               >
                 Analyze Compatibility <ArrowRight className="w-3.5 h-3.5" />
               </button>
+              {compatibilityError && <div role="alert" className="text-red-700 font-mono text-[10px]">{compatibilityError}</div>}
             </form>
 
             {compatibilityResults && (
               <div className="border border-navy-accent/20 bg-warm-ivory p-4 space-y-3 font-mono text-xs">
                 <div className="font-bold text-navy-accent flex items-center gap-1.5 uppercase">
                   <ShieldCheck className="w-4 h-4 text-forest-status" />
-                  Optimal Matches on Block {selectedBlock} · Floor {selectedFloor}
+                  Best Matches from {candidateCount} Survey Response{candidateCount === 1 ? '' : 's'}
                 </div>
+                {compatibilityResults.length === 0 && (
+                  <div className="text-slate-gray">No survey responses yet. Ask residents to complete the Room Preference Survey.</div>
+                )}
                 <div className="divide-y divide-charcoal/5">
                   {compatibilityResults.map((result, idx) => (
                     <div key={idx} className="py-2 flex justify-between items-center">
-                      <span className="text-charcoal">{result.name}</span>
+                      <span className="text-charcoal">{result.name} <span className="text-slate-gray">({result.room})</span></span>
                       <span className={`font-bold ${result.score >= 90 ? 'text-forest-status' : result.score >= 75 ? 'text-navy-accent' : 'text-amber-700'}`}>
                         {result.score}% Match
                       </span>
@@ -430,8 +477,11 @@ export default function RoomAllocation() {
                   ) : (
                     <span className="text-slate-gray italic text-[11px]">Room is currently unallocated. Available for selection.</span>
                   )}
-                  {selectedRoom.occupants.length < selectedRoom.maxOccupants && selectedRoom.status !== 'Maintenance' && (
-                    <button className="mt-3 w-full text-center bg-navy-accent text-surface-white font-mono text-[10px] uppercase tracking-wider py-2 hover:bg-charcoal transition-colors">
+                  {(activeSelectedRoom?.occupants.length ?? selectedRoom.occupants.length) < selectedRoom.maxOccupants && selectedRoom.status !== 'Maintenance' && (
+                    <button 
+                      onClick={() => setShowAllocateModal(true)}
+                      className="mt-3 w-full text-center bg-navy-accent text-surface-white font-mono text-[10px] uppercase tracking-wider py-2 hover:bg-charcoal transition-colors rounded-xs shadow-xs"
+                    >
                       Allocate Resident Here
                     </button>
                   )}
@@ -445,6 +495,50 @@ export default function RoomAllocation() {
           </div>
         </div>
       </div>
+
+      {/* ALLOCATE RESIDENT MODAL */}
+      {showAllocateModal && selectedRoom && (
+        <div className="fixed inset-0 bg-charcoal/80 z-50 flex items-center justify-center p-4">
+          <form onSubmit={handleConfirmAllocate} className="bg-surface-white border border-charcoal/20 max-w-sm w-full p-6 space-y-4 font-mono text-xs shadow-2xl rounded-sm">
+            <div className="flex justify-between items-center border-b border-charcoal/10 pb-3">
+              <h4 className="font-bold text-navy-accent text-sm uppercase">Allocate Resident — Room {selectedRoom.number}</h4>
+              <button type="button" onClick={() => setShowAllocateModal(false)} className="text-slate-gray hover:text-charcoal text-base font-bold">✕</button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-[11px] text-slate-gray uppercase">Resident Full Name *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Siddharth Verma"
+                value={residentNameInput}
+                onChange={(e) => setResidentNameInput(e.target.value)}
+                className="w-full border border-charcoal/20 p-2.5 bg-white text-xs text-charcoal outline-none focus:border-navy-accent rounded-xs"
+                maxLength={80}
+                autoFocus
+              />
+              {allocationError && <div role="alert" className="text-red-700 text-[10px] font-bold">{allocationError}</div>}
+            </div>
+
+            <div className="flex gap-2 justify-end pt-2">
+              <button 
+                type="button" 
+                onClick={() => setShowAllocateModal(false)}
+                className="px-3 py-2 border border-charcoal/20 text-xs text-charcoal rounded-xs"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={allocating}
+                className="px-4 py-2 bg-navy-accent text-white text-xs font-bold uppercase tracking-wider rounded-xs shadow-xs disabled:opacity-50"
+              >
+                {allocating ? 'Saving...' : 'Confirm Allocation'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

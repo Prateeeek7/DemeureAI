@@ -5,47 +5,14 @@ import {
   Building, Layers, BedDouble, ChevronRight, Trash2, Cpu, Zap,
 } from 'lucide-react';
 import ThemedSelect from './ThemedSelect';
+import { api, errorMessage } from '../lib/api';
+import { useApi } from '../lib/useApi';
+import { useSession } from '../lib/session';
+import { encodeVector, type SurveyEntry } from '../lib/survey';
 
-// ── Types (exported so DashboardLayout can hold shared state) ─────────────────
-export interface SurveyEntry {
-  id: string;
-  studentId: string;
-  fullName: string;
-  rollNumber: string;
-  email: string;
-  gender: string;
-  course: string;
-  branch: string;
-  yearOfStudy: string;
-  preferredBlock: string;
-  preferredFloor: string;
-  roomTypePref: string;
-  sleepHabit: string;
-  studyEnv: string;
-  cleanliness: string;
-  socialPref: string;
-  dietaryPref: string;
-  specialNeeds: string;
-  submittedAt: string;
-}
+type SurveyForm = Omit<SurveyEntry, 'id' | 'studentId' | 'submittedAt'>;
 
-// ── ML vector encoder ─────────────────────────────────────────────────────────
-export function encodeVector(entry: SurveyEntry) {
-  const sleepMap:  Record<string, number> = { 'Early Riser': 0, 'Night Owl': 1, 'Flexible': 2 };
-  const studyMap:  Record<string, number> = { 'Absolute Silence': 0, 'Ambient / Music OK': 1, 'Library Preferred': 2 };
-  const cleanMap:  Record<string, number> = { 'Strict / Scheduled': 0, 'Moderate / Weekends': 1, 'Relaxed / Minimal': 2 };
-  const socialMap: Record<string, number> = { 'Quiet Sanctuary': 0, 'Moderate / Occasional': 1, 'Active Hub': 2 };
-  return {
-    sleep_vec:  sleepMap[entry.sleepHabit]  ?? -1,
-    study_vec:  studyMap[entry.studyEnv]    ?? -1,
-    clean_vec:  cleanMap[entry.cleanliness] ?? -1,
-    social_vec: socialMap[entry.socialPref] ?? -1,
-    gender_bin: entry.gender === 'Male' ? 0 : 1,
-    veg_bin:    ['Vegetarian', 'Vegan', 'Jain'].includes(entry.dietaryPref) ? 1 : 0,
-  };
-}
-
-const EMPTY: Omit<SurveyEntry, 'id' | 'studentId' | 'submittedAt'> = {
+const EMPTY: SurveyForm = {
   fullName: '', rollNumber: '', email: '',
   gender: '', course: '', branch: '', yearOfStudy: '',
   preferredBlock: '', preferredFloor: '', roomTypePref: '',
@@ -53,16 +20,16 @@ const EMPTY: Omit<SurveyEntry, 'id' | 'studentId' | 'submittedAt'> = {
   dietaryPref: '', specialNeeds: '',
 };
 
+const pickForm = (entry: SurveyEntry): SurveyForm =>
+  Object.fromEntries(Object.keys(EMPTY).map(k => [k, entry[k as keyof SurveyForm] ?? ''])) as SurveyForm;
+
 // ── Props ─────────────────────────────────────────────────────────────────────
 interface StudentSurveyFormProps {
-  currentRole: 'Admin' | 'Warden' | 'MessManager' | 'Student';
-  submissions: SurveyEntry[];
-  onAddSubmission: (entry: SurveyEntry) => void;
-  onRemoveSubmission: (id: string) => void;
+  currentRole: string;
 }
 
 // ── Section header helper ─────────────────────────────────────────────────────
-const Section = ({ n, icon: Icon, title }: { n: string; icon: any; title: string }) => (
+const Section = ({ n, icon: Icon, title }: { n: string; icon: React.ComponentType<{ className?: string }>; title: string }) => (
   <div className="flex items-center gap-2 border-b border-charcoal/5 pb-3 mb-4">
     <span className="font-mono text-[10px] text-slate-gray">{n}</span>
     <Icon className="w-4 h-4 text-navy-accent" />
@@ -71,32 +38,57 @@ const Section = ({ n, icon: Icon, title }: { n: string; icon: any; title: string
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-export default function StudentSurveyForm({
-  currentRole,
-  submissions,
-  onAddSubmission,
-  onRemoveSubmission,
-}: StudentSurveyFormProps) {
-  const isAdmin = currentRole === 'Admin' || currentRole === 'Warden';
+export default function StudentSurveyForm({ currentRole }: StudentSurveyFormProps) {
+  const isAdmin = currentRole === 'HostelAdmin' || currentRole === 'Warden';
+  const user = useSession();
+  // Wardens receive every response; students receive only their own.
+  const surveysApi = useApi<SurveyEntry[]>('/api/surveys');
+  const submissions = surveysApi.data ?? [];
+  const existing = isAdmin ? undefined : submissions[0];
 
-  const [form, setForm] = useState({ ...EMPTY });
+  const [form, setForm] = useState<SurveyForm>({ ...EMPTY, fullName: user?.name ?? '', email: user?.email ?? '' });
+  const [loadedId, setLoadedId] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
-  const set = (key: keyof typeof EMPTY, val: string) =>
+  // Prefill once from a previously saved response (adjusting state during render, not in an effect).
+  if (existing && loadedId !== existing.id) {
+    setLoadedId(existing.id);
+    setForm(pickForm(existing));
+  }
+
+  const set = (key: keyof SurveyForm, val: string) =>
     setForm(prev => ({ ...prev, [key]: val }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const entry: SurveyEntry = {
-      ...form,
-      id: String(Date.now()),
-      studentId: `STU-${String(submissions.length + 101).padStart(3, '0')}`,
-      submittedAt: new Date().toLocaleString('en-IN'),
-    };
-    onAddSubmission(entry);
-    setSubmitted(true);
-    setForm({ ...EMPTY });
-    setTimeout(() => setSubmitted(false), 3500);
+    const missing = (Object.keys(EMPTY) as (keyof SurveyForm)[]).filter(k => k !== 'specialNeeds' && !form[k].trim());
+    if (missing.length > 0) {
+      setError('Please answer every required question before submitting.');
+      return;
+    }
+    setSaving(true);
+    setError('');
+    try {
+      await api.put('/api/surveys/me', form);
+      setSubmitted(true);
+      surveysApi.reload();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRemove = async (id: string) => {
+    if (!window.confirm('Permanently delete this survey response?')) return;
+    try {
+      await api.del(`/api/surveys/${id}`);
+    } catch (err) {
+      setError(errorMessage(err));
+    }
+    surveysApi.reload();
   };
 
   // ── Excel Export (admin only) ─────────────────────────────────────────────
@@ -137,36 +129,46 @@ export default function StudentSurveyForm({
         </div>
 
         {/* Auto-feed indicator */}
-        <div className="flex items-center gap-3 border border-forest-status/20 bg-green-50 px-4 py-2.5 font-mono text-[10px] text-forest-status">
-          <Zap className="w-3.5 h-3.5 flex-shrink-0" />
-          <span>
-            <strong>Live feed enabled</strong> — your submission will instantly appear in the allocation model.
-            No Excel import required.
-          </span>
-        </div>
+        {existing ? (
+          <div className="flex items-center gap-3 border border-navy-accent/20 bg-navy-accent/5 px-4 py-2.5 font-mono text-[10px] text-navy-accent">
+            <ClipboardList className="w-3.5 h-3.5 flex-shrink-0 animate-pulse" />
+            <span>
+              <strong>Preferences Registered</strong> — You have already submitted your survey preferences.
+              You can modify your responses below and click <strong>Update Preferences</strong> to save changes.
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3 border border-forest-status/20 bg-green-50 px-4 py-2.5 font-mono text-[10px] text-forest-status">
+            <Zap className="w-3.5 h-3.5 flex-shrink-0" />
+            <span>
+              <strong>Live feed enabled</strong> — your submission will instantly appear in the allocation model.
+              No Excel import required.
+            </span>
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl">
+        <form onSubmit={handleSubmit} className="space-y-6 w-full">
           {/* § 1 Personal */}
           <div className="border border-charcoal/10 bg-surface-white p-6">
             <Section n="§ 01" icon={User} title="Personal Details" />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">Full Name *</label>
+                <label className="block text-charcoal font-semibold uppercase text-[10px] tracking-wider">Full Name *</label>
                 <input required value={form.fullName} onChange={e => set('fullName', e.target.value)} placeholder="Aarav Sharma"
-                  className="w-full bg-warm-ivory border border-charcoal/15 px-3 py-2.5 text-charcoal outline-none focus:border-navy-accent placeholder-slate-gray/30" />
+                  className="w-full bg-warm-ivory border border-charcoal/15 px-3 py-2.5 text-charcoal outline-none focus:border-navy-accent placeholder-slate-gray/70" />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">Roll Number *</label>
+                <label className="block text-charcoal font-semibold uppercase text-[10px] tracking-wider">Roll Number *</label>
                 <input required value={form.rollNumber} onChange={e => set('rollNumber', e.target.value)} placeholder="DE24CSE001"
-                  className="w-full bg-warm-ivory border border-charcoal/15 px-3 py-2.5 text-charcoal outline-none focus:border-navy-accent placeholder-slate-gray/30 uppercase" />
+                  className="w-full bg-warm-ivory border border-charcoal/15 px-3 py-2.5 text-charcoal outline-none focus:border-navy-accent placeholder-slate-gray/70 uppercase" />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">Email *</label>
+                <label className="block text-charcoal font-semibold uppercase text-[10px] tracking-wider">Email *</label>
                 <input required type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="name@demeure.ac.in"
-                  className="w-full bg-warm-ivory border border-charcoal/15 px-3 py-2.5 text-charcoal outline-none focus:border-navy-accent placeholder-slate-gray/30" />
+                  className="w-full bg-warm-ivory border border-charcoal/15 px-3 py-2.5 text-charcoal outline-none focus:border-navy-accent placeholder-slate-gray/70" />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">Gender *</label>
+                <label className="block text-charcoal font-semibold uppercase text-[10px] tracking-wider">Gender *</label>
                 <ThemedSelect value={form.gender} onChange={v => set('gender', v)} placeholder="Select..."
                   options={[{value:'Male',label:'Male'},{value:'Female',label:'Female'},{value:'Other',label:'Other / Prefer not to say'}]} />
               </div>
@@ -178,17 +180,17 @@ export default function StudentSurveyForm({
             <Section n="§ 02" icon={BookOpen} title="Academic Profile" />
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-xs">
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">Course *</label>
+                <label className="block text-charcoal font-semibold uppercase text-[10px] tracking-wider">Course *</label>
                 <ThemedSelect value={form.course} onChange={v => set('course', v)} placeholder="Select..."
                   options={['B.Tech','M.Tech','MBA','MCA','PhD','B.Sc','M.Sc'].map(c => ({value:c,label:c}))} />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">Branch *</label>
+                <label className="block text-charcoal font-semibold uppercase text-[10px] tracking-wider">Branch *</label>
                 <ThemedSelect value={form.branch} onChange={v => set('branch', v)} placeholder="Select..."
                   options={['CSE','ECE','ME','Civil','EEE','IT','AI & ML','Data Science','Biotechnology','Chemical Engg'].map(b => ({value:b,label:b}))} />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">Year *</label>
+                <label className="block text-charcoal font-semibold uppercase text-[10px] tracking-wider">Year *</label>
                 <ThemedSelect value={form.yearOfStudy} onChange={v => set('yearOfStudy', v)} placeholder="Select..."
                   options={['Year 1','Year 2','Year 3','Year 4','Year 5+'].map(y => ({value:y,label:y}))} />
               </div>
@@ -200,17 +202,17 @@ export default function StudentSurveyForm({
             <Section n="§ 03" icon={Building} title="Accommodation Preference" />
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-xs">
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">Preferred Block *</label>
+                <label className="block text-charcoal font-semibold uppercase text-[10px] tracking-wider">Preferred Block *</label>
                 <ThemedSelect value={form.preferredBlock} onChange={v => set('preferredBlock', v)} placeholder="Select block..."
                   options={[{value:'A',label:'Block A — Boys (North Wing)'},{value:'B',label:'Block B — Girls (South Wing)'},{value:'C',label:'Block C — Mixed / PG'}]} />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">Preferred Floor *</label>
+                <label className="block text-charcoal font-semibold uppercase text-[10px] tracking-wider">Preferred Floor *</label>
                 <ThemedSelect value={form.preferredFloor} onChange={v => set('preferredFloor', v)} placeholder="Select floor..."
                   options={[{value:'1',label:'Floor 1 (101–110)'},{value:'2',label:'Floor 2 (201–210)'},{value:'3',label:'Floor 3 (301–310)'},{value:'4',label:'Floor 4 (401–410)'},{value:'5',label:'Floor 5 (501–510)'}]} />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">Room Type *</label>
+                <label className="block text-charcoal font-semibold uppercase text-[10px] tracking-wider">Room Type *</label>
                 <ThemedSelect value={form.roomTypePref} onChange={v => set('roomTypePref', v)} placeholder="Select type..."
                   options={[{value:'Single',label:'Single (1 person)'},{value:'Double',label:'Double (2 persons)'},{value:'Suite',label:'Suite (3–4 persons)'}]} />
               </div>
@@ -222,22 +224,22 @@ export default function StudentSurveyForm({
             <Section n="§ 04" icon={Layers} title="Lifestyle Profile — used by AI compatibility engine" />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">1. Sleep Habit *</label>
+                <label className="block text-charcoal font-semibold uppercase text-[10px] tracking-wider">1. Sleep Habit *</label>
                 <ThemedSelect value={form.sleepHabit} onChange={v => set('sleepHabit', v)} placeholder="Select..."
                   options={[{value:'Early Riser',label:'Early Riser (Before 6 AM)'},{value:'Night Owl',label:'Night Owl (Past midnight)'},{value:'Flexible',label:'Flexible'}]} />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">2. Study Environment *</label>
+                <label className="block text-charcoal font-semibold uppercase text-[10px] tracking-wider">2. Study Environment *</label>
                 <ThemedSelect value={form.studyEnv} onChange={v => set('studyEnv', v)} placeholder="Select..."
                   options={[{value:'Absolute Silence',label:'Absolute Silence'},{value:'Ambient / Music OK',label:'Ambient / Music OK'},{value:'Library Preferred',label:'Library Preferred'}]} />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">3. Cleanliness Standard *</label>
+                <label className="block text-charcoal font-semibold uppercase text-[10px] tracking-wider">3. Cleanliness Standard *</label>
                 <ThemedSelect value={form.cleanliness} onChange={v => set('cleanliness', v)} placeholder="Select..."
                   options={[{value:'Strict / Scheduled',label:'Strict / Scheduled'},{value:'Moderate / Weekends',label:'Moderate / Weekends'},{value:'Relaxed / Minimal',label:'Relaxed / Minimal'}]} />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">4. Social Preference *</label>
+                <label className="block text-charcoal font-semibold uppercase text-[10px] tracking-wider">4. Social Preference *</label>
                 <ThemedSelect value={form.socialPref} onChange={v => set('socialPref', v)} placeholder="Select..."
                   options={[{value:'Quiet Sanctuary',label:'Quiet Sanctuary'},{value:'Moderate / Occasional',label:'Moderate / Occasional'},{value:'Active Hub',label:'Active Hub'}]} />
               </div>
@@ -249,29 +251,33 @@ export default function StudentSurveyForm({
             <Section n="§ 05" icon={BedDouble} title="Dietary & Special Requirements" />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">Dietary Preference *</label>
+                <label className="block text-charcoal font-semibold uppercase text-[10px] tracking-wider">Dietary Preference *</label>
                 <ThemedSelect value={form.dietaryPref} onChange={v => set('dietaryPref', v)} placeholder="Select..."
                   options={[{value:'Vegetarian',label:'Vegetarian'},{value:'Non-Vegetarian',label:'Non-Vegetarian'},{value:'Vegan',label:'Vegan'},{value:'Jain',label:'Jain (strict veg)'}]} />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-slate-gray uppercase text-[10px] tracking-wider">Special Needs / Notes</label>
+                <label className="block text-charcoal font-semibold uppercase text-[10px] tracking-wider">Special Needs / Notes</label>
                 <input value={form.specialNeeds} onChange={e => set('specialNeeds', e.target.value)}
                   placeholder="E.g. Allergic to dust, near lift…"
-                  className="w-full bg-warm-ivory border border-charcoal/15 px-3 py-2.5 text-charcoal outline-none focus:border-navy-accent placeholder-slate-gray/30 font-mono text-xs" />
+                  className="w-full bg-warm-ivory border border-charcoal/15 px-3 py-2.5 text-charcoal outline-none focus:border-navy-accent placeholder-slate-gray/70 font-mono text-xs" />
               </div>
             </div>
           </div>
 
-          <button type="submit"
-            className="w-full bg-navy-accent hover:bg-charcoal text-surface-white py-4 font-mono uppercase tracking-widest text-[12px] transition-colors flex items-center justify-center gap-2">
-            <ClipboardList className="w-4 h-4" /> Submit Preference Survey
+          {error && (
+            <div role="alert" className="border border-red-700/20 p-3 text-center font-mono text-[11px] text-red-700">{error}</div>
+          )}
+
+          <button type="submit" disabled={saving}
+            className="w-full bg-navy-accent hover:bg-charcoal text-surface-white py-4 font-mono uppercase tracking-widest text-[12px] transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
+            <ClipboardList className="w-4 h-4" /> {saving ? 'Saving...' : existing ? 'Update Preferences' : 'Submit Preference Survey'}
             <ChevronRight className="w-4 h-4" />
           </button>
 
-          {submitted && (
-            <div className="border border-forest-status/30 bg-green-50 p-4 text-center font-mono text-[11px] text-forest-status flex items-center justify-center gap-2">
+          {submitted && !error && (
+            <div role="status" className="border border-forest-status/30 bg-green-50 p-4 text-center font-mono text-[11px] text-forest-status flex items-center justify-center gap-2">
               <CheckCircle className="w-4 h-4" />
-              ✓ Submitted &amp; auto-fed to the AI allocation model. You're all set!
+              ✓ Preferences saved and fed to the room allocation model.
             </div>
           )}
         </form>
@@ -306,12 +312,15 @@ export default function StudentSurveyForm({
         </button>
       </div>
 
+      {surveysApi.error && <div role="alert" className="border border-red-700/20 p-3 font-mono text-xs text-red-700">{surveysApi.error}</div>}
+      {error && <div role="alert" className="border border-red-700/20 p-3 font-mono text-xs text-red-700">{error}</div>}
+
       {/* Pipeline status strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 font-mono text-xs">
         {[
           { label: 'Live Responses', val: String(submissions.length), color: 'text-navy-accent' },
-          { label: 'Baseline Dataset', val: '100 Students', color: 'text-charcoal' },
-          { label: 'Total in Model', val: String(100 + submissions.length), color: 'text-charcoal' },
+          { label: 'Vegetarian Share', val: submissions.length ? `${Math.round(100 * submissions.filter(s => encodeVector(s).veg_bin === 1).length / submissions.length)}%` : '—', color: 'text-charcoal' },
+          { label: 'Night Owls', val: String(submissions.filter(s => s.sleepHabit === 'Night Owl').length), color: 'text-charcoal' },
           { label: 'Model Status', val: 'LIVE FEED ●', color: 'text-forest-status' },
         ].map(s => (
           <div key={s.label} className="border border-charcoal/10 bg-surface-white p-4 space-y-1">
@@ -325,8 +334,8 @@ export default function StudentSurveyForm({
       <div className="flex items-center gap-3 border border-navy-accent/15 bg-blue-50/60 px-4 py-3 font-mono text-[10px] text-navy-accent">
         <Cpu className="w-4 h-4 flex-shrink-0 text-navy-accent" />
         <span>
-          <strong>Auto-feed active</strong> — every student submission is encoded into ML vectors and appended to the
-          compatibility matrix instantly. Cosine similarity scores update on each new entry.
+          <strong>Auto-feed active</strong> — every student submission is encoded into feature vectors and used by the
+          room allocation compatibility engine immediately (weighted similarity across sleep, study, cleanliness and social habits).
         </span>
       </div>
 
@@ -365,8 +374,8 @@ export default function StudentSurveyForm({
                   <td className="p-2.5 text-slate-gray">{s.dietaryPref}</td>
                   <td className="p-2.5 text-slate-gray text-[9px] whitespace-nowrap">{s.submittedAt}</td>
                   <td className="p-2.5">
-                    <button onClick={() => onRemoveSubmission(s.id)}
-                      className="text-red-700/40 hover:text-red-700 transition-colors" title="Remove">
+                    <button onClick={() => handleRemove(s.id)}
+                      className="text-red-700/40 hover:text-red-700 transition-colors" title="Remove" aria-label={`Remove ${s.fullName}`}>
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </td>
